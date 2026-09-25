@@ -11,8 +11,8 @@ requires-python = ">=3.11"
 dependencies = ["numpy>=1.26,<3"]
 
 [project.urls]
-Repository = "https://github.com/clientside-dev/awaitonal"
-Issues = "https://github.com/clientside-dev/awaitonal/issues"
+Repository = "https://github.com/sindarknave/awaitonal"
+Issues = "https://github.com/sindarknave/awaitonal/issues"
 
 [project.optional-dependencies]
 semantic = ["sentence-transformers>=3.4,<6"]
