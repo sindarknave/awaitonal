@@ -1,0 +1,89 @@
+# Awaitonal's complete first-pass instrument. Times are seconds, notes use
+# scientific pitch notation, and amplitudes are linear (not decibels).
+[synth]
+sample_rate = 48000
+master_gain = 0.24
+peak_limit = 0.80
+harmonics = [1.0, 2.0, 3.0, 4.0, 5.0]
+harmonic_weights = [1.0, 0.22, 0.09, 0.035, 0.015]
+# Higher partials fade faster for a rounded electric-key-like decay.
+partial_decay = 0.30
+demo_gap = 0.35
+
+[synth.brightness]
+enabled = false
+# Saturating character-count mapping: length / (length + length_scale).
+length_scale = 2000
+max_boost = 0.65
+
+[classification]
+caveats_threshold = 0.5
+
+[states.done]
+duration = 0.92
+[[states.done.events]]
+time = 0.02
+notes = ["C4", "E4", "G4"]
+duration = 0.84
+attack = 0.014
+decay = 0.25
+release = 0.15
+gain = 1.0
+
+[states.caveats]
+duration = 1.10
+[[states.caveats.events]]
+time = 0.02
+notes = ["C4", "E4", "G4", "B4", "D5"]
+duration = 1.02
+attack = 0.014
+decay = 0.29
+release = 0.17
+gain = 1.0
+
+[states.needs-you]
+duration = 1.48
+[[states.needs-you.events]]
+time = 0.02
+notes = ["G3", "B3", "D4", "F4", "A4"]
+duration = 0.84
+attack = 0.014
+decay = 0.26
+release = 0.15
+gain = 1.0
+# The two late upper notes deliberately leave the dominant unresolved.
+[[states.needs-you.events]]
+time = 0.89
+notes = ["B4"]
+duration = 0.22
+attack = 0.012
+decay = 0.085
+release = 0.055
+gain = 0.72
+[[states.needs-you.events]]
+time = 1.16
+notes = ["D5"]
+duration = 0.27
+attack = 0.012
+decay = 0.10
+release = 0.065
+gain = 0.72
+
+[states.rejected]
+duration = 0.66
+[[states.rejected.events]]
+time = 0.025
+notes = ["C4", "F#4"]
+duration = 0.17
+attack = 0.008
+decay = 0.070
+release = 0.045
+gain = 0.95
+[[states.rejected.events]]
+time = 0.30
+notes = ["C4", "F#4"]
+duration = 0.17
+attack = 0.008
+decay = 0.070
+release = 0.045
+gain = 0.95

@@ -1,0 +1,43 @@
+{
+  "cases": 30,
+  "correct": 30,
+  "accuracy": 1.0,
+  "confusion_matrix": {
+    "done": {
+      "done": 12,
+      "caveats": 0,
+      "needs-you": 0,
+      "rejected": 0,
+      "ignored": 0
+    },
+    "caveats": {
+      "done": 0,
+      "caveats": 5,
+      "needs-you": 0,
+      "rejected": 0,
+      "ignored": 0
+    },
+    "needs-you": {
+      "done": 0,
+      "caveats": 0,
+      "needs-you": 8,
+      "rejected": 0,
+      "ignored": 0
+    },
+    "rejected": {
+      "done": 0,
+      "caveats": 0,
+      "needs-you": 0,
+      "rejected": 5,
+      "ignored": 0
+    }
+  },
+  "failures": [],
+  "false_attention": [],
+  "false_rejection": [],
+  "classification_ms": {
+    "first": 3.7212090101093054,
+    "warm_median": 0.025582965463399887,
+    "max": 6.901749991811812
+  }
+}

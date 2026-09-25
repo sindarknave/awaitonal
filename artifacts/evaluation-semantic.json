@@ -1,0 +1,129 @@
+{
+  "cases": 30,
+  "correct": 13,
+  "accuracy": 0.43333333333333335,
+  "confusion_matrix": {
+    "done": {
+      "done": 5,
+      "caveats": 7,
+      "needs-you": 0,
+      "rejected": 0,
+      "ignored": 0
+    },
+    "caveats": {
+      "done": 2,
+      "caveats": 3,
+      "needs-you": 0,
+      "rejected": 0,
+      "ignored": 0
+    },
+    "needs-you": {
+      "done": 0,
+      "caveats": 7,
+      "needs-you": 1,
+      "rejected": 0,
+      "ignored": 0
+    },
+    "rejected": {
+      "done": 0,
+      "caveats": 1,
+      "needs-you": 0,
+      "rejected": 4,
+      "ignored": 0
+    }
+  },
+  "failures": [
+    {
+      "id": "basic-success",
+      "expected": "done",
+      "actual": "caveats"
+    },
+    {
+      "id": "limited-checks",
+      "expected": "caveats",
+      "actual": "done"
+    },
+    {
+      "id": "database-choice",
+      "expected": "needs-you",
+      "actual": "caveats"
+    },
+    {
+      "id": "code-question",
+      "expected": "done",
+      "actual": "caveats"
+    },
+    {
+      "id": "permission-prose",
+      "expected": "needs-you",
+      "actual": "caveats"
+    },
+    {
+      "id": "missing-browser",
+      "expected": "caveats",
+      "actual": "done"
+    },
+    {
+      "id": "initial-error",
+      "expected": "done",
+      "actual": "caveats"
+    },
+    {
+      "id": "waiting-confirmation",
+      "expected": "needs-you",
+      "actual": "caveats"
+    },
+    {
+      "id": "delivered",
+      "expected": "done",
+      "actual": "caveats"
+    },
+    {
+      "id": "pending-selection",
+      "expected": "needs-you",
+      "actual": "caveats"
+    },
+    {
+      "id": "all-set",
+      "expected": "done",
+      "actual": "caveats"
+    },
+    {
+      "id": "permission-needed",
+      "expected": "needs-you",
+      "actual": "caveats"
+    },
+    {
+      "id": "no-longer-waiting",
+      "expected": "done",
+      "actual": "caveats"
+    },
+    {
+      "id": "long-late-choice",
+      "expected": "needs-you",
+      "actual": "caveats"
+    },
+    {
+      "id": "long-late-recovery",
+      "expected": "done",
+      "actual": "caveats"
+    },
+    {
+      "id": "long-middle-blocker",
+      "expected": "needs-you",
+      "actual": "caveats"
+    },
+    {
+      "id": "long-late-refusal",
+      "expected": "rejected",
+      "actual": "caveats"
+    }
+  ],
+  "false_attention": [],
+  "false_rejection": [],
+  "classification_ms": {
+    "first": 6.688417051918805,
+    "warm_median": 5.602500052191317,
+    "max": 66.31875003222376
+  }
+}

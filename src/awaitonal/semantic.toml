@@ -1,0 +1,15 @@
+# Cosine similarities and margins are heuristics, NEVER probabilities.
+# These defaults were chosen before running examples/evaluation.jsonl.
+anchors = "anchors.json"
+max_chunks = 8
+token_budget = 224
+# score = 0.65 * conclusion_score + 0.35 * strongest_chunk_score
+conclusion_weight = 0.65
+# Each chunk score = 0.75 * best positive + 0.25 * mean(top 3 positives).
+best_anchor_weight = 0.75
+minimum_similarity = 0.38
+minimum_margin = 0.035
+attention_similarity = 0.52
+attention_margin = 0.06
+# Attention classes must also beat their most similar contrast example.
+contrast_margin = 0.035

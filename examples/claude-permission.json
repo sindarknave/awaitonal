@@ -1,0 +1,12 @@
+{
+  "session_id": "awaitonal-example-permission",
+  "transcript_path": "/example/.claude/projects/demo/transcript.jsonl",
+  "cwd": "/example/project",
+  "permission_mode": "default",
+  "hook_event_name": "PermissionRequest",
+  "tool_name": "Bash",
+  "tool_input": {
+    "command": "npm test",
+    "description": "Run the project's test suite"
+  }
+}

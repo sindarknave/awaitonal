@@ -1,0 +1,67 @@
+{
+  "done": {
+    "positive": [
+      "The changes are complete and the validation succeeded.",
+      "Everything requested is implemented and checked.",
+      "The issue is resolved. The test suite is green.",
+      "I finished the task successfully.",
+      "The earlier error is repaired; the new run succeeds.",
+      "The requested work is ready. If useful, I can add an optional extra later.",
+      "The update is done. Would you like any additional improvements?"
+    ],
+    "negative": [
+      "The implementation is ready but I have not validated it.",
+      "I am still blocked and waiting for your decision."
+    ]
+  },
+  "caveats": {
+    "positive": [
+      "Most of the work is finished, with a few limitations remaining.",
+      "The implementation is complete, but tests were unavailable.",
+      "I could not verify the result in this environment.",
+      "Some checks failed and still need repair.",
+      "The change is written, although deployment remains untested.",
+      "The task is partly complete. There are unresolved issues.",
+      "The command could not execute because the required tool is missing."
+    ],
+    "negative": [
+      "The first attempt failed, then I repaired the cause and verified success.",
+      "I refuse to comply with this request."
+    ]
+  },
+  "needs-you": {
+    "positive": [
+      "I am waiting for your decision before I can continue.",
+      "Please choose an option so I can proceed with the work.",
+      "I need your answer to continue.",
+      "May I execute this command? It requires your approval.",
+      "Please grant permission for the next operation.",
+      "Which approach should I take? Work is paused until you decide.",
+      "I cannot proceed without your confirmation."
+    ],
+    "negative": [
+      "The work is finished. Would you like an optional follow-up?",
+      "Let me know if you want any extra features later.",
+      "No answer is needed; the task is complete.",
+      "I am no longer waiting for approval; the operation completed.",
+      "The documentation contains a sample question for users."
+    ]
+  },
+  "rejected": {
+    "positive": [
+      "I will not assist with this request.",
+      "I must decline to provide that implementation.",
+      "I cannot help you build that.",
+      "I refuse to carry out the requested action.",
+      "Your request is rejected. I cannot comply.",
+      "I am unable to assist with the requested content."
+    ],
+    "negative": [
+      "I need your permission before running the tool.",
+      "The build failed initially, but I corrected it and it now works.",
+      "I cannot run the tests because a dependency is unavailable.",
+      "An external command was denied; I used another method successfully.",
+      "The implementation is complete with a minor limitation."
+    ]
+  }
+}

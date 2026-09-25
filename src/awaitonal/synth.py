@@ -1,0 +1,179 @@
+"""Deterministic additive synthesis, independent of classifiers and playback."""
+
+from __future__ import annotations
+
+import math
+from pathlib import Path
+import re
+import wave
+
+import numpy as np
+
+from .config import load_config
+
+STATE_ORDER = ("done", "caveats", "needs-you", "rejected")
+_SEMITONES = {"C": 0, "D": 2, "E": 4, "F": 5, "G": 7, "A": 9, "B": 11}
+
+
+def note_frequency(note: str) -> float:
+    """Translate a configured scientific-pitch note, using A4 = 440 Hz."""
+    match = re.fullmatch(r"([A-G])([#b]?)(-?\d+)", note)
+    if match is None:
+        raise ValueError(f"Invalid pitch: {note!r}; expected a note such as C4")
+    letter, accidental, octave = match.groups()
+    midi = 12 * (int(octave) + 1) + _SEMITONES[letter]
+    midi += {"": 0, "#": 1, "b": -1}[accidental]
+    try:
+        frequency = 440.0 * 2.0 ** ((midi - 69) / 12.0)
+    except OverflowError as exc:
+        raise ValueError(f"Pitch is outside the audible range: {note!r}") from exc
+    if not math.isfinite(frequency) or frequency <= 0:
+        raise ValueError(f"Pitch is outside the audible range: {note!r}")
+    return frequency
+
+
+def _number(value: object, name: str, low: float, high: float) -> float:
+    try:
+        result = float(value)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"{name} must be numeric") from exc
+    if not math.isfinite(result) or not low <= result <= high:
+        raise ValueError(f"{name} must be between {low} and {high}")
+    return result
+
+
+def _sample_rate(config: dict) -> int:
+    value = _number(config["synth"]["sample_rate"], "sample_rate", 8000, 192000)
+    if value != int(value):
+        raise ValueError("sample_rate must be an integer")
+    return int(value)
+
+
+def _render_events(state: str, config: dict, brightness: float) -> np.ndarray:
+    settings = config["synth"]
+    sample_rate = _sample_rate(config)
+    patch = config["states"][state]
+    duration = _number(patch["duration"], "state duration", 0.05, 10.0)
+    samples = np.zeros(round(duration * sample_rate), dtype=np.float64)
+    harmonics = np.asarray(settings["harmonics"], dtype=np.float64)
+    weights = np.asarray(settings["harmonic_weights"], dtype=np.float64)
+    if (harmonics.ndim != 1 or weights.shape != harmonics.shape
+            or len(harmonics) == 0 or len(harmonics) > 32
+            or not np.isfinite(harmonics).all() or not np.isfinite(weights).all()
+            or (harmonics < 1).any() or (weights < 0).any()
+            or not (weights > 0).any()):
+        raise ValueError("Harmonics and weights must be finite, equally sized positive lists")
+    # Boost upper partials gradually. Per-voice energy normalization and the
+    # final RMS match in render keep this independent of output volume.
+    weights = weights * (1.0 + brightness * (1.0 - 1.0 / harmonics))
+    partial_decay = _number(settings["partial_decay"], "partial_decay", 0.0, 10.0)
+    events = patch["events"]
+    if not isinstance(events, list) or not 1 <= len(events) <= 32:
+        raise ValueError("A state must contain between 1 and 32 events")
+    for event in events:
+        start = _number(event["time"], "event time", 0.0, duration)
+        length = _number(event["duration"], "event duration", 0.005, duration)
+        if start + length > duration + 1.0 / sample_rate:
+            raise ValueError("An event must finish within its state's duration")
+        attack = _number(event["attack"], "attack", 0.001, length)
+        release = _number(event["release"], "release", 0.001, length)
+        decay = _number(event["decay"], "decay", 0.001, 10.0)
+        gain = _number(event["gain"], "event gain", 0.0, 4.0)
+        notes = event["notes"]
+        if not isinstance(notes, list) or not 1 <= len(notes) <= 16:
+            raise ValueError("Each event needs between 1 and 16 notes")
+        count = round(length * sample_rate)
+        times = np.arange(count, dtype=np.float64) / sample_rate
+        # Raised cosine ramps have zero slope at both ends. Multiplying
+        # overlapping ramps also safely handles very short configured events.
+        onset = 0.5 - 0.5 * np.cos(np.pi * np.minimum(times / attack, 1.0))
+        remaining = (count - 1 - np.arange(count)) / sample_rate
+        ending = 0.5 - 0.5 * np.cos(np.pi * np.minimum(remaining / release, 1.0))
+        envelope = onset * ending * np.exp(-times / decay)
+        chord = np.zeros(count, dtype=np.float64)
+        for note in notes:
+            frequency = note_frequency(note)
+            if frequency >= sample_rate / 2:
+                raise ValueError(f"Fundamental {note} is at or above Nyquist")
+            usable = frequency * harmonics < sample_rate / 2
+            local_weights = weights[usable]
+            local_harmonics = harmonics[usable]
+            norm = float(np.linalg.norm(local_weights))
+            if norm == 0:
+                raise ValueError("No audible partial has a nonzero weight")
+            for harmonic, weight in zip(local_harmonics, local_weights, strict=True):
+                partial_envelope = np.exp(-times * partial_decay * (harmonic - 1) / decay)
+                chord += (weight / norm) * partial_envelope * np.sin(
+                    2.0 * np.pi * frequency * harmonic * times
+                )
+        # Energy, rather than peak, scaling stops richer chords becoming louder.
+        chord *= envelope * gain / math.sqrt(len(notes))
+        offset = round(start * sample_rate)
+        end = min(len(samples), offset + count)
+        samples[offset:end] += chord[:end - offset]
+    return samples
+
+
+def render(state: str, config: dict | None = None, response_length: int = 0) -> np.ndarray:
+    """Render one gesture as mono float64 samples, with guaranteed headroom.
+
+    Brightness is opt-in, bounded, and RMS-matched to the same fixed gesture.
+    Character count never changes duration or the intended volume.
+    """
+    config = load_config() if config is None else config
+    if state not in STATE_ORDER:
+        raise ValueError(f"Unknown state {state!r}; expected one of {', '.join(STATE_ORDER)}")
+    settings = config["synth"]
+    master_gain = _number(settings["master_gain"], "master_gain", 0.0, 1.0)
+    peak_limit = _number(settings["peak_limit"], "peak_limit", 0.01, 0.98)
+    samples = _render_events(state, config, 0.0)
+    brightness_config = settings.get("brightness", {})
+    if brightness_config.get("enabled", False):
+        scale = _number(brightness_config["length_scale"], "length_scale", 1.0, 1e9)
+        max_boost = _number(brightness_config["max_boost"], "max_boost", 0.0, 2.0)
+        count = _number(response_length, "response_length", 0.0, 1e15)
+        amount = max_boost * count / (count + scale)
+        if amount > 0:
+            brighter = _render_events(state, config, amount)
+            energy = float(np.dot(brighter, brighter))
+            if energy > 0:
+                brighter *= math.sqrt(float(np.dot(samples, samples)) / energy)
+            samples = brighter
+    samples *= master_gain
+    peak = float(np.max(np.abs(samples)))
+    if peak > peak_limit:
+        # Uniform emergency attenuation, never waveform clipping. Ordinarily
+        # inactive with the conservative packaged palette.
+        samples *= peak_limit / peak
+    samples[0] = samples[-1] = 0.0
+    return samples
+
+
+def render_demo(config: dict | None = None) -> np.ndarray:
+    """Audition all four states in the approved order with configurable gaps."""
+    config = load_config() if config is None else config
+    gap = _number(config["synth"]["demo_gap"], "demo_gap", 0.0, 10.0)
+    silence = np.zeros(round(gap * _sample_rate(config)), dtype=np.float64)
+    parts = []
+    for index, state in enumerate(STATE_ORDER):
+        if index:
+            parts.append(silence)
+        parts.append(render(state, config))
+    return np.concatenate(parts)
+
+
+def write_wav(path: str | Path, samples: np.ndarray, sample_rate: int) -> None:
+    """Write mono PCM16 WAV. Reject invalid audio instead of hiding clipping."""
+    audio = np.asarray(samples, dtype=np.float64)
+    if audio.ndim != 1 or len(audio) == 0 or not np.isfinite(audio).all():
+        raise ValueError("WAV samples must be finite, nonempty mono audio")
+    if np.max(np.abs(audio)) > 1.0:
+        raise ValueError("WAV samples exceed full scale")
+    if isinstance(sample_rate, bool) or not isinstance(sample_rate, int) or sample_rate <= 0:
+        raise ValueError("sample_rate must be a positive integer")
+    pcm = np.rint(audio * 32767.0).astype("<i2")
+    with wave.open(str(Path(path)), "wb") as stream:
+        stream.setnchannels(1)
+        stream.setsampwidth(2)
+        stream.setframerate(sample_rate)
+        stream.writeframes(pcm.tobytes())

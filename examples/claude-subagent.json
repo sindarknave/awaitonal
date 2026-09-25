@@ -1,0 +1,24 @@
+{
+  "session_id": "awaitonal-example-main",
+  "transcript_path": "/example/.claude/projects/demo/subagents/worker.jsonl",
+  "cwd": "/example/project",
+  "permission_mode": "default",
+  "hook_event_name": "PreToolUse",
+  "agent_id": "awaitonal-example-worker",
+  "agent_type": "general-purpose",
+  "tool_name": "AskUserQuestion",
+  "tool_use_id": "toolu_awaitonal_worker_01",
+  "tool_input": {
+    "questions": [
+      {
+        "question": "Which database should I use before continuing?",
+        "header": "Database",
+        "options": [
+          {"label": "SQLite", "description": "Keep the application local."},
+          {"label": "PostgreSQL", "description": "Use a shared database server."}
+        ],
+        "multiSelect": false
+      }
+    ]
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "session_id": "awaitonal-example-missing-text",
+  "transcript_path": "/example/.claude/projects/demo/transcript.jsonl",
+  "cwd": "/example/project",
+  "permission_mode": "default",
+  "hook_event_name": "Stop",
+  "stop_hook_active": false
+}

@@ -1,0 +1,31 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "awaitonal"
+version = "0.1.0"
+description = "Hear how your agent left things."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = ["numpy>=1.26,<3"]
+
+[project.urls]
+Repository = "https://github.com/clientside-dev/awaitonal"
+Issues = "https://github.com/clientside-dev/awaitonal/issues"
+
+[project.optional-dependencies]
+semantic = ["sentence-transformers>=3.4,<6"]
+
+[dependency-groups]
+dev = ["pytest>=8,<10"]
+
+[project.scripts]
+awaitonal = "awaitonal.cli:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["semantic: requires explicitly downloaded local model"]
+
+[tool.hatch.build]
+exclude = ["artifacts/dist", "examples/claude-hooks.local.json"]

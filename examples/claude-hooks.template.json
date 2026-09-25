@@ -1,0 +1,38 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "'/absolute/path/to/awaitonal/.venv/bin/awaitonal' hook claude",
+            "timeout": 2
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "^AskUserQuestion$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "'/absolute/path/to/awaitonal/.venv/bin/awaitonal' hook claude",
+            "timeout": 2
+          }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "'/absolute/path/to/awaitonal/.venv/bin/awaitonal' hook claude",
+            "timeout": 2
+          }
+        ]
+      }
+    ]
+  }
+}

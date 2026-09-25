@@ -1,0 +1,9 @@
+.venv/
+.wheel-venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+.models/
+dist/
+examples/claude-hooks.local.json
+.DS_Store
