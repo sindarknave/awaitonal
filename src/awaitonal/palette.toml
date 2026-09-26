@@ -23,7 +23,7 @@ caveats_threshold = 0.5
 # Suppress only routine completion cues with a matched prompt start/stop pair.
 # Zero disables suppression. Missing or ambiguous turn IDs always play.
 min_turn_seconds = 0
-# Optional fuller voicing after a matched elapsed turn; zero leaves cues fixed.
+# Optional extended ending after a matched elapsed turn; zero leaves cues fixed.
 # This measures time waiting for the turn, not time spent reasoning.
 long_turn_seconds = 0
 # Ongoing background work normally stays silent. Enable its small pulse here.
@@ -438,3 +438,29 @@ attack = 0.012
 decay = 0.20
 release = 0.07
 gain = 0.88714
+
+# Longer elapsed turns keep the opening motif, then add two rising notes and
+# a wider held ending. These voicings are independent of character brightness.
+[states.done.long_turn]
+lift = ["G4", "B4"]
+chord = ["C4", "E4", "G4", "C5"]
+
+[states.answer.long_turn]
+lift = ["G4", "C5"]
+chord = ["E4", "G4", "C5", "D5"]
+
+[states.verdict.long_turn]
+lift = ["D4", "F#4"]
+chord = ["G3", "D4", "G4", "B4"]
+
+[states.plan.long_turn]
+lift = ["A4", "B4"]
+chord = ["G4", "C5", "E5"]
+
+[states.artifact.long_turn]
+lift = ["G5", "B5"]
+chord = ["C4", "G4", "C5", "E5", "G5", "C6"]
+
+[states.published.long_turn]
+lift = ["G4", "B4"]
+chord = ["C3", "G3", "C4", "E4", "G4", "C5"]

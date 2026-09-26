@@ -103,9 +103,11 @@ notify_in_flight = false
 Pass that file using `--config` to `serve`, `service start`, or `service install`.
 Only routine cues can be suppressed by the short threshold or receive the long
 variant. Feedback requests, handoffs, caveats, refusals, and failures retain their
-normal treatment. Long variants retain motif, duration, and matched energy;
-emergency headroom attenuation can reduce level. Preview with
-`awaitonal play verdict --long-turn`.
+normal treatment. Long variants extend done, answer, verdict, plan, artifact, and
+published cues by 0.8 seconds with two rising notes and a held, wider ending.
+The opening motif stays recognizable at similar RMS level; headroom attenuation
+can reduce level. Each cue's `[states.<gesture>.long_turn]` palette table sets the
+two `lift` notes and final `chord`. Preview with `awaitonal play verdict --long-turn`.
 
 Timing is matched elapsed turn time, not reasoning duration. It requires supported
 prompt IDs (Claude 2.1.196+) and an observed start. Missing IDs, overlapping starts,

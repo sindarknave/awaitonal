@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from copy import deepcopy
 import math
 from pathlib import Path
 import re
@@ -55,11 +56,39 @@ def _sample_rate(config: dict) -> int:
     return int(value)
 
 
-def _render_events(state: str, config: dict, brightness: float, *, fuller: bool = False) -> np.ndarray:
+def _long_turn_patch(patch: dict) -> dict:
+    """Keep the opening, then lift into a wider, longer final chord."""
+    expanded = deepcopy(patch)
+    events = expanded["events"]
+    profile = expanded.get("long_turn", {})
+    if not isinstance(profile, dict):
+        raise ValueError("long_turn must be a table")
+    final_index = max(range(len(events)), key=lambda i: float(events[i]["time"]))
+    final = events.pop(final_index)
+    lift = profile.get("lift", [final["notes"][0], final["notes"][-1]])
+    chord = profile.get("chord", final["notes"])
+    if not isinstance(lift, list) or len(lift) != 2:
+        raise ValueError("long_turn lift requires two notes")
+    # Leave room for two new attacks without stretching the familiar opening.
+    start = float(final["time"])
+    for index, note in enumerate(lift):
+        events.append({"time": start + .18 * index, "notes": [note],
+                       "duration": .26, "attack": .012, "decay": .18,
+                       "release": .075, "gain": float(final["gain"]) * (.78 + .10 * index)})
+    final.update(time=start + .36, notes=chord, duration=float(final["duration"]) + .44,
+                 decay=min(10.0, float(final["decay"]) * 2.5), release=max(.20, float(final["release"])))
+    events.append(final)
+    expanded["duration"] = float(expanded["duration"]) + .80
+    return expanded
+
+
+def _render_events(state: str, config: dict, brightness: float, *, extended: bool = False) -> np.ndarray:
     settings = config["synth"]
     sample_rate = _sample_rate(config)
     patch = config["states"][state]
-    duration = _number(patch["duration"], "state duration", 0.05, 10.0)
+    if extended:
+        patch = _long_turn_patch(patch)
+    duration = _number(patch["duration"], "state duration", 0.05, 10.8 if extended else 10.0)
     samples = np.zeros(round(duration * sample_rate), dtype=np.float64)
     harmonics = np.asarray(settings["harmonics"], dtype=np.float64)
     weights = np.asarray(settings["harmonic_weights"], dtype=np.float64)
@@ -74,9 +103,9 @@ def _render_events(state: str, config: dict, brightness: float, *, fuller: bool 
     weights = weights * (1.0 + brightness * (1.0 - 1.0 / harmonics))
     partial_decay = _number(settings["partial_decay"], "partial_decay", 0.0, 10.0)
     events = patch["events"]
-    if not isinstance(events, list) or not 1 <= len(events) <= 32:
+    if not isinstance(events, list) or not 1 <= len(events) <= (34 if extended else 32):
         raise ValueError("A state must contain between 1 and 32 events")
-    for event_index, event in enumerate(events):
+    for event in events:
         start = _number(event["time"], "event time", 0.0, duration)
         length = _number(event["duration"], "event duration", 0.005, duration)
         if start + length > duration + 1.0 / sample_rate:
@@ -98,11 +127,6 @@ def _render_events(state: str, config: dict, brightness: float, *, fuller: bool 
         envelope = onset * ending * np.exp(-times / decay)
         chord = np.zeros(count, dtype=np.float64)
         voices = [(note_frequency(note), 1.0) for note in notes]
-        if fuller and event_index == len(events) - 1:
-            # A quiet octave beneath the final event keeps the original
-            # pitches, rhythm, and length recognizable. Its energy is matched
-            # to the unmodified cue below, so a long wait is not a louder cue.
-            voices.append((voices[0][0] / 2.0, 0.32))
         for frequency, amplitude in voices:
             if frequency >= sample_rate / 2:
                 raise ValueError("Fundamental is at or above Nyquist")
@@ -131,8 +155,8 @@ def render(state: str, config: dict | None = None, response_length: int = 0,
 
     Brightness is opt-in, bounded, and RMS-matched to the same fixed gesture.
     Character count never changes duration or the intended volume. Separately,
-    long_turn enriches the final voicing of routine results at the same RMS
-    level and duration. It describes elapsed time, not reasoning or confidence.
+    long_turn adds a rising lift and longer final chord to routine results at
+    similar RMS level. It describes elapsed time, not reasoning or confidence.
     """
     config = load_config() if config is None else config
     if state not in GESTURE_ORDER:
@@ -142,7 +166,7 @@ def render(state: str, config: dict | None = None, response_length: int = 0,
     peak_limit = _number(settings["peak_limit"], "peak_limit", 0.01, 0.98)
     samples = _render_events(state, config, 0.0)
     reference_energy = float(np.dot(samples, samples))
-    fuller = long_turn and state in LONG_TURN_GESTURES
+    extended = long_turn and state in LONG_TURN_GESTURES
     amount = 0.0
     brightness_config = settings.get("brightness", {})
     if brightness_config.get("enabled", False):
@@ -150,11 +174,11 @@ def render(state: str, config: dict | None = None, response_length: int = 0,
         max_boost = _number(brightness_config["max_boost"], "max_boost", 0.0, 2.0)
         count = _number(response_length, "response_length", 0.0, 1e15)
         amount = max_boost * count / (count + scale)
-    if amount > 0 or fuller:
-        variant = _render_events(state, config, amount, fuller=fuller)
+    if amount > 0 or extended:
+        variant = _render_events(state, config, amount, extended=extended)
         energy = float(np.dot(variant, variant))
         if energy > 0:
-            variant *= math.sqrt(reference_energy / energy)
+            variant *= math.sqrt(reference_energy / energy * (len(variant) / len(samples)))
         samples = variant
     samples *= master_gain
     peak = float(np.max(np.abs(samples)))

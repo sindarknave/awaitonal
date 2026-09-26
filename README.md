@@ -183,8 +183,10 @@ notify_in_flight = false
 Pass the file with `serve --config PATH` or `service start --config PATH`.
 Defaults are zero for both thresholds and false for the background pulse.
 Short-turn suppression keeps handoffs, feedback requests, caveats, refusals, and
-failures audible. The long-turn variant slightly fills out a routine result's
-existing motif at matched energy and unchanged duration. Preview it with
+failures audible. Long-turn variants give done, answer, verdict, plan, artifact,
+and published cues a longer, slightly more triumphant finish: two rising notes and
+a held, wider ending add 0.8 seconds while preserving the opening motif and similar
+volume. Preview with
 `awaitonal play verdict --long-turn`. The in-flight pulse is independent of timing.
 
 Timing means elapsed user-waited time, **not model thinking duration**. It requires

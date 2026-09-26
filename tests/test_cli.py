@@ -38,8 +38,8 @@ def test_neutral_outcome_and_long_turn_audition(tmp_path):
     for path, flags in ((normal, ()), (long, ("--long-turn",))):
         rendered = cli("play", "verdict", "--out", path, *flags)
         assert rendered.returncode == 0, rendered.stderr
-    assert normal.stat().st_size == long.stat().st_size
-    assert normal.read_bytes() != long.read_bytes()
+    with wave.open(str(normal)) as short_wav, wave.open(str(long)) as long_wav:
+        assert long_wav.getnframes() - short_wav.getnframes() == 38400
 
 
 def test_explicit_cli_reports_service_missing(tmp_path):

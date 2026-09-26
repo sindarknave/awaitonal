@@ -142,8 +142,11 @@ descriptions, prompts, and task results are discarded. Session-wide activity onl
 corroborates a reply reporting ongoing work; a monitor does not override delivery.
 An in-flight report is silent unless `[notifications] notify_in_flight = true`.
 
-Set `[notifications] long_turn_seconds = 120` to enable the slightly fuller motif
-for routine results after a matched two-minute turn. Zero disables this option.
+Set `[notifications] long_turn_seconds = 120` to give routine results a longer,
+slightly more triumphant finish after a matched two-minute turn. Done, answer,
+verdict, plan, artifact, and published cues retain their opening motif and similar
+volume, adding 0.8 seconds with two rising notes and a held, wider ending. Zero
+disables this option.
 It uses the same bounded timing registry as short-turn suppression, and works when
 only the long threshold is enabled. There are no additional per-tool hooks.
 

@@ -1,5 +1,26 @@
 # Observed validation
 
+## Extended endings, v0.4.1
+
+Following listening feedback, all six elapsed-turn variants now add **0.80 seconds**
+with two rising notes and a wider, held final chord. Their durations are 1.75–1.92
+seconds. The familiar opening is retained, RMS level stays matched to the short
+cue, and the extra time contains audible music rather than trailing silence.
+Editable lift/chord voicings live in each state's `long_turn` table.
+
+The focused synthesis and CLI suite reports **59 passed, 1 optional-model skip**.
+Tests cover extension length, musical energy beyond the original ending, retained
+opening shape, level/headroom, deterministic rendering, configurable voicing,
+independent character brightness, and the exported CLI WAV's length. A direct
+comparison with the previous renderer confirms all fourteen normal cues remain
+sample-identical, both with and without optional brightness. Attention, caveat,
+failure, and in-flight cues keep their existing behavior.
+
+[Measured durations and levels](artifacts/long-turn-v0.4.1.json) show RMS near
+0.065 and peaks below 0.431 full scale. No blinded perceptual study is claimed.
+The service remains opt-in for elapsed-time treatment; no classification or
+hook changes are part of this revision.
+
 ## Classification boundaries and elapsed-time voicing, v0.4.0
 
 Checked on 2026-09-26 on the same M2 Pro/macOS/Python environment below.

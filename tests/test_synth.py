@@ -145,22 +145,26 @@ def test_brightness_is_opt_in_bounded_and_volume_neutral():
 
 
 @pytest.mark.parametrize("state", STATE_ORDER)
-def test_elapsed_turn_treatment_preserves_duration_level_and_attention_cues(state):
+def test_elapsed_turn_treatment_extends_result_ending_at_similar_level(state):
     config = load_config()
     before = deepcopy(config)
     fixed = render(state, config)
     fuller = render(state, config, long_turn=True)
     assert config == before
     assert np.array_equal(fixed, render(state, config, long_turn=False))
-    assert len(fuller) == len(fixed)
     assert np.isfinite(fuller).all()
     assert np.mean(fuller ** 2) == pytest.approx(np.mean(fixed ** 2), rel=1e-12)
     assert np.max(np.abs(fuller)) < config["synth"]["peak_limit"]
     assert fuller[0] == fuller[-1] == 0
     if state in LONG_TURN_GESTURES:
-        assert not np.array_equal(fixed, fuller)
-        # The same rhythm remains; elapsed time introduces no new onsets.
-        assert np.array_equal(fixed == 0, fuller == 0)
+        assert len(fuller) - len(fixed) == round(.8 * config["synth"]["sample_rate"])
+        # The added time contains music, not silence appended to the old cue.
+        assert np.sqrt(np.mean(fuller[len(fixed):] ** 2)) > .01
+        final_start = max(event["time"] for event in config["states"][state]["events"])
+        opening = round(final_start * config["synth"]["sample_rate"])
+        # Global level matching may scale the opening, but its notes/rhythm stay.
+        assert np.allclose(fixed[:opening] / np.max(np.abs(fixed[:opening])),
+                           fuller[:opening] / np.max(np.abs(fuller[:opening])), atol=1e-12)
     else:
         assert np.array_equal(fixed, fuller)
 
@@ -174,9 +178,21 @@ def test_elapsed_turn_and_character_brightness_remain_independent_and_bounded(st
     both = render(state, config, response_length=100000, long_turn=True)
     assert not np.array_equal(both, bright)
     assert not np.array_equal(both, render(state, config, long_turn=True))
-    assert len(both) == len(fixed)
+    assert len(both) - len(fixed) == round(.8 * config["synth"]["sample_rate"])
     assert np.mean(both ** 2) == pytest.approx(np.mean(fixed ** 2), rel=1e-12)
     assert np.max(np.abs(both)) < config["synth"]["peak_limit"]
+
+
+def test_long_turn_voicing_is_editable_without_changing_the_short_cue():
+    config = load_config()
+    normal = render("done", config)
+    extended = render("done", config, long_turn=True)
+    config["states"]["done"]["long_turn"]["lift"] = ["D4", "E4"]
+    assert np.array_equal(normal, render("done", config))
+    assert not np.array_equal(extended, render("done", config, long_turn=True))
+    config["states"]["done"]["long_turn"]["lift"] = []
+    with pytest.raises(ValueError, match="two notes"):
+        render("done", config, long_turn=True)
 
 
 def test_partials_above_nyquist_are_omitted():

@@ -1,0 +1,41 @@
+{
+  "normal_cues_sample_identical": true,
+  "measurements": {
+    "done": {
+      "normal_seconds": 1.08,
+      "extended_seconds": 1.88,
+      "rms": 0.06500106878312098,
+      "peak": 0.36330346985855255
+    },
+    "answer": {
+      "normal_seconds": 0.95,
+      "extended_seconds": 1.75,
+      "rms": 0.06500050455658432,
+      "peak": 0.37547710021047326
+    },
+    "verdict": {
+      "normal_seconds": 0.98,
+      "extended_seconds": 1.78,
+      "rms": 0.06499999999771079,
+      "peak": 0.3564947047578265
+    },
+    "plan": {
+      "normal_seconds": 1.1,
+      "extended_seconds": 1.9,
+      "rms": 0.06500045869283934,
+      "peak": 0.30838224512302737
+    },
+    "artifact": {
+      "normal_seconds": 1.12,
+      "extended_seconds": 1.92,
+      "rms": 0.06500010345898916,
+      "peak": 0.3451838577762298
+    },
+    "published": {
+      "normal_seconds": 1.12,
+      "extended_seconds": 1.92,
+      "rms": 0.06500018514561327,
+      "peak": 0.43011784222094634
+    }
+  }
+}
