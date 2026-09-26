@@ -4,12 +4,13 @@ import pytest
 from awaitonal.audition import render_ensemble_demo
 from awaitonal.config import load_config
 from awaitonal.synth import render
+from awaitonal.voices import SESSION_VOICES
 
 
 def test_voice_study_covers_each_identity_and_outcome_with_clear_gaps():
     audio, cues = render_ensemble_demo()
     assert {(cue.voice, cue.gesture) for cue in cues} == {
-        (voice, gesture) for voice in ("wood", "glass", "round")
+        (voice, gesture) for voice in SESSION_VOICES
         for gesture in ("done", "review", "needs-you")}
     end = 0
     for cue in cues:
@@ -50,3 +51,24 @@ def test_overlap_mix_respects_headroom_with_loud_custom_profiles():
 def test_unknown_study_mode_fails_explicitly():
     with pytest.raises(ValueError, match="mode"):
         render_ensemble_demo(mode="unbounded")
+
+
+def test_rotation_demo_keeps_returning_sessions_identifiable_and_reuses_after_six():
+    audio, cues = render_ensemble_demo(mode="rotation")
+    assert [cue.voice for cue in cues[:6]] == list(SESSION_VOICES)
+    assert [cue.session for cue in cues] == ["1", "2", "3", "4", "5", "6", "1", "2", "7"]
+    assert [cue.voice for cue in cues[-3:]] == [SESSION_VOICES[0], SESSION_VOICES[1], SESSION_VOICES[0]]
+    for cue in cues:
+        start = round(cue.start * 48000)
+        expected = render("done", voice=cue.voice)
+        assert np.array_equal(audio[start:start + len(expected)], expected)
+
+
+@pytest.mark.parametrize("mode", ["voices", "serial", "overlap", "rotation"])
+def test_auditions_use_custom_voice_cycle_including_a_single_voice(mode):
+    config = load_config()
+    config["notifications"]["voice_cycle"] = ["flute"]
+    _, cues = render_ensemble_demo(config, mode=mode)
+    assert all(cue.voice == "flute" for cue in cues)
+    if mode == "rotation":
+        assert [cue.session for cue in cues] == ["1", "1", "1", "2"]

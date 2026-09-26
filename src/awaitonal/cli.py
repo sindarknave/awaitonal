@@ -31,14 +31,14 @@ def parser():
     sub = cli.add_subparsers(dest="command", required=True)
     for name in ("demo", "play", "ensemble-demo"):
         help_text = {"demo": "audition or render the palette", "play": "play or render one gesture",
-                     "ensemble-demo": "audition three session voices and composed burst comparisons"}
+                     "ensemble-demo": "audition rotating session voices and composed burst comparisons"}
         command = sub.add_parser(name, help=help_text[name])
         if name == "play":
             command.add_argument("state", choices=GESTURES, metavar="GESTURE")
             command.add_argument("--long-turn", action="store_true", help="audition the elapsed-time variant of a routine cue")
         if name == "ensemble-demo":
-            command.add_argument("--mode", choices=("voices", "serial", "overlap"), default="voices",
-                                 help="nine voice/gesture examples or a composed burst comparison")
+            command.add_argument("--mode", choices=("voices", "serial", "overlap", "rotation"), default="voices",
+                                 help="voice comparison, new/returning sessions, or a composed burst")
         else:
             command.add_argument("--voice", choices=VOICE_NAMES, default="default",
                                  help="instrument for the gesture; default keeps the original palette")
@@ -271,6 +271,7 @@ def execute(args):
                           notify_in_flight=notifications.get("notify_in_flight", False),
                           long_turn_player=long_turn_player,
                           session_voices=notifications.get("session_voices", False),
+                          voice_cycle=notifications.get("voice_cycle"),
                           voice_player=voice_player)
         print(f"Awaitonal starting on {args.socket or default_socket()} ({args.classifier}); Ctrl-C to stop.", file=sys.stderr, flush=True)
         service.run(stop)

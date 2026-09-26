@@ -50,12 +50,80 @@ attack_scale = 1.5
 decay_scale = 1.08
 release_scale = 1.15
 
+# Compact rotation: harmonic partials share the gesture's tuning. A fast
+# envelope leaves room for the next session; no reverb or pitch transposition.
+# max_decay is an exponential time constant in seconds; max_note_duration caps
+# the note body. The final 25 ms of silence is retained for click-free playback.
+# Optional detune_cents accepts 1..7 offsets within +/-12, including zero.
+[voices.marimba]
+harmonics = [1.0, 4.0, 10.0]
+harmonic_weights = [1.0, 0.34, 0.12]
+partial_decay = 0.28
+attack_scale = 0.65
+decay_scale = 0.65
+release_scale = 1.3
+max_decay = 0.105
+max_note_duration = 0.36
+
+[voices.powersaw]
+harmonics = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0]
+harmonic_weights = [1.0, 0.55, 0.38, 0.29, 0.23, 0.195, 0.167, 0.145, 0.128, 0.115, 0.104, 0.095]
+partial_decay = 0.025
+attack_scale = 0.75
+decay_scale = 0.75
+release_scale = 1.3
+max_decay = 0.125
+max_note_duration = 0.36
+detune_cents = [-5.0, 0.0, 5.0]
+
+[voices.harp]
+harmonics = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0]
+harmonic_weights = [1.0, 0.56, 0.30, 0.16, 0.11, 0.08, 0.05, 0.03]
+partial_decay = 0.12
+attack_scale = 0.65
+decay_scale = 0.75
+release_scale = 1.3
+max_decay = 0.120
+max_note_duration = 0.36
+
+[voices.clarinet]
+harmonics = [1.0, 3.0, 5.0, 7.0, 9.0]
+harmonic_weights = [1.0, 0.45, 0.22, 0.10, 0.055]
+partial_decay = 0.02
+attack_scale = 0.90
+decay_scale = 0.80
+release_scale = 1.3
+max_decay = 0.130
+max_note_duration = 0.36
+
+[voices.crystal]
+harmonics = [1.0, 2.0, 5.0, 7.0, 11.0]
+harmonic_weights = [1.0, 0.11, 0.49, 0.28, 0.14]
+partial_decay = 0.10
+attack_scale = 0.60
+decay_scale = 0.75
+release_scale = 1.3
+max_decay = 0.120
+max_note_duration = 0.36
+
+[voices.flute]
+harmonics = [1.0, 2.0, 3.0]
+harmonic_weights = [1.0, 0.10, 0.035]
+partial_decay = 0.05
+attack_scale = 1.05
+decay_scale = 0.85
+release_scale = 1.3
+max_decay = 0.135
+max_note_duration = 0.36
+
 [classification]
 caveats_threshold = 0.5
 
 [notifications]
-# Opt in to distinct instruments for the first three active sessions.
+# Opt in to stable instruments, rotating as new sessions arrive.
 session_voices = false
+# Optional subset/order; active sessions get an unused voice whenever possible.
+voice_cycle = ["marimba", "powersaw", "harp", "clarinet", "crystal", "flute"]
 # Suppress only routine completion cues with a matched prompt start/stop pair.
 # Zero disables suppression. Missing or ambiguous turn IDs always play.
 min_turn_seconds = 0

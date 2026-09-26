@@ -53,7 +53,7 @@ def test_named_voice_and_ensemble_cli_render_without_service(tmp_path):
     expected = np.rint(render("review", voice="glass") * 32767).astype("<i2")
     assert np.array_equal(actual, expected)
     durations = {}
-    for mode in ("voices", "serial", "overlap"):
+    for mode in ("voices", "serial", "overlap", "rotation"):
         result = cli("ensemble-demo", "--mode", mode, "--out", tmp_path / f"{mode}.wav")
         assert result.returncode == 0, result.stderr
         with wave.open(str(tmp_path / f"{mode}.wav")) as wav:

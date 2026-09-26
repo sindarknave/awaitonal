@@ -9,10 +9,13 @@ from awaitonal.config import load_config
 from awaitonal.synth import (
     GESTURE_ORDER, LONG_TURN_GESTURES, VOICES, note_frequency, render, render_demo,
 )
+from awaitonal.voices import SESSION_VOICES
+
+LEGACY_VOICES = ("wood", "glass", "round")
 
 
 @pytest.mark.parametrize("gesture", GESTURE_ORDER)
-@pytest.mark.parametrize("voice", VOICES[1:])
+@pytest.mark.parametrize("voice", LEGACY_VOICES)
 def test_voices_preserve_duration_level_and_headroom_with_brightness_and_long_turn(gesture, voice):
     config = load_config()
     config["synth"]["brightness"]["enabled"] = True
@@ -33,6 +36,77 @@ def test_voices_preserve_duration_level_and_headroom_with_brightness_and_long_tu
     if expected_extension:
         assert np.sqrt(np.mean(combined[len(reference):] ** 2)) > .008
     assert config == before
+
+
+@pytest.mark.parametrize("gesture", GESTURE_ORDER)
+@pytest.mark.parametrize("voice", SESSION_VOICES)
+def test_compact_voices_shorten_tails_and_preserve_safe_level_and_long_turn_lift(gesture, voice):
+    config = load_config()
+    config["synth"]["brightness"]["enabled"] = True
+    before = deepcopy(config)
+    reference = render(gesture, config)
+    normal = render(gesture, config, voice=voice)
+    long = render(gesture, config, voice=voice, long_turn=True, response_length=100000)
+    assert np.array_equal(normal, render(gesture, config, voice=voice))
+    assert len(normal) < len(reference)
+    if gesture in LONG_TURN_GESTURES:
+        # Extra rising attacks remain, with a short final stab instead of a
+        # sustained tail. The additional arrangement is still audible.
+        assert len(long) - len(normal) == round(.36 * 48000)
+        assert np.sqrt(np.mean(long[len(normal):] ** 2)) > .008
+    else:
+        assert len(long) == len(normal)
+    for audio in (normal, long):
+        assert np.isfinite(audio).all() and audio.ndim == 1
+        assert audio[0] == audio[-1] == 0
+        assert 0 < np.max(np.abs(audio)) <= config["synth"]["peak_limit"]
+        assert np.mean(audio ** 2) == pytest.approx(np.mean(reference ** 2), rel=1e-12)
+        assert not np.any(audio[-1200:])
+    assert config == before
+
+
+@pytest.mark.parametrize("voice", SESSION_VOICES)
+def test_compact_single_note_keeps_pitch_with_a_short_decaying_body(voice):
+    audio = _single_note(load_config(), voice)
+    rate = 48000
+    # The body now breathes beyond the previous 220 ms stab, then ends cleanly.
+    assert not np.any(audio[round(.36 * rate):])
+    early = np.sqrt(np.mean(audio[round(.01 * rate):round(.06 * rate)] ** 2))
+    late = np.sqrt(np.mean(audio[round(.14 * rate):round(.19 * rate)] ** 2))
+    body = np.sqrt(np.mean(audio[round(.22 * rate):round(.26 * rate)] ** 2))
+    assert late < early * .6
+    assert body > early * .06
+    spectrum = np.abs(np.fft.rfft(audio * np.hanning(len(audio)), n=131072))
+    bins = np.fft.rfftfreq(131072, 1 / rate)
+    assert bins[np.argmax(spectrum)] == pytest.approx(440, abs=2)
+
+
+def test_compact_profiles_are_distinct_without_unrelated_pitches():
+    config = load_config()
+    spectra = []
+    for voice in SESSION_VOICES:
+        profile = config["voices"][voice]
+        assert all(harmonic == int(harmonic) for harmonic in profile["harmonics"])
+        audio = _single_note(config, voice)
+        spectra.append(np.abs(np.fft.rfft(audio * np.hanning(len(audio)), n=32768)))
+    # This protects against accidentally shipping six copies of one instrument;
+    # perceptual recognizability still requires the listening comparison.
+    for index, first in enumerate(spectra):
+        for second in spectra[index + 1:]:
+            assert np.linalg.norm(first / np.linalg.norm(first) - second / np.linalg.norm(second)) > .05
+
+
+@pytest.mark.parametrize("key,value", [
+    ("max_decay", 0), ("max_decay", float("nan")), ("max_note_duration", .01),
+    ("max_note_duration", 100), ("detune_cents", []), ("detune_cents", "0"),
+    ("detune_cents", [-13, 0, 13]), ("detune_cents", [1, 2]),
+    ("detune_cents", [0, float("inf")]), ("detune_cents", [0] * 8),
+])
+def test_compact_profile_rejects_invalid_envelopes_and_detuning(key, value):
+    config = load_config()
+    config["voices"]["powersaw"][key] = value
+    with pytest.raises(ValueError, match="voices.powersaw"):
+        render("done", config, voice="powersaw")
 
 
 @pytest.mark.parametrize("gesture", GESTURE_ORDER)

@@ -80,6 +80,17 @@ def _voice_profile(config: dict, voice: str) -> dict | None:
     for key, low, high in (("partial_decay", 0.0, 10.0), ("attack_scale", .25, 4.0),
                            ("decay_scale", .25, 4.0), ("release_scale", .25, 4.0)):
         validated[key] = _number(profile.get(key), f"voices.{voice}.{key}", low, high)
+    # Optional compact envelopes leave legacy profiles sample-for-sample intact.
+    for key, low, high in (("max_decay", .015, 1.0), ("max_note_duration", .06, 2.0)):
+        if key in profile:
+            validated[key] = _number(profile[key], f"voices.{voice}.{key}", low, high)
+    detunes = profile.get("detune_cents", [0.0])
+    if not isinstance(detunes, list) or not 1 <= len(detunes) <= 7:
+        raise ValueError(f"voices.{voice}.detune_cents must contain between 1 and 7 values")
+    validated["detune_cents"] = [_number(value, f"voices.{voice}.detune_cents", -12, 12)
+                                  for value in detunes]
+    if 0.0 not in validated["detune_cents"]:
+        raise ValueError(f"voices.{voice}.detune_cents must include the unshifted root")
     return validated
 
 
@@ -133,6 +144,7 @@ def _render_events(state: str, config: dict, brightness: float, *, extended: boo
     events = patch["events"]
     if not isinstance(events, list) or not 1 <= len(events) <= (34 if extended else 32):
         raise ValueError("A state must contain between 1 and 32 events")
+    last_end = 0
     for event in events:
         start = _number(event["time"], "event time", 0.0, duration)
         length = _number(event["duration"], "event duration", 0.005, duration)
@@ -147,6 +159,9 @@ def _render_events(state: str, config: dict, brightness: float, *, extended: boo
             attack = min(length, max(.001, attack * voice_profile["attack_scale"]))
             decay = min(10.0, max(.001, decay * voice_profile["decay_scale"]))
             release = min(length, max(.001, release * voice_profile["release_scale"]))
+            decay = min(decay, voice_profile.get("max_decay", decay))
+            length = min(length, voice_profile.get("max_note_duration", length))
+            attack, release = min(attack, length), min(release, length)
         gain = _number(event["gain"], "event gain", 0.0, 4.0)
         notes = event["notes"]
         if not isinstance(notes, list) or not 1 <= len(notes) <= 16:
@@ -161,10 +176,13 @@ def _render_events(state: str, config: dict, brightness: float, *, extended: boo
         envelope = onset * ending * np.exp(-times / decay)
         chord = np.zeros(count, dtype=np.float64)
         voices = [(note_frequency(note), 1.0) for note in notes]
+        detunes = [0.0] if voice_profile is None else voice_profile["detune_cents"]
         for frequency, amplitude in voices:
             if frequency >= sample_rate / 2:
                 raise ValueError("Fundamental is at or above Nyquist")
-            usable = frequency * harmonics < sample_rate / 2
+            # Check the highest detuned oscillator too, before dropping partials.
+            highest = frequency * 2 ** (max(detunes) / 1200)
+            usable = highest * harmonics < sample_rate / 2
             local_weights = weights[usable]
             local_harmonics = harmonics[usable]
             norm = float(np.linalg.norm(local_weights))
@@ -172,14 +190,19 @@ def _render_events(state: str, config: dict, brightness: float, *, extended: boo
                 raise ValueError("No audible partial has a nonzero weight")
             for harmonic, weight in zip(local_harmonics, local_weights, strict=True):
                 partial_envelope = np.exp(-times * partial_decay * (harmonic - 1) / decay)
-                chord += (amplitude * weight / norm) * partial_envelope * np.sin(
-                    2.0 * np.pi * frequency * harmonic * times
-                )
+                for cents in detunes:
+                    chord += (amplitude * weight / norm / math.sqrt(len(detunes))) * partial_envelope * np.sin(
+                        2.0 * np.pi * frequency * 2 ** (cents / 1200) * harmonic * times
+                    )
         # Energy, rather than peak, scaling stops richer chords becoming louder.
         chord *= envelope * gain / math.sqrt(sum(amplitude ** 2 for _, amplitude in voices))
         offset = round(start * sample_rate)
         end = min(len(samples), offset + count)
         samples[offset:end] += chord[:end - offset]
+        last_end = max(last_end, end)
+    if voice_profile is not None and "max_note_duration" in voice_profile:
+        # Avoid holding the serial player open for a now-silent sustained tail.
+        samples = samples[:min(len(samples), last_end + round(.025 * sample_rate))]
     return samples
 
 
@@ -192,7 +215,9 @@ def render(state: str, config: dict | None = None, response_length: int = 0,
     long_turn adds a rising lift and longer final chord to routine results at
     similar RMS level. It describes elapsed time, not reasoning or confidence.
     Named session voices use different partials and envelopes at the same RMS
-    level; the default voice preserves the original palette sample for sample.
+    level. Compact voices keep pitches/onsets and shorten note tails; long turns
+    retain their two extra rising attacks. The default voice preserves the
+    original palette sample for sample.
     """
     config = load_config() if config is None else config
     if state not in GESTURE_ORDER:

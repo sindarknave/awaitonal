@@ -60,8 +60,9 @@ In-flight notifications are silent by default; `play` and
 `demo` let you audition them. Each audible notification plays one gesture once.
 
 For the optional multi-session prototype, try `awaitonal play review --voice glass`
-or `awaitonal ensemble-demo --out voice-study.wav`. Three instruments carry the
-same gestures: wood, glass, and round. Set `session_voices = true` in the service
+or `awaitonal ensemble-demo --mode rotation --out rotation.wav`. Six short voices
+rotate across new sessions: marimba, powersaw, harp, clarinet, crystal, and flute.
+Each session keeps its instrument. Set `session_voices = true` in the service
 configuration's `[notifications]` table for stable voices across parallel sessions.
 See [session voices and listening comparisons](docs/session-voices.md).
 

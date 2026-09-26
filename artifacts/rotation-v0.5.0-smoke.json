@@ -1,0 +1,77 @@
+{
+  "version": "0.5.0",
+  "passed": true,
+  "audio_played": false,
+  "environment": "Fresh non-editable wheel and NumPy; isolated silent services and unrelated working directory",
+  "service_log_capture": "Temporary entrypoint imports the installed CLI and redirects stderr only",
+  "wheel_sha256": "9f05c01eeacf8ad92832abd05ab656ade6b488636197456afaa97d28ef5bff85",
+  "checks": [
+    "Version 0.5.0 imported from installed wheel outside repository",
+    "Default six voices rotate; seventh session reuses marimba",
+    "Default cycle retains returning identities through mute/unmute without replay",
+    "Default service preserves PID and instance; logs omit fixture IDs and reply text; clean shutdown",
+    "Custom two-voice cycle forwarded through installed lifecycle CLI",
+    "Custom cycle retains returning identities through mute/unmute without replay",
+    "Custom service preserves PID and instance; logs omit fixture IDs and reply text; clean shutdown",
+    "All six named voices render distinct mono 16-bit 48 kHz WAVs using installed CLI",
+    "Installed CLI renders rotation, overlap, voices, and serial demos without playback"
+  ],
+  "wav_checks": [
+    {
+      "voice": "marimba",
+      "gesture": "review",
+      "seconds": 1.425,
+      "sha256": "24cf3bb305a9e274f6c96464fff91abdcf3a089c80ef376f36f60057a1fb2c1f"
+    },
+    {
+      "voice": "powersaw",
+      "gesture": "review",
+      "seconds": 1.425,
+      "sha256": "039e70f7ebc22b31d1274223821d05e8e2ceb298a041d9cd82035507834bba4b"
+    },
+    {
+      "voice": "harp",
+      "gesture": "review",
+      "seconds": 1.425,
+      "sha256": "86cb0ba8d2b582bc9cc3c808bbf05835d34057e4a193bd39824768dd8775de2e"
+    },
+    {
+      "voice": "clarinet",
+      "gesture": "review",
+      "seconds": 1.425,
+      "sha256": "aebb1f356092cae1a145191c1c118eab77b4f6118c9a7cf9a86ff7571e6395c6"
+    },
+    {
+      "voice": "crystal",
+      "gesture": "review",
+      "seconds": 1.425,
+      "sha256": "0e1e1853f957de3c4205bd26c9050302d24e0cd62f4b2051470c0a7c7411a9af"
+    },
+    {
+      "voice": "flute",
+      "gesture": "review",
+      "seconds": 1.425,
+      "sha256": "01f0fbff8c45fff26adde8fc515847d33709d452f854585bb3fe3142450bae44"
+    },
+    {
+      "demo": "rotation",
+      "seconds": 8.265,
+      "sha256": "6eda6273759a76d6e7733a56c8a7da487e4810761f25b9b19de15cf06f3ef850"
+    },
+    {
+      "demo": "overlap",
+      "seconds": 3.6,
+      "sha256": "cc86dfccda276003c2b3a6827abd4c6974d36fae0e2e52b33a4037be8e52be65"
+    },
+    {
+      "demo": "voices",
+      "seconds": 31.26,
+      "sha256": "c799e94fd28c135cc93829ec5a857721b3e66548b33cde9ff73f3ec6979970a6"
+    },
+    {
+      "demo": "serial",
+      "seconds": 4.235,
+      "sha256": "8054645e59846b7862cb9acbc83e9e5c7a0242bb33b31cef5240f343cabe8711"
+    }
+  ]
+}

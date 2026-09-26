@@ -1,5 +1,6 @@
-# Opt-in prototype: distinct instruments for the first three active sessions.
+# Stable session identity, with a rotating set of six short instruments.
 [notifications]
 session_voices = true
+voice_cycle = ["marimba", "powersaw", "harp", "clarinet", "crystal", "flute"]
 # Optional extended endings after long turns:
 # long_turn_seconds = 120

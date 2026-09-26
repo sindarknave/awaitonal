@@ -208,7 +208,7 @@ def private_directory(directory: Path):
 class Service:
     def __init__(self, classifier, player, socket_path=None, queue_size=8, logger=None, min_turn_seconds=0,
                  long_turn_seconds=0, notify_in_flight=False, long_turn_player=None,
-                 session_voices=False, voice_player=None):
+                 session_voices=False, voice_player=None, voice_cycle=None):
         for name, value in (("min_turn_seconds", min_turn_seconds), ("long_turn_seconds", long_turn_seconds)):
             if type(value) not in (int, float) or not math.isfinite(value) or value < 0:
                 raise ValueError(f"{name} must be finite and nonnegative")
@@ -234,7 +234,7 @@ class Service:
         self.long_turn_player = long_turn_player
         self.session_voices = session_voices
         self.voice_player = voice_player
-        self.voices = SessionVoices() if session_voices else None
+        self.voices = SessionVoices(voice_cycle=voice_cycle) if session_voices else None
         self.timings = TurnTimings()
         self.instance_id = uuid.uuid4().hex
         self.muted = False

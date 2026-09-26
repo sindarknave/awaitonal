@@ -1,6 +1,43 @@
 # Observed validation
 
-## Session voice prototype, v0.5.0
+## Rotating voices, v0.5.0 release
+
+The [full local core suite](artifacts/tests-v0.5.0-rotation-core.txt) reports
+**1,269 passed, 2 optional-model skips**. It covers six-way rotation, stable
+returning sessions, idle expiry without resetting the cursor, least-used reuse,
+bounded overflow, custom cycles, captured queued identities, and mute/unmute.
+Audio checks cover every gesture and voice, optional brightness and long-turn
+arrangements, deterministic output, common pitches, bounded short envelopes,
+RMS matching, headroom, zero endpoints, and CLI/listening exports.
+
+An independent direct comparison against the preceding prototype commit checked
+224 default/wood/glass/round renders: fourteen gestures, normal and long-turn,
+brightness off and on. Every sample was identical. Only the new six compact
+profiles use the revised 105–135 ms maximum decay constants and 360 ms note caps.
+
+A [fresh-wheel smoke check](artifacts/rotation-v0.5.0-smoke.json), run from an
+unrelated directory with only the installed package and NumPy, verifies real
+silent service startup and hook transport, all six initial assignments,
+seventh-session reuse, stable returning identities, and CLI forwarding of a
+custom two-voice cycle. Mute/unmute preserves the process and service instance,
+drops muted hooks without replay, and excludes fixture IDs and response text
+from logs. All six CLI WAV exports and four audition modes pass; shutdown is
+clean. No audio is played and no user service or settings are changed.
+
+[Installed-wheel audio measurements](artifacts/rotation-v0.5.0-audio.json) record
+the shipped profiles, all 84 voice/gesture combinations, and rotation cue sheet.
+The exported six-voice comparison is byte-identical to the final local audition.
+Across 56 warm renders per voice on this Mac, median synthesis time ranged from
+6.40 to 19.44 ms and p95 from 11.04 to 30.00 ms. This excludes hook transport,
+classification, queue wait, WAV writing, player startup, and audible device onset.
+
+Live playback remains serial; overlap demos are composed listening examples.
+Six voices necessarily repeat beyond six active sessions. Instrument recognition
+and perceived loudness across listening devices have not been measured in a
+blinded study. The following prototype records describe the earlier three-voice
+iteration, before the final listening revisions.
+
+## Session voice prototype, before the v0.5.0 release
 
 The [full core suite](artifacts/tests-v0.5.0-core.txt) reports **1,113 passed,
 2 optional-model skips**. Synthesis checks cover all fourteen gestures in wood,

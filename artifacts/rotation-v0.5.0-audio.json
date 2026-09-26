@@ -1,0 +1,743 @@
+{
+  "version": "0.5.0",
+  "source": "non-editable installed wheel",
+  "sample_rate": 48000,
+  "cycle": [
+    "marimba",
+    "powersaw",
+    "harp",
+    "clarinet",
+    "crystal",
+    "flute"
+  ],
+  "envelopes": {
+    "marimba": {
+      "max_decay": 0.105,
+      "max_note_duration": 0.36,
+      "attack_scale": 0.65,
+      "release_scale": 1.3
+    },
+    "powersaw": {
+      "max_decay": 0.125,
+      "max_note_duration": 0.36,
+      "attack_scale": 0.75,
+      "release_scale": 1.3
+    },
+    "harp": {
+      "max_decay": 0.12,
+      "max_note_duration": 0.36,
+      "attack_scale": 0.65,
+      "release_scale": 1.3
+    },
+    "clarinet": {
+      "max_decay": 0.13,
+      "max_note_duration": 0.36,
+      "attack_scale": 0.9,
+      "release_scale": 1.3
+    },
+    "crystal": {
+      "max_decay": 0.12,
+      "max_note_duration": 0.36,
+      "attack_scale": 0.6,
+      "release_scale": 1.3
+    },
+    "flute": {
+      "max_decay": 0.135,
+      "max_note_duration": 0.36,
+      "attack_scale": 1.05,
+      "release_scale": 1.3
+    }
+  },
+  "measurements": [
+    {
+      "voice": "marimba",
+      "gesture": "done",
+      "duration": 0.785,
+      "peak": 0.3682591863855133,
+      "rms": 0.06500106878312097
+    },
+    {
+      "voice": "marimba",
+      "gesture": "answer",
+      "duration": 0.645,
+      "peak": 0.2779815291106352,
+      "rms": 0.06500050455658431
+    },
+    {
+      "voice": "marimba",
+      "gesture": "plan",
+      "duration": 1.065,
+      "peak": 0.2757165635396888,
+      "rms": 0.06500045869283934
+    },
+    {
+      "voice": "marimba",
+      "gesture": "artifact",
+      "duration": 0.685,
+      "peak": 0.30277383821375736,
+      "rms": 0.06500010345898918
+    },
+    {
+      "voice": "marimba",
+      "gesture": "published",
+      "duration": 0.785,
+      "peak": 0.47233145467843574,
+      "rms": 0.06500018514561327
+    },
+    {
+      "voice": "marimba",
+      "gesture": "review",
+      "duration": 1.425,
+      "peak": 0.40366167826307686,
+      "rms": 0.0650004079984189
+    },
+    {
+      "voice": "marimba",
+      "gesture": "decision",
+      "duration": 1.095,
+      "peak": 0.2950241702490722,
+      "rms": 0.06500199238832975
+    },
+    {
+      "voice": "marimba",
+      "gesture": "needs-you",
+      "duration": 1.725,
+      "peak": 0.42222831283998885,
+      "rms": 0.0650007060719183
+    },
+    {
+      "voice": "marimba",
+      "gesture": "caveats",
+      "duration": 0.955,
+      "peak": 0.33159973148870225,
+      "rms": 0.06500064067096072
+    },
+    {
+      "voice": "marimba",
+      "gesture": "rejected",
+      "duration": 0.495,
+      "peak": 0.33535427437769455,
+      "rms": 0.04816884508324816
+    },
+    {
+      "voice": "marimba",
+      "gesture": "failed",
+      "duration": 0.965,
+      "peak": 0.34118068503777926,
+      "rms": 0.06499973728391892
+    },
+    {
+      "voice": "marimba",
+      "gesture": "verdict",
+      "duration": 0.705,
+      "peak": 0.2974517180945848,
+      "rms": 0.06499999999771079
+    },
+    {
+      "voice": "marimba",
+      "gesture": "in-flight",
+      "duration": 0.485,
+      "peak": 0.055422502082392536,
+      "rms": 0.01230903347483612
+    },
+    {
+      "voice": "marimba",
+      "gesture": "authorization",
+      "duration": 1.285,
+      "peak": 0.3355057814314454,
+      "rms": 0.06500000000156174
+    },
+    {
+      "voice": "powersaw",
+      "gesture": "done",
+      "duration": 0.785,
+      "peak": 0.440339558122244,
+      "rms": 0.06500106878312098
+    },
+    {
+      "voice": "powersaw",
+      "gesture": "answer",
+      "duration": 0.645,
+      "peak": 0.37229129468876815,
+      "rms": 0.06500050455658432
+    },
+    {
+      "voice": "powersaw",
+      "gesture": "plan",
+      "duration": 1.065,
+      "peak": 0.3247404334206571,
+      "rms": 0.06500045869283934
+    },
+    {
+      "voice": "powersaw",
+      "gesture": "artifact",
+      "duration": 0.685,
+      "peak": 0.3952780333226541,
+      "rms": 0.06500010345898918
+    },
+    {
+      "voice": "powersaw",
+      "gesture": "published",
+      "duration": 0.785,
+      "peak": 0.5356360141932209,
+      "rms": 0.06500018514561326
+    },
+    {
+      "voice": "powersaw",
+      "gesture": "review",
+      "duration": 1.425,
+      "peak": 0.6115357806990456,
+      "rms": 0.06500040799841889
+    },
+    {
+      "voice": "powersaw",
+      "gesture": "decision",
+      "duration": 1.095,
+      "peak": 0.3619227684764165,
+      "rms": 0.06500199238832975
+    },
+    {
+      "voice": "powersaw",
+      "gesture": "needs-you",
+      "duration": 1.725,
+      "peak": 0.5351988709742875,
+      "rms": 0.0650007060719183
+    },
+    {
+      "voice": "powersaw",
+      "gesture": "caveats",
+      "duration": 0.955,
+      "peak": 0.41447298152946344,
+      "rms": 0.0650006406709607
+    },
+    {
+      "voice": "powersaw",
+      "gesture": "rejected",
+      "duration": 0.495,
+      "peak": 0.3334037316601235,
+      "rms": 0.04816884508324816
+    },
+    {
+      "voice": "powersaw",
+      "gesture": "failed",
+      "duration": 0.965,
+      "peak": 0.4483253797874697,
+      "rms": 0.06499973728391892
+    },
+    {
+      "voice": "powersaw",
+      "gesture": "verdict",
+      "duration": 0.705,
+      "peak": 0.44554629890086744,
+      "rms": 0.06499999999771078
+    },
+    {
+      "voice": "powersaw",
+      "gesture": "in-flight",
+      "duration": 0.485,
+      "peak": 0.06219366374451883,
+      "rms": 0.012309033474836119
+    },
+    {
+      "voice": "powersaw",
+      "gesture": "authorization",
+      "duration": 1.285,
+      "peak": 0.5034968434364335,
+      "rms": 0.06500000000156175
+    },
+    {
+      "voice": "harp",
+      "gesture": "done",
+      "duration": 0.785,
+      "peak": 0.36984912757172883,
+      "rms": 0.06500106878312098
+    },
+    {
+      "voice": "harp",
+      "gesture": "answer",
+      "duration": 0.645,
+      "peak": 0.30101777221837733,
+      "rms": 0.06500050455658432
+    },
+    {
+      "voice": "harp",
+      "gesture": "plan",
+      "duration": 1.065,
+      "peak": 0.2561423659604607,
+      "rms": 0.06500045869283934
+    },
+    {
+      "voice": "harp",
+      "gesture": "artifact",
+      "duration": 0.685,
+      "peak": 0.3143637100134954,
+      "rms": 0.06500010345898918
+    },
+    {
+      "voice": "harp",
+      "gesture": "published",
+      "duration": 0.785,
+      "peak": 0.44260755876010344,
+      "rms": 0.06500018514561327
+    },
+    {
+      "voice": "harp",
+      "gesture": "review",
+      "duration": 1.425,
+      "peak": 0.45937951519489306,
+      "rms": 0.06500040799841889
+    },
+    {
+      "voice": "harp",
+      "gesture": "decision",
+      "duration": 1.095,
+      "peak": 0.26510492606211616,
+      "rms": 0.06500199238832975
+    },
+    {
+      "voice": "harp",
+      "gesture": "needs-you",
+      "duration": 1.725,
+      "peak": 0.45599751128851035,
+      "rms": 0.06500070607191828
+    },
+    {
+      "voice": "harp",
+      "gesture": "caveats",
+      "duration": 0.955,
+      "peak": 0.34624305919936754,
+      "rms": 0.06500064067096072
+    },
+    {
+      "voice": "harp",
+      "gesture": "rejected",
+      "duration": 0.495,
+      "peak": 0.2991679194735822,
+      "rms": 0.04816884508324816
+    },
+    {
+      "voice": "harp",
+      "gesture": "failed",
+      "duration": 0.965,
+      "peak": 0.34974948475695206,
+      "rms": 0.06499973728391892
+    },
+    {
+      "voice": "harp",
+      "gesture": "verdict",
+      "duration": 0.705,
+      "peak": 0.3371868027828061,
+      "rms": 0.06499999999771078
+    },
+    {
+      "voice": "harp",
+      "gesture": "in-flight",
+      "duration": 0.485,
+      "peak": 0.0516631395799804,
+      "rms": 0.012309033474836119
+    },
+    {
+      "voice": "harp",
+      "gesture": "authorization",
+      "duration": 1.285,
+      "peak": 0.35711190972621765,
+      "rms": 0.06500000000156174
+    },
+    {
+      "voice": "clarinet",
+      "gesture": "done",
+      "duration": 0.785,
+      "peak": 0.2728899110870826,
+      "rms": 0.06500106878312098
+    },
+    {
+      "voice": "clarinet",
+      "gesture": "answer",
+      "duration": 0.645,
+      "peak": 0.23784943793282254,
+      "rms": 0.06500050455658431
+    },
+    {
+      "voice": "clarinet",
+      "gesture": "plan",
+      "duration": 1.065,
+      "peak": 0.1826706782009087,
+      "rms": 0.06500045869283934
+    },
+    {
+      "voice": "clarinet",
+      "gesture": "artifact",
+      "duration": 0.685,
+      "peak": 0.23054541616012714,
+      "rms": 0.06500010345898918
+    },
+    {
+      "voice": "clarinet",
+      "gesture": "published",
+      "duration": 0.785,
+      "peak": 0.3440312824016139,
+      "rms": 0.06500018514561327
+    },
+    {
+      "voice": "clarinet",
+      "gesture": "review",
+      "duration": 1.425,
+      "peak": 0.3674189011890279,
+      "rms": 0.06500040799841889
+    },
+    {
+      "voice": "clarinet",
+      "gesture": "decision",
+      "duration": 1.095,
+      "peak": 0.19335099985587412,
+      "rms": 0.06500199238832975
+    },
+    {
+      "voice": "clarinet",
+      "gesture": "needs-you",
+      "duration": 1.725,
+      "peak": 0.32894791440665844,
+      "rms": 0.0650007060719183
+    },
+    {
+      "voice": "clarinet",
+      "gesture": "caveats",
+      "duration": 0.955,
+      "peak": 0.29657750510309544,
+      "rms": 0.06500064067096072
+    },
+    {
+      "voice": "clarinet",
+      "gesture": "rejected",
+      "duration": 0.495,
+      "peak": 0.23893004971171516,
+      "rms": 0.048168845083248146
+    },
+    {
+      "voice": "clarinet",
+      "gesture": "failed",
+      "duration": 0.965,
+      "peak": 0.2724981790333761,
+      "rms": 0.06499973728391892
+    },
+    {
+      "voice": "clarinet",
+      "gesture": "verdict",
+      "duration": 0.705,
+      "peak": 0.27553774482568977,
+      "rms": 0.06499999999771079
+    },
+    {
+      "voice": "clarinet",
+      "gesture": "in-flight",
+      "duration": 0.485,
+      "peak": 0.03737200526632964,
+      "rms": 0.01230903347483612
+    },
+    {
+      "voice": "clarinet",
+      "gesture": "authorization",
+      "duration": 1.285,
+      "peak": 0.2512591616335313,
+      "rms": 0.06500000000156175
+    },
+    {
+      "voice": "crystal",
+      "gesture": "done",
+      "duration": 0.785,
+      "peak": 0.36396288549813716,
+      "rms": 0.06500106878312095
+    },
+    {
+      "voice": "crystal",
+      "gesture": "answer",
+      "duration": 0.645,
+      "peak": 0.27601170438808853,
+      "rms": 0.06500050455658431
+    },
+    {
+      "voice": "crystal",
+      "gesture": "plan",
+      "duration": 1.065,
+      "peak": 0.2537094878510684,
+      "rms": 0.06500045869283934
+    },
+    {
+      "voice": "crystal",
+      "gesture": "artifact",
+      "duration": 0.685,
+      "peak": 0.3203429061903304,
+      "rms": 0.06500010345898917
+    },
+    {
+      "voice": "crystal",
+      "gesture": "published",
+      "duration": 0.785,
+      "peak": 0.41945681276429553,
+      "rms": 0.06500018514561327
+    },
+    {
+      "voice": "crystal",
+      "gesture": "review",
+      "duration": 1.425,
+      "peak": 0.4613120977274527,
+      "rms": 0.06500040799841889
+    },
+    {
+      "voice": "crystal",
+      "gesture": "decision",
+      "duration": 1.095,
+      "peak": 0.265269443944514,
+      "rms": 0.06500199238832975
+    },
+    {
+      "voice": "crystal",
+      "gesture": "needs-you",
+      "duration": 1.725,
+      "peak": 0.4601358544869182,
+      "rms": 0.0650007060719183
+    },
+    {
+      "voice": "crystal",
+      "gesture": "caveats",
+      "duration": 0.955,
+      "peak": 0.3290877689962314,
+      "rms": 0.06500064067096072
+    },
+    {
+      "voice": "crystal",
+      "gesture": "rejected",
+      "duration": 0.495,
+      "peak": 0.3029871027781627,
+      "rms": 0.048168845083248146
+    },
+    {
+      "voice": "crystal",
+      "gesture": "failed",
+      "duration": 0.965,
+      "peak": 0.3481571395072789,
+      "rms": 0.06499973728391892
+    },
+    {
+      "voice": "crystal",
+      "gesture": "verdict",
+      "duration": 0.705,
+      "peak": 0.2795658053339117,
+      "rms": 0.06499999999771078
+    },
+    {
+      "voice": "crystal",
+      "gesture": "in-flight",
+      "duration": 0.485,
+      "peak": 0.05185730587498532,
+      "rms": 0.01230903347483612
+    },
+    {
+      "voice": "crystal",
+      "gesture": "authorization",
+      "duration": 1.285,
+      "peak": 0.3408217609003729,
+      "rms": 0.06500000000156175
+    },
+    {
+      "voice": "flute",
+      "gesture": "done",
+      "duration": 0.785,
+      "peak": 0.3095727539683662,
+      "rms": 0.06500106878312097
+    },
+    {
+      "voice": "flute",
+      "gesture": "answer",
+      "duration": 0.645,
+      "peak": 0.2596948299155772,
+      "rms": 0.06500050455658432
+    },
+    {
+      "voice": "flute",
+      "gesture": "plan",
+      "duration": 1.065,
+      "peak": 0.19542836990907517,
+      "rms": 0.06500045869283934
+    },
+    {
+      "voice": "flute",
+      "gesture": "artifact",
+      "duration": 0.685,
+      "peak": 0.2671827477102711,
+      "rms": 0.06500010345898918
+    },
+    {
+      "voice": "flute",
+      "gesture": "published",
+      "duration": 0.785,
+      "peak": 0.37292473723069314,
+      "rms": 0.06500018514561329
+    },
+    {
+      "voice": "flute",
+      "gesture": "review",
+      "duration": 1.425,
+      "peak": 0.3809241769849248,
+      "rms": 0.06500040799841889
+    },
+    {
+      "voice": "flute",
+      "gesture": "decision",
+      "duration": 1.095,
+      "peak": 0.20730387489676938,
+      "rms": 0.06500199238832975
+    },
+    {
+      "voice": "flute",
+      "gesture": "needs-you",
+      "duration": 1.725,
+      "peak": 0.3906161124412389,
+      "rms": 0.0650007060719183
+    },
+    {
+      "voice": "flute",
+      "gesture": "caveats",
+      "duration": 0.955,
+      "peak": 0.29193015461802996,
+      "rms": 0.0650006406709607
+    },
+    {
+      "voice": "flute",
+      "gesture": "rejected",
+      "duration": 0.495,
+      "peak": 0.25378599852641476,
+      "rms": 0.04816884508324816
+    },
+    {
+      "voice": "flute",
+      "gesture": "failed",
+      "duration": 0.965,
+      "peak": 0.29058793337005034,
+      "rms": 0.06499973728391892
+    },
+    {
+      "voice": "flute",
+      "gesture": "verdict",
+      "duration": 0.705,
+      "peak": 0.2582244895472803,
+      "rms": 0.06499999999771079
+    },
+    {
+      "voice": "flute",
+      "gesture": "in-flight",
+      "duration": 0.485,
+      "peak": 0.03949797113411154,
+      "rms": 0.012309033474836119
+    },
+    {
+      "voice": "flute",
+      "gesture": "authorization",
+      "duration": 1.285,
+      "peak": 0.26748762531825465,
+      "rms": 0.06500000000156175
+    }
+  ],
+  "warm_synthesis_timing": {
+    "marimba": {
+      "median_ms": 6.40424998709932,
+      "p95_ms": 11.035896022804081,
+      "renders": 56
+    },
+    "powersaw": {
+      "median_ms": 19.441771029960364,
+      "p95_ms": 30.004292289959267,
+      "renders": 56
+    },
+    "harp": {
+      "median_ms": 9.276333497837186,
+      "p95_ms": 15.232989710057154,
+      "renders": 56
+    },
+    "clarinet": {
+      "median_ms": 7.788583519868553,
+      "p95_ms": 12.885343719972298,
+      "renders": 56
+    },
+    "crystal": {
+      "median_ms": 7.814438024070114,
+      "p95_ms": 13.226740004029125,
+      "renders": 56
+    },
+    "flute": {
+      "median_ms": 6.4476459519937634,
+      "p95_ms": 11.066406237659976,
+      "renders": 56
+    }
+  },
+  "timing_scope": "Only in-process synthesis with loaded config; excludes hook, queue, classifier, file I/O, player startup and device onset.",
+  "rotation_cues": [
+    {
+      "voice": "marimba",
+      "gesture": "done",
+      "start": 0.0,
+      "duration": 0.785,
+      "session": "1"
+    },
+    {
+      "voice": "powersaw",
+      "gesture": "done",
+      "start": 0.935,
+      "duration": 0.785,
+      "session": "2"
+    },
+    {
+      "voice": "harp",
+      "gesture": "done",
+      "start": 1.87,
+      "duration": 0.785,
+      "session": "3"
+    },
+    {
+      "voice": "clarinet",
+      "gesture": "done",
+      "start": 2.805,
+      "duration": 0.785,
+      "session": "4"
+    },
+    {
+      "voice": "crystal",
+      "gesture": "done",
+      "start": 3.74,
+      "duration": 0.785,
+      "session": "5"
+    },
+    {
+      "voice": "flute",
+      "gesture": "done",
+      "start": 4.675,
+      "duration": 0.785,
+      "session": "6"
+    },
+    {
+      "voice": "marimba",
+      "gesture": "done",
+      "start": 5.61,
+      "duration": 0.785,
+      "session": "1"
+    },
+    {
+      "voice": "powersaw",
+      "gesture": "done",
+      "start": 6.545,
+      "duration": 0.785,
+      "session": "2"
+    },
+    {
+      "voice": "marimba",
+      "gesture": "done",
+      "start": 7.48,
+      "duration": 0.785,
+      "session": "7"
+    }
+  ],
+  "assets": {
+    "awaitonal-six-voices.wav": "52f297802237633b71cfd999363a91816edb4b3021d11ad8f4b72b9bd63c32a3",
+    "awaitonal-session-rotation.wav": "6eda6273759a76d6e7733a56c8a7da487e4810761f25b9b19de15cf06f3ef850"
+  }
+}
