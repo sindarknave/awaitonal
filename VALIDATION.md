@@ -1,5 +1,35 @@
 # Observed validation
 
+## Session voice prototype, v0.5.0
+
+The [full core suite](artifacts/tests-v0.5.0-core.txt) reports **1,113 passed,
+2 optional-model skips**. Synthesis checks cover all fourteen gestures in wood,
+glass, and round, including long-turn and brightness combinations, validated
+configuration, level matching, headroom, deterministic output, and unchanged note
+and event timing. A direct comparison to v0.4.3 confirms default rendering is
+sample-identical across all 56 gesture/brightness/long-turn combinations.
+
+Registry and service checks cover distinct initial assignments, stable fallback,
+idle expiry, bounded saturation, voice capture across queued work, burst
+compaction, and existing mute generation guards. A
+[fresh-wheel integration check](artifacts/ensemble-v0.5.0-smoke.json) runs real
+plugin hooks and mute/unmute wrappers against a private silent service. It verifies
+three instruments, fourth-session fallback, stable identity on later turns,
+no muted replay, unchanged process/instance, no private IDs or reply text in
+logs, and byte-identical CLI audio exports. No user service or settings were changed.
+
+[Audio measurements](artifacts/session-voices-v0.5.0.json) record all named voices'
+levels and the composed demo cue sheets. In a warm local process with loaded
+configuration, 30 renders per voice across done/review/needs-you measured median
+9.86–12.03 ms and p95 10.41–12.64 ms for the named voices. This excludes hook,
+queue, file writing, player startup, and device onset. These are observations,
+not end-to-end latency guarantees.
+
+The demos compare three voices and three outcomes; the overlapping example is
+composed offline. Live playback remains serial. No listener recognition study
+has been performed, and instrument distinguishability still needs listening
+feedback on laptop speakers and headphones.
+
 ## Mute controls and skills, v0.4.3
 
 The [full core suite](artifacts/tests-v0.4.3-core.txt) reports **988 passed,

@@ -1,0 +1,5 @@
+# Opt-in prototype: distinct instruments for the first three active sessions.
+[notifications]
+session_voices = true
+# Optional extended endings after long turns:
+# long_turn_seconds = 120

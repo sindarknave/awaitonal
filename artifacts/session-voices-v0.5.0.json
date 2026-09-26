@@ -1,0 +1,459 @@
+{
+  "version": "0.5.0",
+  "voices": [
+    {
+      "voice": "wood",
+      "gesture": "done",
+      "seconds": 1.08,
+      "rms": 0.06500106878312098,
+      "peak": 0.4317663028943181,
+      "rms_ratio": 1.0
+    },
+    {
+      "voice": "glass",
+      "gesture": "done",
+      "seconds": 1.08,
+      "rms": 0.06500106878312097,
+      "peak": 0.39636344505525456,
+      "rms_ratio": 0.9999999999999999
+    },
+    {
+      "voice": "round",
+      "gesture": "done",
+      "seconds": 1.08,
+      "rms": 0.06500106878312098,
+      "peak": 0.35262394073179837,
+      "rms_ratio": 1.0
+    },
+    {
+      "voice": "wood",
+      "gesture": "answer",
+      "seconds": 0.95,
+      "rms": 0.06500050455658431,
+      "peak": 0.32488052379807114,
+      "rms_ratio": 0.9999999999999997
+    },
+    {
+      "voice": "glass",
+      "gesture": "answer",
+      "seconds": 0.95,
+      "rms": 0.06500050455658431,
+      "peak": 0.3760870397642166,
+      "rms_ratio": 0.9999999999999997
+    },
+    {
+      "voice": "round",
+      "gesture": "answer",
+      "seconds": 0.95,
+      "rms": 0.06500050455658432,
+      "peak": 0.3279760735304686,
+      "rms_ratio": 0.9999999999999999
+    },
+    {
+      "voice": "wood",
+      "gesture": "plan",
+      "seconds": 1.1,
+      "rms": 0.06500045869283934,
+      "peak": 0.27426841912889194,
+      "rms_ratio": 1.0
+    },
+    {
+      "voice": "glass",
+      "gesture": "plan",
+      "seconds": 1.1,
+      "rms": 0.06500045869283934,
+      "peak": 0.268901061711317,
+      "rms_ratio": 1.0
+    },
+    {
+      "voice": "round",
+      "gesture": "plan",
+      "seconds": 1.1,
+      "rms": 0.06500045869283934,
+      "peak": 0.20975899636470643,
+      "rms_ratio": 1.0
+    },
+    {
+      "voice": "wood",
+      "gesture": "artifact",
+      "seconds": 1.12,
+      "rms": 0.06500010345898918,
+      "peak": 0.3877731956511251,
+      "rms_ratio": 1.0
+    },
+    {
+      "voice": "glass",
+      "gesture": "artifact",
+      "seconds": 1.12,
+      "rms": 0.06500010345898918,
+      "peak": 0.38278405967234286,
+      "rms_ratio": 1.0
+    },
+    {
+      "voice": "round",
+      "gesture": "artifact",
+      "seconds": 1.12,
+      "rms": 0.06500010345898918,
+      "peak": 0.3422805624973095,
+      "rms_ratio": 1.0
+    },
+    {
+      "voice": "wood",
+      "gesture": "published",
+      "seconds": 1.12,
+      "rms": 0.06500018514561327,
+      "peak": 0.5452497836164771,
+      "rms_ratio": 1.0
+    },
+    {
+      "voice": "glass",
+      "gesture": "published",
+      "seconds": 1.12,
+      "rms": 0.06500018514561327,
+      "peak": 0.4148247227020088,
+      "rms_ratio": 0.9999999999999999
+    },
+    {
+      "voice": "round",
+      "gesture": "published",
+      "seconds": 1.12,
+      "rms": 0.06500018514561327,
+      "peak": 0.40051695993757164,
+      "rms_ratio": 1.0
+    },
+    {
+      "voice": "wood",
+      "gesture": "review",
+      "seconds": 1.52,
+      "rms": 0.06500040799841889,
+      "peak": 0.37371813113847696,
+      "rms_ratio": 0.9999999999999999
+    },
+    {
+      "voice": "glass",
+      "gesture": "review",
+      "seconds": 1.52,
+      "rms": 0.06500040799841889,
+      "peak": 0.3764618736854608,
+      "rms_ratio": 1.0
+    },
+    {
+      "voice": "round",
+      "gesture": "review",
+      "seconds": 1.52,
+      "rms": 0.06500040799841889,
+      "peak": 0.3716149934029775,
+      "rms_ratio": 0.9999999999999999
+    },
+    {
+      "voice": "wood",
+      "gesture": "decision",
+      "seconds": 1.13,
+      "rms": 0.06500199238832974,
+      "peak": 0.28393435272116513,
+      "rms_ratio": 0.9999999999999998
+    },
+    {
+      "voice": "glass",
+      "gesture": "decision",
+      "seconds": 1.13,
+      "rms": 0.06500199238832975,
+      "peak": 0.30265953660569683,
+      "rms_ratio": 1.0
+    },
+    {
+      "voice": "round",
+      "gesture": "decision",
+      "seconds": 1.13,
+      "rms": 0.06500199238832977,
+      "peak": 0.20862789283390884,
+      "rms_ratio": 1.0
+    },
+    {
+      "voice": "wood",
+      "gesture": "needs-you",
+      "seconds": 1.82,
+      "rms": 0.0650007060719183,
+      "peak": 0.4041012453253763,
+      "rms_ratio": 0.9999999999999999
+    },
+    {
+      "voice": "glass",
+      "gesture": "needs-you",
+      "seconds": 1.82,
+      "rms": 0.06500070607191828,
+      "peak": 0.38455818146704795,
+      "rms_ratio": 0.9999999999999998
+    },
+    {
+      "voice": "round",
+      "gesture": "needs-you",
+      "seconds": 1.82,
+      "rms": 0.0650007060719183,
+      "peak": 0.37010837948225256,
+      "rms_ratio": 0.9999999999999999
+    },
+    {
+      "voice": "wood",
+      "gesture": "caveats",
+      "seconds": 1.1,
+      "rms": 0.06500064067096072,
+      "peak": 0.3442044927025999,
+      "rms_ratio": 1.0
+    },
+    {
+      "voice": "glass",
+      "gesture": "caveats",
+      "seconds": 1.1,
+      "rms": 0.06500064067096072,
+      "peak": 0.32351135097062295,
+      "rms_ratio": 0.9999999999999999
+    },
+    {
+      "voice": "round",
+      "gesture": "caveats",
+      "seconds": 1.1,
+      "rms": 0.06500064067096072,
+      "peak": 0.31809692395119643,
+      "rms_ratio": 1.0
+    },
+    {
+      "voice": "wood",
+      "gesture": "rejected",
+      "seconds": 0.66,
+      "rms": 0.04816884508324816,
+      "peak": 0.38151200243469335,
+      "rms_ratio": 1.0
+    },
+    {
+      "voice": "glass",
+      "gesture": "rejected",
+      "seconds": 0.66,
+      "rms": 0.04816884508324815,
+      "peak": 0.30702140714917586,
+      "rms_ratio": 1.0
+    },
+    {
+      "voice": "round",
+      "gesture": "rejected",
+      "seconds": 0.66,
+      "rms": 0.04816884508324817,
+      "peak": 0.26494119841122227,
+      "rms_ratio": 1.0000000000000002
+    },
+    {
+      "voice": "wood",
+      "gesture": "failed",
+      "seconds": 1.02,
+      "rms": 0.06499973728391893,
+      "peak": 0.33677814900570147,
+      "rms_ratio": 1.0000000000000002
+    },
+    {
+      "voice": "glass",
+      "gesture": "failed",
+      "seconds": 1.02,
+      "rms": 0.06499973728391893,
+      "peak": 0.2973305086473816,
+      "rms_ratio": 1.0
+    },
+    {
+      "voice": "round",
+      "gesture": "failed",
+      "seconds": 1.02,
+      "rms": 0.06499973728391893,
+      "peak": 0.2773786194178783,
+      "rms_ratio": 1.0
+    },
+    {
+      "voice": "wood",
+      "gesture": "verdict",
+      "seconds": 0.98,
+      "rms": 0.06499999999771079,
+      "peak": 0.3313271016311865,
+      "rms_ratio": 1.0
+    },
+    {
+      "voice": "glass",
+      "gesture": "verdict",
+      "seconds": 0.98,
+      "rms": 0.06499999999771079,
+      "peak": 0.3689523876637318,
+      "rms_ratio": 1.0
+    },
+    {
+      "voice": "round",
+      "gesture": "verdict",
+      "seconds": 0.98,
+      "rms": 0.06499999999771079,
+      "peak": 0.2993897565769702,
+      "rms_ratio": 1.0
+    },
+    {
+      "voice": "wood",
+      "gesture": "in-flight",
+      "seconds": 0.54,
+      "rms": 0.01230903347483612,
+      "peak": 0.05869197917086746,
+      "rms_ratio": 1.0
+    },
+    {
+      "voice": "glass",
+      "gesture": "in-flight",
+      "seconds": 0.54,
+      "rms": 0.012309033474836119,
+      "peak": 0.05905435006068336,
+      "rms_ratio": 0.9999999999999999
+    },
+    {
+      "voice": "round",
+      "gesture": "in-flight",
+      "seconds": 0.54,
+      "rms": 0.012309033474836119,
+      "peak": 0.03993248157524883,
+      "rms_ratio": 0.9999999999999999
+    },
+    {
+      "voice": "wood",
+      "gesture": "authorization",
+      "seconds": 1.38,
+      "rms": 0.06500000000156174,
+      "peak": 0.31441415807768547,
+      "rms_ratio": 0.9999999999999998
+    },
+    {
+      "voice": "glass",
+      "gesture": "authorization",
+      "seconds": 1.38,
+      "rms": 0.06500000000156175,
+      "peak": 0.29532766182803527,
+      "rms_ratio": 1.0
+    },
+    {
+      "voice": "round",
+      "gesture": "authorization",
+      "seconds": 1.38,
+      "rms": 0.06500000000156174,
+      "peak": 0.26866072036404515,
+      "rms_ratio": 0.9999999999999998
+    }
+  ],
+  "composed_demo_cue_sheets": {
+    "serial": [
+      {
+        "voice": "wood",
+        "gesture": "done",
+        "start": 0.0,
+        "duration": 1.08
+      },
+      {
+        "voice": "glass",
+        "gesture": "review",
+        "start": 1.23,
+        "duration": 1.52
+      },
+      {
+        "voice": "round",
+        "gesture": "needs-you",
+        "start": 2.9,
+        "duration": 1.82
+      }
+    ],
+    "overlap": [
+      {
+        "voice": "wood",
+        "gesture": "done",
+        "start": 0.0,
+        "duration": 1.08
+      },
+      {
+        "voice": "glass",
+        "gesture": "review",
+        "start": 0.3,
+        "duration": 1.52
+      },
+      {
+        "voice": "round",
+        "gesture": "needs-you",
+        "start": 1.97,
+        "duration": 1.82
+      }
+    ],
+    "voices": [
+      {
+        "voice": "wood",
+        "gesture": "done",
+        "start": 0.0,
+        "duration": 1.08
+      },
+      {
+        "voice": "glass",
+        "gesture": "done",
+        "start": 1.53,
+        "duration": 1.08
+      },
+      {
+        "voice": "round",
+        "gesture": "done",
+        "start": 3.06,
+        "duration": 1.08
+      },
+      {
+        "voice": "wood",
+        "gesture": "review",
+        "start": 4.59,
+        "duration": 1.52
+      },
+      {
+        "voice": "glass",
+        "gesture": "review",
+        "start": 6.56,
+        "duration": 1.52
+      },
+      {
+        "voice": "round",
+        "gesture": "review",
+        "start": 8.53,
+        "duration": 1.52
+      },
+      {
+        "voice": "wood",
+        "gesture": "needs-you",
+        "start": 10.5,
+        "duration": 1.82
+      },
+      {
+        "voice": "glass",
+        "gesture": "needs-you",
+        "start": 12.77,
+        "duration": 1.82
+      },
+      {
+        "voice": "round",
+        "gesture": "needs-you",
+        "start": 15.04,
+        "duration": 1.82
+      }
+    ]
+  },
+  "render_timing": {
+    "default": {
+      "median_ms": 5.940062517765909,
+      "p95_ms": 6.324066856177524
+    },
+    "wood": {
+      "median_ms": 9.861083468422294,
+      "p95_ms": 10.410008300095797
+    },
+    "glass": {
+      "median_ms": 12.032958562485874,
+      "p95_ms": 12.641995801823214
+    },
+    "round": {
+      "median_ms": 11.831792013254017,
+      "p95_ms": 12.392732891021296
+    }
+  },
+  "timing_scope": "Warm process, loaded configuration, done/review/needs-you rendering only; no device playback or hook/queue time",
+  "perceptual_recognition_tested": false
+}

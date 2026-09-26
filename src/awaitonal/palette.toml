@@ -16,10 +16,46 @@ enabled = false
 length_scale = 2000
 max_boost = 0.65
 
+# Optional session instruments. "default" keeps the synth settings above.
+# Ratios multiply each note's fundamental; noninteger ratios add struck-body
+# color without transposing the melody. Weights are linear, and all profiles
+# are RMS-matched to the original gesture, including the quieter in-flight cue.
+# Envelope scales change character within each event, never its timing/length.
+# Valid ranges: 1..32 partials, ratios 1..32, weights 0..4 (some nonzero),
+# partial_decay 0..10, envelope scales 0.25..4. Partials above Nyquist are omitted.
+[voices.wood]
+# A short wooden pluck: a low body with a quickly fading struck overtone.
+harmonics = [1.0, 3.99, 9.99]
+harmonic_weights = [1.0, 0.34, 0.12]
+partial_decay = 0.18
+attack_scale = 0.65
+decay_scale = 0.68
+release_scale = 0.85
+
+[voices.glass]
+# A soft bell: inharmonic partials linger behind the pitched fundamental.
+harmonics = [1.0, 2.01, 2.76, 5.40, 8.93]
+harmonic_weights = [1.0, 0.35, 0.48, 0.22, 0.09]
+partial_decay = 0.06
+attack_scale = 1.1
+decay_scale = 1.6
+release_scale = 1.25
+
+[voices.round]
+# A rounded electric-piano body with a softer attack and harmonic overtones.
+harmonics = [1.0, 2.0, 3.0, 4.0, 5.0]
+harmonic_weights = [1.0, 0.45, 0.10, 0.16, 0.06]
+partial_decay = 0.45
+attack_scale = 1.5
+decay_scale = 1.08
+release_scale = 1.15
+
 [classification]
 caveats_threshold = 0.5
 
 [notifications]
+# Opt in to distinct instruments for the first three active sessions.
+session_voices = false
 # Suppress only routine completion cues with a matched prompt start/stop pair.
 # Zero disables suppression. Missing or ambiguous turn IDs always play.
 min_turn_seconds = 0

@@ -1,0 +1,17 @@
+{
+  "version": "0.5.0",
+  "passed": true,
+  "audio_played": false,
+  "environment": "Fresh wheel and NumPy; isolated silent service, unrelated working directory",
+  "checks": [
+    "opt-in config reaches real service",
+    "three unique voices and fourth-session fallback",
+    "stable voice on subsequent turn",
+    "mute/unmute retains voices and discards muted hook",
+    "same resident process and instance",
+    "no session IDs or reply text in logs",
+    "named-voice CLI WAV matches preview",
+    "all composed demos match installed wheel",
+    "authenticated clean shutdown"
+  ]
+}

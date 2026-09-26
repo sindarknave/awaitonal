@@ -19,6 +19,7 @@ from . import __version__
 from .adapter import MAX_WIRE, event_from_wire
 from .client import _peer_uid, default_socket
 from .types import Event
+from .voices import SessionVoices
 
 
 @dataclass
@@ -28,6 +29,7 @@ class Pending:
     received: float
     turn_seconds: float | None = None
     mute_generation: int = 0
+    voice: str = "default"
 
 
 @dataclass
@@ -101,7 +103,7 @@ class EventQueue:
             self.seen = {k: v for k, v in self.seen.items() if not (k[0] == event.session_id and v[3])}
 
     def put(self, event: Event, attention=False, now=None, state=None, turn_seconds=None,
-            classification=None, supersede=True, mute_generation=0) -> bool:
+            classification=None, supersede=True, mute_generation=0, voice="default") -> bool:
         now = time.monotonic() if now is None else now
         with self.condition:
             if self.closed:
@@ -156,7 +158,7 @@ class EventQueue:
                 self.seen[alias] = seen
             while len(self.seen) > 512:
                 self.seen.pop(next(iter(self.seen)))
-            self.items.append(Pending(event, attention, now, turn_seconds, mute_generation))
+            self.items.append(Pending(event, attention, now, turn_seconds, mute_generation, voice))
             self.condition.notify()
             return True
 
@@ -182,6 +184,14 @@ class EventQueue:
             self.items.clear()
             self.condition.notify_all()
 
+    def other_session_waiting(self, session_id, now=None):
+        """Whether another live session is queued behind the current cue."""
+        now = time.monotonic() if now is None else now
+        with self.condition:
+            return not self.closed and any(
+                item.event.session_id != session_id and now - item.received < self.ttl
+                for item in self.items)
+
     def discard(self):
         with self.condition:
             self.items.clear()
@@ -197,7 +207,8 @@ def private_directory(directory: Path):
 
 class Service:
     def __init__(self, classifier, player, socket_path=None, queue_size=8, logger=None, min_turn_seconds=0,
-                 long_turn_seconds=0, notify_in_flight=False, long_turn_player=None):
+                 long_turn_seconds=0, notify_in_flight=False, long_turn_player=None,
+                 session_voices=False, voice_player=None):
         for name, value in (("min_turn_seconds", min_turn_seconds), ("long_turn_seconds", long_turn_seconds)):
             if type(value) not in (int, float) or not math.isfinite(value) or value < 0:
                 raise ValueError(f"{name} must be finite and nonnegative")
@@ -205,6 +216,12 @@ class Service:
             raise ValueError("notify_in_flight must be a boolean")
         if long_turn_player is not None and not callable(long_turn_player):
             raise ValueError("long_turn_player must be callable")
+        if type(session_voices) is not bool:
+            raise ValueError("session_voices must be a boolean")
+        if voice_player is not None and not callable(voice_player):
+            raise ValueError("voice_player must be callable")
+        if session_voices and voice_player is None:
+            raise ValueError("session_voices requires a voice_player")
         self.classifier, self.player = classifier, player
         self.socket_path = Path(socket_path or default_socket())
         self.queue = EventQueue(queue_size)
@@ -215,6 +232,9 @@ class Service:
         self.long_turn_seconds = long_turn_seconds
         self.notify_in_flight = notify_in_flight
         self.long_turn_player = long_turn_player
+        self.session_voices = session_voices
+        self.voice_player = voice_player
+        self.voices = SessionVoices() if session_voices else None
         self.timings = TurnTimings()
         self.instance_id = uuid.uuid4().hex
         self.muted = False
@@ -279,6 +299,7 @@ class Service:
                 mute_generation = self._mute_generation
             if self.muted or mute_generation != self._mute_generation:
                 return
+        voice = self.voices.assign(event.session_id, now) if self.voices is not None else "default"
         if event.kind == "turn-start":
             self.queue.begin_turn(event)
             if self.min_turn_seconds > 0 or self.long_turn_seconds > 0:
@@ -296,7 +317,7 @@ class Service:
             if not self.muted and mute_generation == self._mute_generation:
                 self.queue.put(event, bool(hint and hint.attention), state=hint.state if hint else None,
                                now=now, turn_seconds=turn_seconds, classification=hint,
-                               supersede=not silent_activity, mute_generation=mute_generation)
+                               supersede=not silent_activity, mute_generation=mute_generation, voice=voice)
 
     def _worker(self):
         while (pending := self.queue.get_pending()) is not None:
@@ -316,14 +337,21 @@ class Service:
                         if self.muted or pending.mute_generation != self._mute_generation:
                             suppressed = "muted"
                     long_turn = not suppressed and self._long_turn(result, pending.turn_seconds)
-                    self.logger({"state": result.state, "gesture": result.gesture,
-                                 "expectancy": result.expectancy, "delivery_kind": result.delivery_kind,
-                                 "evidence_source": result.evidence_source,
-                                 "classification_ms": round(elapsed, 3), "failure_code": result.failure_code,
-                                 "activity": result.activity,
-                                 "turn_seconds": (round(pending.turn_seconds, 3)
-                                                  if pending.turn_seconds is not None else None),
-                                 "long_turn": long_turn, "suppressed": suppressed})
+                    burst_compacted = (self.session_voices and long_turn
+                                       and self.queue.other_session_waiting(event.session_id))
+                    if burst_compacted:
+                        long_turn = False
+                    record = {"state": result.state, "gesture": result.gesture,
+                              "expectancy": result.expectancy, "delivery_kind": result.delivery_kind,
+                              "evidence_source": result.evidence_source,
+                              "classification_ms": round(elapsed, 3), "failure_code": result.failure_code,
+                              "activity": result.activity,
+                              "turn_seconds": (round(pending.turn_seconds, 3)
+                                               if pending.turn_seconds is not None else None),
+                              "long_turn": long_turn, "suppressed": suppressed}
+                    if self.session_voices:
+                        record.update(voice=pending.voice, burst_compacted=burst_compacted)
+                    self.logger(record)
                     if not suppressed and not self.queue.closed and not self._stop.is_set():
                         player = self.long_turn_player if long_turn and self.long_turn_player else self.player
                         # Admission is atomic with mute. At most this one
@@ -332,7 +360,10 @@ class Service:
                         with self._mute_lock:
                             admitted = not self.muted and pending.mute_generation == self._mute_generation
                         if admitted:
-                            player(result.gesture, len(event.text))
+                            if self.session_voices:
+                                self.voice_player(result.gesture, len(event.text), pending.voice, long_turn)
+                            else:
+                                player(result.gesture, len(event.text))
             except Exception as error:
                 # Don't log exception strings: third-party errors may quote input.
                 if not self.queue.closed and not self._stop.is_set():

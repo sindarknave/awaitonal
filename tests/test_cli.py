@@ -42,6 +42,25 @@ def test_neutral_outcome_and_long_turn_audition(tmp_path):
         assert long_wav.getnframes() - short_wav.getnframes() == 38400
 
 
+def test_named_voice_and_ensemble_cli_render_without_service(tmp_path):
+    import numpy as np
+    from awaitonal.synth import render
+    target = tmp_path / "glass.wav"
+    result = cli("play", "review", "--voice", "glass", "--out", target)
+    assert result.returncode == 0, result.stderr
+    with wave.open(str(target)) as wav:
+        actual = np.frombuffer(wav.readframes(wav.getnframes()), dtype="<i2")
+    expected = np.rint(render("review", voice="glass") * 32767).astype("<i2")
+    assert np.array_equal(actual, expected)
+    durations = {}
+    for mode in ("voices", "serial", "overlap"):
+        result = cli("ensemble-demo", "--mode", mode, "--out", tmp_path / f"{mode}.wav")
+        assert result.returncode == 0, result.stderr
+        with wave.open(str(tmp_path / f"{mode}.wav")) as wav:
+            durations[mode] = wav.getnframes() / wav.getframerate()
+    assert durations["voices"] > durations["serial"] > durations["overlap"]
+
+
 def test_explicit_cli_reports_service_missing(tmp_path):
     result = cli("notify", "--text", "Done.", "--socket", tmp_path / "absent")
     assert result.returncode == 1

@@ -12,6 +12,8 @@ import numpy as np
 
 from .config import load_config
 from .types import GESTURES
+# Session voices change the instrument, never the gesture's notes or rhythm.
+from .voices import VOICE_NAMES as VOICES
 
 GESTURE_ORDER = GESTURES
 # Kept as an import alias for callers of the original renderer.
@@ -56,6 +58,31 @@ def _sample_rate(config: dict) -> int:
     return int(value)
 
 
+def _voice_profile(config: dict, voice: str) -> dict | None:
+    """Validate only the selected voice; default retains the original signal."""
+    if voice not in VOICES:
+        raise ValueError(f"Unknown voice {voice!r}; expected one of {', '.join(VOICES)}")
+    if voice == "default":
+        return None
+    profiles = config.get("voices")
+    if not isinstance(profiles, dict) or not isinstance(profiles.get(voice), dict):
+        raise ValueError(f"voices.{voice} must be a table")
+    profile = profiles[voice]
+    validated = {}
+    for key, low, high in (("harmonics", 1.0, 32.0), ("harmonic_weights", 0.0, 4.0)):
+        values = profile.get(key)
+        if not isinstance(values, list) or not 1 <= len(values) <= 32:
+            raise ValueError(f"voices.{voice}.{key} must contain between 1 and 32 values")
+        validated[key] = [_number(value, f"voices.{voice}.{key}", low, high) for value in values]
+    if (len(validated["harmonics"]) != len(validated["harmonic_weights"])
+            or not any(validated["harmonic_weights"])):
+        raise ValueError(f"voices.{voice} needs equally sized harmonics and nonzero weights")
+    for key, low, high in (("partial_decay", 0.0, 10.0), ("attack_scale", .25, 4.0),
+                           ("decay_scale", .25, 4.0), ("release_scale", .25, 4.0)):
+        validated[key] = _number(profile.get(key), f"voices.{voice}.{key}", low, high)
+    return validated
+
+
 def _long_turn_patch(patch: dict) -> dict:
     """Keep the opening, then lift into a wider, longer final chord."""
     expanded = deepcopy(patch)
@@ -82,8 +109,9 @@ def _long_turn_patch(patch: dict) -> dict:
     return expanded
 
 
-def _render_events(state: str, config: dict, brightness: float, *, extended: bool = False) -> np.ndarray:
-    settings = config["synth"]
+def _render_events(state: str, config: dict, brightness: float, *, extended: bool = False,
+                   voice_profile: dict | None = None) -> np.ndarray:
+    settings = config["synth"] if voice_profile is None else voice_profile
     sample_rate = _sample_rate(config)
     patch = config["states"][state]
     if extended:
@@ -113,6 +141,12 @@ def _render_events(state: str, config: dict, brightness: float, *, extended: boo
         attack = _number(event["attack"], "attack", 0.001, length)
         release = _number(event["release"], "release", 0.001, length)
         decay = _number(event["decay"], "decay", 0.001, 10.0)
+        if voice_profile is not None:
+            # Keep every event's boundaries and the long-turn arrangement. The
+            # instrument shapes only its attack, decay, and release inside them.
+            attack = min(length, max(.001, attack * voice_profile["attack_scale"]))
+            decay = min(10.0, max(.001, decay * voice_profile["decay_scale"]))
+            release = min(length, max(.001, release * voice_profile["release_scale"]))
         gain = _number(event["gain"], "event gain", 0.0, 4.0)
         notes = event["notes"]
         if not isinstance(notes, list) or not 1 <= len(notes) <= 16:
@@ -150,17 +184,20 @@ def _render_events(state: str, config: dict, brightness: float, *, extended: boo
 
 
 def render(state: str, config: dict | None = None, response_length: int = 0,
-           *, long_turn: bool = False) -> np.ndarray:
+           *, long_turn: bool = False, voice: str = "default") -> np.ndarray:
     """Render one gesture as mono float64 samples, with guaranteed headroom.
 
     Brightness is opt-in, bounded, and RMS-matched to the same fixed gesture.
     Character count never changes duration or the intended volume. Separately,
     long_turn adds a rising lift and longer final chord to routine results at
     similar RMS level. It describes elapsed time, not reasoning or confidence.
+    Named session voices use different partials and envelopes at the same RMS
+    level; the default voice preserves the original palette sample for sample.
     """
     config = load_config() if config is None else config
     if state not in GESTURE_ORDER:
         raise ValueError(f"Unknown gesture {state!r}; expected one of {', '.join(GESTURE_ORDER)}")
+    profile = _voice_profile(config, voice)
     settings = config["synth"]
     master_gain = _number(settings["master_gain"], "master_gain", 0.0, 1.0)
     peak_limit = _number(settings["peak_limit"], "peak_limit", 0.01, 0.98)
@@ -174,8 +211,8 @@ def render(state: str, config: dict | None = None, response_length: int = 0,
         max_boost = _number(brightness_config["max_boost"], "max_boost", 0.0, 2.0)
         count = _number(response_length, "response_length", 0.0, 1e15)
         amount = max_boost * count / (count + scale)
-    if amount > 0 or extended:
-        variant = _render_events(state, config, amount, extended=extended)
+    if amount > 0 or extended or profile is not None:
+        variant = _render_events(state, config, amount, extended=extended, voice_profile=profile)
         energy = float(np.dot(variant, variant))
         if energy > 0:
             variant *= math.sqrt(reference_energy / energy * (len(variant) / len(samples)))
@@ -190,7 +227,7 @@ def render(state: str, config: dict | None = None, response_length: int = 0,
     return samples
 
 
-def render_demo(config: dict | None = None) -> np.ndarray:
+def render_demo(config: dict | None = None, *, voice: str = "default") -> np.ndarray:
     """Audition the full gesture palette with configurable gaps."""
     config = load_config() if config is None else config
     gap = _number(config["synth"]["demo_gap"], "demo_gap", 0.0, 10.0)
@@ -199,7 +236,7 @@ def render_demo(config: dict | None = None) -> np.ndarray:
     for index, state in enumerate(GESTURE_ORDER):
         if index:
             parts.append(silence)
-        parts.append(render(state, config))
+        parts.append(render(state, config, voice=voice))
     return np.concatenate(parts)
 
 

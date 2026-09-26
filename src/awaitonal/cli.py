@@ -11,6 +11,7 @@ import threading
 import uuid
 
 from .types import Event, GESTURES
+from .voices import VOICE_NAMES
 
 
 def model_directory():
@@ -28,11 +29,19 @@ def make_classifier(args, threshold):
 def parser():
     cli = argparse.ArgumentParser(prog="awaitonal", description="Hear how your agent left things.")
     sub = cli.add_subparsers(dest="command", required=True)
-    for name in ("demo", "play"):
-        command = sub.add_parser(name, help="audition or render the palette" if name == "demo" else "play or render one gesture")
+    for name in ("demo", "play", "ensemble-demo"):
+        help_text = {"demo": "audition or render the palette", "play": "play or render one gesture",
+                     "ensemble-demo": "audition three session voices and composed burst comparisons"}
+        command = sub.add_parser(name, help=help_text[name])
         if name == "play":
             command.add_argument("state", choices=GESTURES, metavar="GESTURE")
             command.add_argument("--long-turn", action="store_true", help="audition the elapsed-time variant of a routine cue")
+        if name == "ensemble-demo":
+            command.add_argument("--mode", choices=("voices", "serial", "overlap"), default="voices",
+                                 help="nine voice/gesture examples or a composed burst comparison")
+        else:
+            command.add_argument("--voice", choices=VOICE_NAMES, default="default",
+                                 help="instrument for the gesture; default keeps the original palette")
         command.add_argument("--out", type=Path, help="write WAV without playback")
         command.add_argument("--config", type=Path, help="editable palette TOML")
     classify = sub.add_parser("classify", help="inspect a response's reported state")
@@ -190,9 +199,15 @@ def execute(args):
         return 0
     from .config import load_config
     config = load_config(args.config)
-    if args.command in ("play", "demo"):
+    if args.command in ("play", "demo", "ensemble-demo"):
         from .synth import render, render_demo, write_wav
-        samples = render_demo(config) if args.command == "demo" else render(args.state, config, long_turn=args.long_turn)
+        if args.command == "ensemble-demo":
+            from .audition import render_ensemble_demo
+            samples, _ = render_ensemble_demo(config, mode=args.mode)
+        elif args.command == "demo":
+            samples = render_demo(config, voice=args.voice)
+        else:
+            samples = render(args.state, config, long_turn=args.long_turn, voice=args.voice)
         if args.out:
             write_wav(args.out, samples, config["synth"]["sample_rate"])
             print(args.out.absolute())
@@ -238,6 +253,12 @@ def execute(args):
                 write_wav(audio_path, render(state, config, response_length, long_turn=True), config["synth"]["sample_rate"])
                 play_file(audio_path, stop_event=stop)
 
+        def voice_player(state, response_length, voice, long_turn):
+            if not args.silent:
+                write_wav(audio_path, render(state, config, response_length, voice=voice,
+                                            long_turn=long_turn), config["synth"]["sample_rate"])
+                play_file(audio_path, stop_event=stop)
+
         def logger(record):
             print(json.dumps(record), file=sys.stderr, flush=True)
 
@@ -248,7 +269,9 @@ def execute(args):
         service = Service(classifier, player, args.socket, args.queue_size, logger, min_turn_seconds=minimum,
                           long_turn_seconds=notifications.get("long_turn_seconds", 0),
                           notify_in_flight=notifications.get("notify_in_flight", False),
-                          long_turn_player=long_turn_player)
+                          long_turn_player=long_turn_player,
+                          session_voices=notifications.get("session_voices", False),
+                          voice_player=voice_player)
         print(f"Awaitonal starting on {args.socket or default_socket()} ({args.classifier}); Ctrl-C to stop.", file=sys.stderr, flush=True)
         service.run(stop)
     return 0

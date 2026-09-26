@@ -59,6 +59,12 @@ plays the gestures in this order with 350 ms gaps:
 In-flight notifications are silent by default; `play` and
 `demo` let you audition them. Each audible notification plays one gesture once.
 
+For the optional multi-session prototype, try `awaitonal play review --voice glass`
+or `awaitonal ensemble-demo --out voice-study.wav`. Three instruments carry the
+same gestures: wood, glass, and round. Set `session_voices = true` in the service
+configuration's `[notifications]` table for stable voices across parallel sessions.
+See [session voices and listening comparisons](docs/session-voices.md).
+
 All sound settings live in [palette.toml](src/awaitonal/palette.toml): pitches,
 timings, envelopes, partials, headroom, gain, and routing threshold. Use
 `--config my-palette.toml` on `demo`, `play`, `classify`, or `serve` for a partial
