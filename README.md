@@ -1,76 +1,86 @@
 # Awaitonal
 
+![Awaitonal — hear how your agent left things.](docs/assets/awaitonal-brand.png)
+
 **Hear how your agent left things.**
 
-A small local musical notification engine for coding agents. Composed gestures
-distinguish changes, answers, plans, artifacts, publication, and human handoffs.
-This does not verify the agent's work, generate music
-from text, or send response text to a cloud service.
+Awaitonal turns your coding agent's final reply into a short musical cue. Hear
+whether it completed a change, answered a question, delivered an artifact, or
+needs your attention. Classification and sound synthesis run locally.
+
+Each cue describes what the agent reports; it does not verify the work. Awaitonal
+selects from composed phrases and keeps response text on your machine.
+
+For Claude Code, start with the [plugin setup](#connect-claude-code).
 
 ## Hear it
 
-Requires Python 3.11+ and [uv](https://docs.astral.sh/uv/). macOS uses the built-in
-`afplay`; rendering, classification, and tests require no audio device. The only
-core runtime dependency is NumPy.
+Requires Python 3.11+ and [uv](https://docs.astral.sh/uv/). Audio playback currently
+uses macOS's built-in `afplay`. Rendering, classification, and tests require no
+audio device. NumPy is the only core runtime dependency.
 
-From this directory:
+From the repository root:
 
 ```sh
 uv sync --dev
 uv run awaitonal demo
 uv run awaitonal demo --out palette.wav
 uv run awaitonal play done
-uv run awaitonal play answer
-uv run awaitonal play plan
-uv run awaitonal play artifact
-uv run awaitonal play published
 uv run awaitonal play review
-uv run awaitonal play decision
-uv run awaitonal play caveats
 uv run awaitonal play needs-you
-uv run awaitonal play rejected
-uv run awaitonal play verdict
-uv run awaitonal play authorization
-uv run awaitonal play in-flight
 uv run awaitonal play answer --long-turn
 ```
 
-`--out` renders without playback; `play` accepts it too. Neither audition command
-requires a service or classifier. A ready-made [audition WAV](artifacts/awaitonal-palette.wav)
-plays the gestures in this order with 350 ms gaps:
+Use `play` with any gesture ID below. Both `demo` and `play` accept `--out` to save
+a WAV without playback, and neither requires a running service or classifier.
+The [palette demo](artifacts/awaitonal-palette.wav) plays these gestures in order,
+with 350 ms gaps. Durations below use the default voice.
 
-| Gesture ID | Meaning and sound | Duration |
+| Gesture ID | Meaning and sound | Default duration |
 | --- | --- | --- |
-| `done` | Change/completion: descending notes settle into a chord | 1.08 s |
-| `answer` | Answer, finding, or assessment: a quick upward figure | 0.95 s |
-| `plan` | Plan/proposal: four measured steps | 1.10 s |
+| `done` | Reported completion: descending notes settle into a chord | 1.08 s |
+| `answer` | Answer or finding: a quick upward figure | 0.95 s |
+| `plan` | Plan or proposal: four measured steps | 1.10 s |
 | `artifact` | Output ready to inspect: an arpeggio blooms | 1.12 s |
 | `published` | Result delivered externally: two broad chord strikes | 1.12 s |
 | `review` | Feedback requested: a suspended opening and hanging A4 → B4 | 1.52 s |
-| `decision` | Required choice/clarification: taps and a rising question | 1.13 s |
+| `decision` | Required choice or clarification: taps and a rising question | 1.13 s |
 | `needs-you` | Sign-in, approval, or needed action: knocks, a pause, then A4 → B4 | 1.82 s |
-| `caveats` | Partial result/limitation: an uneven unresolved descent | 1.10 s |
-| `rejected` | C4–F♯4, two dry taps | 0.66 s |
-| `failed` | API/infrastructure failure: three low descending dyad pulses | 1.02 s |
+| `caveats` | Partial result or limitation: an unresolved descent | 1.10 s |
+| `rejected` | Refusal: two dry C4–F♯4 taps | 0.66 s |
+| `failed` | API or infrastructure failure: three low, descending two-note pulses | 1.02 s |
 | `verdict` | Completed assessment: a compact, firm ending | 0.98 s |
-| `in-flight` | Continuing work: a very quiet unresolved pulse (silent by default) | 0.54 s |
-| `authorization` | Prepared outward action awaits approval: an expectant tail | 1.38 s |
+| `in-flight` | Continuing work: a quiet, unresolved pulse; silent by default | 0.54 s |
+| `authorization` | Prepared publication or other outward action awaits approval: an expectant tail | 1.38 s |
 
-In-flight notifications are silent by default; `play` and
-`demo` let you audition them. Each audible notification plays one gesture once.
+In-flight notifications are silent by default; `play` and `demo` let you hear
+them. Each audible notification plays one gesture once.
 
-For the optional multi-session prototype, try `awaitonal play review --voice glass`
-or `awaitonal ensemble-demo --mode rotation --out rotation.wav`. Six short voices
-rotate across new sessions: marimba, powersaw, harp, clarinet, crystal, and flute.
-Each session keeps its instrument. Set `session_voices = true` in the service
-configuration's `[notifications]` table for stable voices across parallel sessions.
-See [session voices and listening comparisons](docs/session-voices.md).
+### Parallel sessions
+
+Six voices rotate across new sessions: **marimba, powersaw brass, harp, clarinet,
+crystal key, and flute**. A returning session keeps its instrument until an hour
+of inactivity or a service restart. New sessions get unused voices first; beyond
+six active sessions, voices are shared. Playback stays serial.
+
+```sh
+uv run awaitonal play review --voice powersaw
+uv run awaitonal ensemble-demo --mode rotation --out rotation.wav
+```
+
+Enable this with `session_voices = true` in the service configuration's
+`[notifications]` table. The six voices use shorter note tails than the default
+voice, with soft attacks and shared tuning. Choose their order or a smaller set
+with `voice_cycle`. See [session voices and listening comparisons](docs/session-voices.md).
+
+### Customize the sound
 
 All sound settings live in [palette.toml](src/awaitonal/palette.toml): pitches,
-timings, envelopes, partials, headroom, gain, and routing threshold. Use
-`--config my-palette.toml` on `demo`, `play`, `classify`, or `serve` for a partial
-override. Tables merge; event arrays replace the entire state's event list. For
-example:
+timing, envelopes, harmonics, gain, and headroom. The same file holds the routing
+threshold and notification settings. Pass `--config my-palette.toml` to `demo`,
+`play`, `ensemble-demo`, `classify`, or `serve` to override selected values.
+Tables merge with the defaults; event arrays replace a state's entire event list.
+For example:
 
 ```toml
 [synth]
@@ -80,16 +90,15 @@ master_gain = 0.18
 enabled = true
 ```
 
-Brightness is disabled by default. When enabled in the service, response character
-count increases upper partials with a bounded, saturating curve. Duration stays
-fixed and energy is matched to the unmodified gesture; emergency peak attenuation
-may reduce level. Rich chords use voice-energy normalization. All oscillators are
-deterministic, partials above Nyquist are omitted, and cosine ramps prevent hard
-onsets and releases. WAV output is mono PCM16 at 48 kHz by default.
+Brightness is off by default. When enabled, longer responses gradually strengthen
+upper harmonics, up to a fixed limit. This leaves duration unchanged and matches
+the original gesture's energy, subject to peak limiting. Chord normalization
+keeps richer chords from becoming louder. Synthesis is deterministic, omits
+partials above Nyquist, and uses smooth attacks and releases. WAV output is mono
+PCM16 at 48 kHz by default.
 
-The palette follows the auditioned gesture sketches, including the expectant review
-and authentication revision. Distinguishability has not been measured in a blinded
-listening study.
+The palette has been revised through listening feedback. Recognition of its cues
+has not been measured in a blinded study.
 
 ## Classify and run
 
@@ -111,80 +120,84 @@ uv run awaitonal doctor
 uv run awaitonal service stop
 ```
 
-On macOS, `awaitonal service install` enables a per-user login service;
-`awaitonal service uninstall` removes it. Use a stable installed executable, such
-as the plugin runtime below, before enabling login startup. `serve` remains the
-foreground mode; Ctrl-C stops it. In another terminal:
+On macOS, `awaitonal service install` enables a service that starts when you log
+in; `awaitonal service uninstall` removes it. Use a stable installed executable,
+such as the plugin runtime below, before enabling login startup. `serve` runs in
+the foreground; Ctrl-C stops it. With either service mode running, send a test
+notification from another terminal:
 
 ```sh
 uv run awaitonal notify --text "Which database should I use before proceeding?"
 ```
 
-`notify` reports errors when the service is absent. Normal hooks silently return
-success instead. `serve --silent` exercises classification and diagnostics without
-playing audio. Setup is explicit; notification hooks never install dependencies
-or start the service. The listener remains local to your account.
+`notify` reports an error if the service is absent. Normal hooks return quietly
+instead. `serve --silent` runs classification and diagnostics without audio.
+Setup is explicit: notification hooks never install dependencies or start the
+service. The listener is private to your user account.
 
-`service mute` silences all notifications on that service while keeping its model
-loaded. Queued notifications are discarded, and a cue already starting or playing
-may finish.
-`service unmute` resumes future notifications without replaying muted ones. Mute
-lasts until unmuted or the service restarts; `service status` and `doctor` show it.
+**Mute applies to every session sharing the service.** `service mute` keeps the
+process and any model loaded, discards queued notifications, and allows a cue
+already starting or playing to finish. `service unmute` resumes future
+notifications without replaying missed ones. Mute lasts until unmuted or the
+service restarts; `service status` and `doctor` report it.
 
-The core controls are `loose_ends` in [0,1], `needs_you`, `rejected`, and `failed`.
-Known outcomes route deterministically: rejection first, then waiting, failure,
-then caveats at or above the configured threshold (default 0.5), otherwise done.
-Text classifiers use coarse
-loose-end values 0 or 1; neither similarities nor controls claim calibrated
-probability. Text outcomes include `done`, `caveats`, `needs-you`, `rejected`,
-and `unknown`; structured infrastructure errors add `failed`. `unknown` is
-uncertainty, not a claim of success, and uses the neutral `answer` cue.
-Classification also returns `delivery_kind`, `expectancy`, `handoff_kind`,
-`assessment_kind`, `activity`, and the selected `gesture`.
-Playback uses `gesture`; queue attention uses the outcome. A direct review request
-gets `review-requested` and the softer cue without claiming a blocking dependency.
-Required sign-in, approval, choices, and needed evidence get `required-handoff`.
+### Classification
 
-Structured question/permission evidence bypasses textual inference. Rules examine
-only the assistant's current prose, filtering Markdown code and quotes where
-practical. Passive review availability and completed guides describing login steps
-do not imply a current handoff. An explicit request to review and respond does,
-even when work is not blocked. A pending approval still matters after tests pass.
-Completed assessments can report defects without becoming unfinished repairs.
-Optional offers do not imply waiting, and recovered failures do not imply refusal.
-Unclear prose retains `state = "unknown"`; empty/code-only input and malformed events
-are ignored. Discussing an error does not itself establish unfinished work.
-Delivered artifact and PR links require current delivery wording, not just a URL.
-A verdict requires an assessment frame or assessed object; an ordinary yes/no
-answer is not enough. Ongoing work is separate from a future plan or optional offer. Rules are intentionally small English-language heuristics; Markdown
-extraction and semantic interpretation are imperfect. The classifier sees the final
-response, not the preceding user request, so task scope and implicit dependencies
-can remain ambiguous. This update adds a deterministic baseline, not a trained
-classifier or a claim of general accuracy. See [routing details](docs/gesture-routing.md).
+The core controls are `loose_ends` in [0, 1], `needs_you`, `rejected`, and `failed`.
+Known outcomes route deterministically: rejection, waiting, failure, then caveats
+at or above the configured threshold (0.5 by default), otherwise done. Text
+classifiers assign coarse loose-end values of 0 or 1; these are not probabilities.
 
-The listener uses a private Unix socket at `/tmp/awaitonal-<uid>/service.sock`, a
-0700 directory, a 0600 socket, and a single-instance lock. Override with
-`--socket PATH` on service/client/hook or `AWAITONAL_SOCKET`; a custom parent
-directory must also be owned by you and mode 0700. Hook input is capped at 64 KiB
-and 150 ms. Before sending response text, the client verifies the private directory,
-socket ownership and permissions, and connected peer's user ID. Symlinked endpoints
-and untrusted listeners are rejected; normal hooks discard those notifications
-silently. This boundary separates OS users, not processes under your own account.
-Socket connect/send has an 80 ms total deadline. The hook never waits
-for classification or playback. These are I/O bounds, not guarantees about OS
-process-start latency.
+Text outcomes are `done`, `caveats`, `needs-you`, `rejected`, and `unknown`.
+Structured infrastructure errors add `failed`. `unknown` preserves uncertainty
+and uses the neutral `answer` cue. Classification also returns `delivery_kind`,
+`expectancy`, `handoff_kind`, `assessment_kind`, `activity`, and `gesture`.
+Playback uses `gesture`; queue priority uses the outcome.
 
-Playback is serialized. The default queue holds eight events, drops notifications
-older than eight seconds, coalesces obsolete events, and favors attention over
-routine completion. Duplicate suppression lasts two seconds and includes session
-and available turn identifiers. On older Claude versions without prompt IDs, very
-rapid identical turns cannot always be distinguished; this limitation never becomes
-permanent suppression. No queue or response text is persisted. Default service
-stderr contains outcome/gesture metadata, evidence sources, timings, and error class
-names only. Soft review invitations have routine queue priority; required handoffs
-and refusals have attention priority. Longer cues can increase delay during bursts.
+A request for feedback gets `review-requested` and a softer cue. Required sign-in,
+approval, choices, and evidence get `required-handoff`. Structured question and
+permission events bypass textual inference.
 
-## Elapsed-time and background treatments
+Rules examine the assistant's current prose, filtering Markdown code and quotes
+where practical. They distinguish a direct request for review from passive
+availability, current sign-in requests from documented login steps, and unfinished
+work from a completed diagnosis of a problem. Optional offers do not imply
+waiting; recovered failures do not imply refusal. Artifact and PR links need
+current delivery wording. A verdict needs an assessment frame or assessed object,
+and ongoing work is distinct from a future plan.
+
+Unclear prose retains `state = "unknown"`; empty or code-only input and malformed
+events are ignored. The rules are English-language heuristics, and the classifier
+sees only the final response. Without the preceding request, task scope and
+implicit dependencies can remain ambiguous. See [routing details and examples](docs/gesture-routing.md).
+
+### Transport and playback
+
+The listener uses a private Unix socket at `/tmp/awaitonal-<uid>/service.sock`,
+with a 0700 directory, a 0600 socket, and a single-instance lock. Override it with
+`--socket PATH` on service, client, or hook commands, or with `AWAITONAL_SOCKET`.
+A custom parent directory must also be owned by you and have mode 0700.
+
+Hook input is capped at 64 KiB and 150 ms. Before sending response text, the client
+checks directory and socket permissions, ownership, and the connected peer's user
+ID. Symlinked endpoints and untrusted listeners are rejected; normal hooks discard
+those notifications silently. This boundary separates OS users, not processes
+under your own account. Connecting and sending have an 80 ms total deadline.
+The hook never waits for classification or playback. These are I/O bounds, not
+guarantees about OS process-start latency.
+
+The default queue holds eight events, drops notifications older than eight seconds,
+coalesces obsolete events, and favors attention over routine completion. Duplicate
+suppression lasts two seconds and includes session and available turn IDs. On
+older Claude versions without prompt IDs, rapid identical turns cannot always be
+distinguished, but suppression is never permanent.
+
+No queue or response text is persisted. Default service logs contain outcome and
+gesture metadata, evidence sources, timings, and error class names. Review requests
+have routine priority; required handoffs and refusals have attention priority.
+Longer cues can increase delay during bursts.
+
+## Turn timing and background work
 
 These optional settings work with the resident service:
 
@@ -196,104 +209,108 @@ notify_in_flight = false
 ```
 
 Pass the file with `serve --config PATH` or `service start --config PATH`.
-Defaults are zero for both thresholds and false for the background pulse.
-Short-turn suppression keeps handoffs, feedback requests, caveats, refusals, and
-failures audible. Long-turn variants give done, answer, verdict, plan, artifact,
-and published cues a longer, slightly more triumphant finish: two rising notes and
-a held, wider ending add 0.8 seconds while preserving the opening motif and similar
-volume. Preview with
-`awaitonal play verdict --long-turn`. The in-flight pulse is independent of timing.
+Both timing thresholds default to zero (disabled); the background pulse defaults
+to false. Short-turn suppression affects routine results only. Handoffs, feedback
+requests, caveats, refusals, and failures remain audible.
 
-Timing means elapsed user-waited time, **not model thinking duration**. It requires
-matching prompt-start/stop IDs (Claude 2.1.196+); missing or ambiguous timing leaves
-the ordinary treatment intact. Autonomous follow-ups cannot inherit an old wait.
-The installed 2.1.158 schema supports background-task metadata but lacks prompt IDs.
+Long-turn variants give `done`, `answer`, `verdict`, `plan`, `artifact`, and
+`published` a longer, slightly more triumphant finish. The default and original
+voices add 0.8 seconds: two rising notes and a wider, held ending. The six compact
+session voices keep the extra notes but use a shorter final chord, adding 0.36
+seconds. With session voices enabled, a waiting notification from another session
+suppresses the extension. Preview with `awaitonal play verdict --long-turn`.
+The in-flight pulse is independent of timing.
 
-Stop metadata contributes only bounded background-task and scheduled-task counts;
-commands, task descriptions, and scheduled prompts are discarded. Counts corroborate
-an ongoing-work reply, rather than turning every result with a background monitor
-into a waiting cue. No hooks are added to every tool call.
+Timing measures elapsed turn time, **not model thinking duration**. It requires
+matching prompt-start and stop IDs, supported in Claude 2.1.196+. Missing or
+ambiguous timing leaves ordinary playback intact. Autonomous follow-ups cannot
+inherit an old wait, and restarting the service clears its in-memory timing map.
+
+Stop metadata contributes only bounded background-task and scheduled-task counts.
+Commands, task descriptions, and scheduled prompts are discarded. Counts can
+corroborate a reply that says work is ongoing; a background monitor alone does not
+turn a completed result into a waiting cue. No hook is added to every tool call.
 
 ## Connect Claude Code
 
-The Claude Code plugin and marketplace live in this repository:
+The plugin and its marketplace both live in this repository:
 
 ```sh
 claude plugin marketplace add sindarknave/awaitonal
 claude plugin install awaitonal@awaitonal
 ```
 
-Then run `/awaitonal:setup` in Claude Code to install the runtime and start the
-service. `/awaitonal:status` diagnoses setup; `/awaitonal:uninstall` removes the
-plugin-owned runtime. See [plugin setup and migration](docs/plugin.md), including
-how to remove old manual hooks without duplicate sounds. Updating the plugin
-requires rerunning setup to update its stable Python runtime.
+Restart Claude Code, then run `/awaitonal:setup` to install the runtime and start
+the service. `/awaitonal:status` diagnoses setup. Use `/awaitonal:mute` and
+`/awaitonal:unmute` to silence or resume sounds for all sessions sharing the service.
+`/awaitonal:uninstall` removes the plugin-owned runtime.
 
-Use `/awaitonal:mute` and `/awaitonal:unmute` to silence or resume notification
-sounds across sessions without stopping the service. `/awaitonal:status` reports
-whether the service is muted.
+After updating the plugin, restart Claude Code and rerun setup to update its
+stable Python runtime. See [plugin setup, updates, and migration](docs/plugin.md),
+including how to remove old manual hooks without duplicate sounds.
 
-For standalone hooks, `awaitonal init` previews the settings diff;
-`awaitonal init --apply` backs up and installs owned handlers. `awaitonal uninstall
---apply` removes only those handlers. Both accept `--settings PATH` for an explicit
-Claude settings scope. Existing manually pasted snippets need an explicit
-`--legacy-executable /absolute/path/to/awaitonal` to migrate them.
+For a standalone installation, `awaitonal init` previews the settings diff;
+`awaitonal init --apply` backs up settings and installs owned handlers.
+`awaitonal uninstall --apply` removes only those handlers. Both accept
+`--settings PATH` for an explicit Claude settings file. Migrating old hand-pasted
+snippets requires `--legacy-executable /absolute/path/to/awaitonal`.
 
-Installed Claude **2.1.158** and the current [official hook reference](https://code.claude.com/docs/en/hooks)
-were checked on 2026-09-25. The adapter handles:
+### Hook behavior
 
-- `Stop`: classify `last_assistant_message` if supplied; never infer success from stopping.
-- `PreToolUse` matched to `AskUserQuestion`: explicit `needs-you`, `decision` gesture.
-- `PermissionRequest`: explicit `needs-you`, stronger waiting gesture.
-- `StopFailure`: structured API failure; account/authentication problems need user
-  action, other errors play a distinct `failed` cue. Error prose is discarded.
-- `UserPromptSubmit`: timing metadata only; prompt text is discarded.
+Compatibility was checked against Claude Code **2.1.158** and the
+[official hook reference](https://code.claude.com/docs/en/hooks) in September 2026.
+The adapter handles:
 
-It suppresses `agent_id` subagent events and installs no `SubagentStop` hook. Missing
-final text is ignored; transcripts are never opened. `prompt_id` is used when
-present, but requires Claude 2.1.196+ and is absent on the installed version.
+- `Stop`: classify `last_assistant_message` when supplied; stopping alone does not establish success.
+- `PreToolUse` matched to `AskUserQuestion`: select `needs-you` with the `decision` gesture.
+- `PermissionRequest`: select `needs-you` with the stronger waiting gesture.
+- `StopFailure`: use a structured error code; account or authentication problems need user action, while other errors play `failed`. Error prose is discarded.
+- `UserPromptSubmit`: retain timing metadata and discard prompt text.
+
+Events with `agent_id` are suppressed as subagent events; there is no `SubagentStop`
+hook. Missing final text is ignored, and transcripts are never opened. `prompt_id`
+is used when present; it requires Claude 2.1.196+ and was absent in the tested
+2.1.158 schema. See [compatibility details](docs/claude-hooks.md).
 
 ```sh
 uv run awaitonal hook claude --dry-run < examples/claude-stop.json
 uv run awaitonal hook claude --dry-run < examples/claude-question.json
 uv run awaitonal hook claude < examples/claude-stop.json
+```
+
+Normal hooks produce no stdout or stderr and exit 0 even for invalid input or a
+missing service. They emit no permissions, decisions, prompts, or feedback.
+`--dry-run` is diagnostic and must never appear in installed hooks. Hooks use a
+short synchronous handoff; the resident service does the work separately.
+
+### Manual hook configuration
+
+To generate a settings fragment instead of using `init`:
+
+```sh
 uv run awaitonal hook-config > examples/claude-hooks.local.json
 ```
 
-Optional short-turn suppression uses `[notifications] min_turn_seconds = 30` in a
-TOML config, or `serve/service start --min-turn-seconds 30`. It is off by default.
-Only routine completed-result cues are suppressed; review, caveats, handoffs,
-refusals, and failures remain audible. Timing must match a known turn ID. Missing
-or ambiguous timing, including older Claude versions without `prompt_id`, plays
-normally. Restarting the service loses its bounded in-memory timing map.
-
-The generated `examples/claude-hooks.local.json` settings fragment uses the
-installed executable's absolute, shell-quoted path, so it works from another
-project. **Review and manually merge** the five groups into your chosen Claude
-settings' `hooks` object. Do not overwrite existing settings. Regenerate after
-moving the checkout or its environment. A [portable template](examples/claude-hooks.template.json)
-and [detailed installation/removal notes](docs/claude-hooks.md) are included.
-The generated local fragment is intentionally excluded from version control and packages.
-
-Normal hook execution has empty stdout/stderr and exits 0 even for invalid input
-or a missing service. It emits no permissions, decisions, prompts, or feedback.
-`--dry-run` is explicitly diagnostic and must never appear in installed hooks.
-The settings omit `async`: only the short handoff runs in the hook; the service
-does the work separately.
+The fragment uses the installed executable's absolute, shell-quoted path, so it
+works from another project. Review it, then merge its five groups into your
+chosen Claude settings file's `hooks` object, preserving existing settings.
+Regenerate it after moving the checkout or environment. The generated file is
+excluded from version control and packages. A [portable template](examples/claude-hooks.template.json)
+and [installation and removal guide](docs/claude-hooks.md) are included.
 
 ## Optional local embeddings
 
-**Experimental:** use rules for the initial installation. The original v0.1 encoder
-scored 13/30 on the included fixtures, and a later exploratory real-conversation
-sample exposed substantial classification errors in both backends. Those historical
-scores do not describe the updated router. The fixtures are now regression material,
-not a fresh held-out accuracy estimate. Historical [encoder results](artifacts/evaluation-semantic.json)
-are retained for reference.
+**Experimental. Start with rules.** Both backends share explicit delivery and
+handoff rules. The semantic backend uses recognized routes first
+(`diagnostics.backend = "rules-routing"`), then falls back to its original
+four-outcome embedding comparison for unrecognized prose. It loads local model
+weights once at service startup.
 
-Both backends now share explicit delivery and handoff rules. The semantic backend
-uses these recognized routes first (`diagnostics.backend = "rules-routing"`), then
-falls back to its original four-outcome embedding comparison for unrecognized prose.
-It still requires local model weights and loads them once at startup.
+The original v0.1 encoder scored 13/30 on the included fixtures. A later exploratory
+sample of real conversations exposed substantial errors in both backends. These
+historical scores do not describe the current router, and the fixtures are now
+regression material rather than a fresh accuracy estimate. The original
+[encoder results](artifacts/evaluation-semantic.json) remain available.
 
 Install optional dependencies, then explicitly download weights once:
 
@@ -303,15 +320,14 @@ uv run --extra semantic awaitonal model-setup --model-dir .models/all-MiniLM-L6-
 ```
 
 The model is [`sentence-transformers/all-MiniLM-L6-v2`](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2),
-distributed under Apache-2.0 by the Sentence Transformers project. It uses a
-384-dimensional sentence representation and a 256-word-piece default context
-window. See the [Sentence Transformers documentation](https://sbert.net/docs/sentence_transformer/usage/efficiency.html)
-for runtime options. This implementation uses PyTorch on CPU with
-`trust_remote_code=False`. Optional dependencies include Sentence Transformers,
-Transformers, and PyTorch; they are not required by rules, hooks, demos, or rendering.
+distributed under Apache-2.0 by the Sentence Transformers project. It produces
+384-dimensional sentence embeddings and has a default context window of 256 word
+pieces. Awaitonal uses PyTorch on CPU with `trust_remote_code=False`; see the
+[Sentence Transformers documentation](https://sbert.net/docs/sentence_transformer/usage/efficiency.html)
+for runtime options. Sentence Transformers, Transformers, and PyTorch are optional;
+rules, hooks, demos, and rendering do not need them.
 
-After setup, use the already-installed environment directly for guaranteed offline
-startup (no package-manager resolution on hooks):
+After setup, use the installed environment directly for offline startup:
 
 ```sh
 HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 .venv/bin/awaitonal serve \
@@ -323,35 +339,33 @@ HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 .venv/bin/awaitonal classify \
 ```
 
 The constructor requires a local model directory and uses `local_files_only=True`.
-Missing weights produce an explicit setup error. The service loads and embeds
-anchors once, keeping the model warm. The hook has no model download or ML import
-path. Without `--model-dir`, the default is
+Missing weights produce a setup error. The service loads the model and embeds
+anchors once, keeping both ready for subsequent requests. Hooks never download
+models or import ML libraries. Without `--model-dir`, the default location is
 `~/.cache/awaitonal/all-MiniLM-L6-v2`, overridable with `AWAITONAL_MODEL_DIR`.
 
-Editable [anchors.json](src/awaitonal/anchors.json) has multiple positive and
-negative examples per class, separate from [evaluation fixtures](examples/evaluation.jsonl).
-[semantic.toml](src/awaitonal/semantic.toml) controls thresholds and margins; pass
-`--semantic-config PATH` to override it. Its `anchors` path is relative to that file.
+Edit [anchors.json](src/awaitonal/anchors.json) to change the positive and negative
+examples for each class. These are separate from the [evaluation fixtures](examples/evaluation.jsonl).
+[semantic.toml](src/awaitonal/semantic.toml) controls thresholds and margins;
+`--semantic-config PATH` overrides it. Its `anchors` path is relative to that file.
 
 The backend tokenizes without truncation, reserves conclusion windows, selects
-salient contexts with neighboring recovery clauses, then fills remaining slots
-with coverage windows. Each selected window is rechecked against the encoder's
-word-piece limit. Selection is capped at eight windows of 224 tokens by default;
-diagnostics disclose omitted-token counts. It does not embed an entire transcript.
+salient passages with nearby recovery clauses, then fills remaining slots with
+coverage windows. Each window is checked against the encoder's word-piece limit.
+By default, selection is capped at eight windows of 224 tokens; diagnostics report
+omitted-token counts. The backend does not embed an entire transcript.
 
-For each class, a window score is 75% best-anchor similarity plus 25% mean of the
-top three. The class score is 65% conclusion score plus 35% strongest-window score.
-The winner must exceed an absolute threshold and runner-up margin. Attention and
-rejection additionally need stricter thresholds and a margin over negative anchors.
-Uncertain results retain `unknown` and use the neutral answer cue. Cosine similarity measures resemblance to examples,
-not probability or whether the coding agent is correct.
+For each class, a window score combines 75% best-anchor similarity with 25% mean
+similarity to the top three anchors. The class score combines 65% conclusion score
+with 35% strongest-window score. The winner must clear an absolute threshold and
+a runner-up margin. Attention and rejection use stricter thresholds and margins
+over negative anchors. Uncertain results retain `unknown` and use the neutral
+answer cue. Cosine similarity measures resemblance to examples, not probability
+or whether the agent's work is correct.
 
 ## Tests, evaluation, and timings
 
-Core install, no ML weights or audio device:
-
-Run evaluation from the source checkout, or supply `--fixtures PATH` when using a
-standalone installed wheel; evaluation fixtures are distributed with the source.
+Run the core checks without ML weights or an audio device:
 
 ```sh
 uv sync --dev
@@ -362,7 +376,10 @@ HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 .venv/bin/python -m pytest -q
 .venv/bin/python tools/benchmark.py
 ```
 
-After the explicit semantic setup:
+Evaluation fixtures ship with the source distribution. Run from the checkout,
+or pass `--fixtures PATH` when using an installed wheel.
+
+After setting up the optional semantic model:
 
 ```sh
 HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 \
@@ -376,48 +393,58 @@ HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 .venv/bin/python tools/benchmark.py \
   --model-dir .models/all-MiniLM-L6-v2
 ```
 
-Tests cover routing precedence, prose contrasts, model input budgets, explicit-event
-overrides, malformed input, quiet notification-only hooks, blocked stdin, absent
-service, concurrent sessions, bounded queues, duplicates, safe shutdown, real
-offline encoder loading when weights exist, and audio properties. The real-model
-test blocks network connections. Without its dependencies/weights it is explicitly
-skipped; stubbed encoder tests alone do not validate model quality.
+Tests cover routing, prose contrasts, model input limits, explicit events,
+malformed input, quiet hooks, blocked stdin, unavailable services, concurrent
+sessions, bounded queues, duplicates, shutdown, and audio properties. Real-model
+tests run only when dependencies and weights are available, and the model-loading
+test blocks network connections. Stubbed encoder tests do not establish model quality.
 
-Gesture fixtures are authored development contrasts, including direct versus passive
-review, active versus documented authentication, delivery types, and explicit-state overrides.
-Optional gesture, expectancy, delivery, activity, assessment, and handoff labels
-get separate evaluation denominators and confusion matrices. Reports also identify
-false caveats, missed handoffs, and the fraction of unknown outcomes. A correct outcome alone
-does not count as a correct gesture. Evaluation output contains IDs and labels only.
+Gesture fixtures are authored development examples, including direct versus passive
+review, active versus documented authentication, delivery types, and explicit states.
+Gesture, expectancy, delivery, activity, assessment, and handoff labels have separate
+evaluation totals and confusion matrices. Reports also identify false caveats,
+missed handoffs, and unknown outcomes. A correct outcome alone does not count as a
+correct gesture. Evaluation output contains IDs and labels, without response text.
 
-[VALIDATION.md](VALIDATION.md) records observed runs, audio properties, confusion
-matrices, timing reports, and unverified behavior. Benchmarks distinguish fresh
-process launches, warm resident classification, and socket connect/send. Semantic
-timings identify shared-rule routing separately from encoder fallback. Cache state
-and OS scheduling are uncontrolled; measurements are not latency promises.
+[VALIDATION.md](VALIDATION.md) records observed test runs, audio properties,
+classification results, timings, and remaining gaps. Benchmarks separate fresh
+process launches, warm classification, and socket handoff; semantic measurements
+also distinguish shared-rule routing from encoder fallback. Cache state and OS
+scheduling are uncontrolled, so these measurements are not latency guarantees.
 
-## Disable and remove
+## Mute, disable, or remove
 
-Stop the foreground service with Ctrl-C to silence Awaitonal. To disconnect Claude,
-remove only the handlers invoking `awaitonal hook claude`, preserving other hooks,
-then restart the Claude session. Delete the checkout/virtual environment and any
-model directory when no longer needed. The private socket directory may retain an
-empty lock file; it can be removed after the service has stopped. Nothing is added
-to startup settings or installed globally.
+- **Mute temporarily:** use `/awaitonal:mute` in Claude or `awaitonal service mute`.
+  Resume with the matching `unmute` command. This affects all sessions sharing
+  the service.
+- **Stop playback:** stop a foreground service with Ctrl-C, or a managed service
+  with `awaitonal service stop`. Use the plugin runtime's service wrapper for a
+  plugin installation.
+- **Remove the Claude plugin and runtime:** use `/awaitonal:uninstall`. See the
+  [plugin removal guide](docs/plugin.md#disable-or-remove) for disabling hooks or
+  removing a runtime after its plugin has already been removed.
+- **Remove standalone hooks:** run `awaitonal uninstall --apply`. Remove any
+  untracked, hand-pasted Awaitonal handlers manually, preserving unrelated hooks.
+- **Remove automatic startup:** if you enabled it, run `awaitonal service uninstall`.
+  Then stop the service and remove its installed environment or checkout when no
+  longer needed. Optional downloaded model weights can be removed separately.
 
-## Small code map
+Setup and login startup are explicit actions. An empty lock file may remain in
+the private socket directory; remove it only after the service has stopped.
 
-- `adapter.py` and `client.py`: bounded event adaptation and quiet hook handoff.
+## Code map
+
+- `adapter.py`, `client.py`: event adaptation and quiet hook handoff.
 - `text.py`, `classify.py`, `semantic.py`: prose extraction and outcome classification.
-- `delivery.py`, `handoff.py`: reported delivery and conversational expectancy.
-- `types.py`: semantic controls and deterministic state mapping.
-- `palette.toml`, `config.py`, `synth.py`, `playback.py`: instrument and local audio.
+- `delivery.py`, `handoff.py`: reported delivery and requested human participation.
+- `types.py`: classification controls and deterministic state mapping.
+- `palette.toml`, `config.py`, `synth.py`, `playback.py`: configuration, synthesis, and local audio.
+- `voices.py`, `audition.py`: session instruments and listening comparisons.
 - `service.py`, `cli.py`: serial worker, private socket, and commands.
-- `evaluation.py`, `tools/benchmark.py`: independent evaluation and actual timing.
+- `evaluation.py`, `tools/benchmark.py`: evaluation and timing measurements.
 
-Only the Claude adapter is implemented. There is no browser UI,
-cloud account, API key requirement, or GPU requirement. The same-repository Claude
-plugin and optional managed background service are installed explicitly.
+Claude Code is the only implemented adapter. Awaitonal needs no cloud account,
+API key, or GPU. The plugin and managed service are installed explicitly.
 
 ## License
 
