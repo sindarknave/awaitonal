@@ -147,8 +147,10 @@ def test_invalid_or_oversized_input_is_unknown(prose):
     ("and " * 30_000, "unknown"),
     ("[" * 131_072, "unknown"),
     ("I fixed the code and " * 5_000, "change"),
-])
+], ids=["question-prefixes", "conjunction-prefixes", "unmatched-brackets", "repeated-actions"])
 def test_adversarial_input_finishes_promptly(prose, expected):
+    # Short IDs also bound the inherited PYTEST_CURRENT_TEST environment value;
+    # Linux limits each argv/environment string even when prose uses stdin.
     process = subprocess.run(
         [sys.executable, "-c", "import sys; from awaitonal.delivery import detect_delivery; "
          "print(detect_delivery(sys.stdin.read()))"],
