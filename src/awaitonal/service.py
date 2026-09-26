@@ -331,6 +331,7 @@ class Service:
                 worker.start()
                 self.ready.set()
                 while not stop.is_set():
+                    completed = []
                     for selected, _ in selector.select(0.05):
                         connection = selected.fileobj
                         if connection is listener:
@@ -343,13 +344,25 @@ class Service:
                             selector.register(connection, selectors.EVENT_READ)
                             continue
                         buffer, received = clients[connection]
-                        try:
-                            chunk = connection.recv(8192)
-                        except (ConnectionError, OSError):
-                            chunk = b""
-                        buffer.extend(chunk)
-                        complete = b"\n" in buffer
-                        if len(buffer) > MAX_WIRE or complete or not chunk:
+                        complete = closed = False
+                        # Drain already available bytes before applying the
+                        # deadline. A full message may span several reads.
+                        while len(buffer) <= MAX_WIRE:
+                            try:
+                                chunk = connection.recv(min(8192, MAX_WIRE + 1 - len(buffer)))
+                            except BlockingIOError:
+                                break
+                            except OSError:
+                                closed = True
+                                break
+                            if not chunk:
+                                closed = True
+                                break
+                            buffer.extend(chunk)
+                            if b"\n" in chunk:
+                                complete = True
+                                break
+                        if len(buffer) > MAX_WIRE or complete or closed:
                             selector.unregister(connection)
                             del clients[connection]
                             try:
@@ -358,7 +371,7 @@ class Service:
                                     if not self._control(payload, connection, stop):
                                         event = event_from_wire(payload)
                                         if event is not None:
-                                            self._intake(event, hints, time.monotonic())
+                                            completed.append((event, time.monotonic()))
                             except (ValueError, TypeError, UnicodeError, RecursionError):
                                 pass
                             finally:
@@ -368,6 +381,16 @@ class Service:
                             selector.unregister(connection)
                             connection.close()
                             del clients[connection]
+                    # Classification can exceed a client's intake deadline.
+                    # Always give ready peers another I/O pass before expiring
+                    # them after time spent on our own classification work.
+                    for event, received in completed:
+                        if stop.is_set():
+                            break
+                        try:
+                            self._intake(event, hints, received)
+                        except (ValueError, TypeError, UnicodeError, RecursionError):
+                            pass
         finally:
             self.queue.close()
             for connection in clients:

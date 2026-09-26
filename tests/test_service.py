@@ -164,6 +164,56 @@ def test_slow_incomplete_client_does_not_block_others():
             slow.sendall(b'{"session_id":')
             send_event(Event("ok", "1", "Done."), path)
             eventually(lambda: len(played) == 1)
+            slow.settimeout(1)
+            assert slow.recv(1) == b""  # Incomplete clients still expire.
+
+
+@pytest.mark.parametrize("text", ["Done.", "Done. " * 2000], ids=["small", "multiple-reads"])
+def test_ready_peer_is_not_expired_during_intake_classification(monkeypatch, text):
+    from types import SimpleNamespace
+    import awaitonal.service as service_module
+
+    accepted, entered, release = threading.Event(), threading.Event(), threading.Event()
+    clock = [time.monotonic()]
+    monkeypatch.setattr(service_module, "time", SimpleNamespace(
+        monotonic=lambda: clock[0], perf_counter=time.perf_counter))
+    original_accept = socket.socket.accept
+    original_classify = RulesClassifier.classify
+
+    def accept(connection):
+        result = original_accept(connection)
+        if not accepted.is_set():
+            result[0].setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 32768)
+        accepted.set()
+        return result
+
+    def classify(classifier, event):
+        if event.session_id == "first" and not entered.is_set():
+            entered.set()
+            assert release.wait(3)
+        return original_classify(classifier, event)
+
+    monkeypatch.setattr(socket.socket, "accept", accept)
+    monkeypatch.setattr(RulesClassifier, "classify", classify)
+    played = []
+    with running_service(player=lambda state, length: played.append((state, length))) as (_, path, _, logs):
+        with socket.socket(socket.AF_UNIX) as peer:
+            peer.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 32768)
+            peer.connect(str(path))
+            assert accepted.wait(3)
+            try:
+                send_event(Event("first", "1", "Done."), path)
+                assert entered.wait(3)
+                peer.sendall(json.dumps(Event("peer", "1", text).to_dict()).encode() + b"\n")
+                # Advance the service clock beyond its 150 ms intake deadline
+                # while classification is blocked, with the full peer message
+                # already buffered in the socket. No real-time race is needed.
+                clock[0] += 0.2
+            finally:
+                release.set()
+            eventually(lambda: len(played) == 2)
+            assert sorted(played) == sorted([("done", 5), ("done", len(text))])
+            assert not any("error" in record for record in logs)
 
 
 def test_live_short_turn_suppression_and_failure_remain_private_and_responsive():

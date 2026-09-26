@@ -1,5 +1,22 @@
 # Observed validation
 
+## Intake deadline race, v0.4.2
+
+The v0.4.1 Linux/Python3.13 CI run exposed a scheduling-dependent notification
+loss. A 64 KiB repeated-question input took about 205 ms to classify locally, while
+accepted peers had a 150 ms intake deadline. If another peer's complete message
+arrived during that classification, the listener could expire it before reading.
+The natural test passed on rerun, but the controlled sequence reproduced the drop.
+
+The listener now drains bounded ready messages, handles incomplete-client expiry,
+and then performs intake classification. Two deterministic regressions advance
+the service clock during a paused hint and deliver a small message or a 12 KB
+message. Both fail against the previous service and pass with the fix. The
+service/security/control group reports **81 passed**. An explicit EOF assertion
+confirms incomplete clients still expire; client and message-size limits are
+unchanged. The full suite reports **952 passed, 2 optional-model skips**; see
+[full core output](artifacts/tests-v0.4.2-core.txt).
+
 ## Extended endings, v0.4.1
 
 Following listening feedback, all six elapsed-turn variants now add **0.80 seconds**
