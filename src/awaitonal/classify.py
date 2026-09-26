@@ -37,6 +37,25 @@ def has_completion(text: str) -> bool:
     return _has(r"\b(done|completed?|implemented|finished|fixed|resolved|delivered|all set|ready|works|working|passes|passed|succeeded|successful(?:ly)?|verified)\b", text)
 
 
+_WAITING_QUESTION_TOKENS = re.compile(
+    r"(?P<boundary>[.!])|(?P<question>\b(?:which|what|how|should)\b)|"
+    r"(?P<dependency>\b(?:before|until) (?:I |we |proceeding|continuing))", re.I)
+
+
+def _waiting_question(text: str) -> bool:
+    # Scan once: retrying an unbounded suffix after every question word makes
+    # repeated 'which ' quadratic when there is no dependency marker.
+    question = False
+    for token in _WAITING_QUESTION_TOKENS.finditer(text):
+        if token.lastgroup == "boundary":
+            question = False
+        elif token.lastgroup == "question":
+            question = True
+        elif question:
+            return True
+    return False
+
+
 def is_waiting(text: str) -> bool:
     # Require a dependency on the user; a bare question mark is insufficient.
     return _has(
@@ -44,8 +63,7 @@ def is_waiting(text: str) -> bool:
         r"\b(?:need|require)(?:s)? (?:your |you to |an? )(?:answer|approval|permission|choice|decision|input|confirmation|selection|choose|select|decide|confirm|approve)\b|"
         r"\b(?:please|could you|can you|would you) (?:approve|authorize|confirm|choose|decide)\b|"
         r"\b(?:may|can) I (?:run|execute|install|delete|remove|access|use|proceed|continue)\b|"
-        r"\b(?:which|what|how|should)\b[^.!]*\b(?:before|until) (?:I |we |proceeding|continuing)|"
-        r"\b(?:cannot|can't|unable to) (?:continue|proceed) (?:without|until)\b", text)
+        r"\b(?:cannot|can't|unable to) (?:continue|proceed) (?:without|until)\b", text) or _waiting_question(text)
 
 
 def is_refusal(text: str) -> bool:
@@ -62,14 +80,21 @@ def unresolved(text: str) -> bool:
     return _has(r"\b(caveat|unverified|untested|unavailable|incomplete|unresolved|remaining|blocked|pending|not (?:done|run|tested|verified|complete|implemented)|no tests (?:were )?run|could not|couldn't|cannot|can't|unable|failed|fails|fail|failure|errors?|limitation|may not|might not)\b", text)
 
 
+_WAITING_RESOLVED = (
+    r"\bno longer (?:waiting|blocked|paused|need)|"
+    r"\b(?:approval|permission|confirmation|answer|decision) (?:is |was |has been )?(?:received|granted|provided|given|obtained)|"
+    r"\b(?:received|obtained|got|have) (?:your |the )(?:approval|permission|confirmation|answer|decision)|"
+    r"\byou (?:have |had )?(?:approved|authorized|confirmed|answered|chosen|selected)|"
+    r"\byou (?:granted|provided|gave) (?:the |your )?(?:approval|permission|confirmation|answer|decision)"
+)
+# A lookahead includes overlapping phrases such as 'got your approval was
+# granted'. The later 'approval was granted' may start in a different sentence.
+_WAITING_RESOLUTION_STARTS = re.compile(r"(?=" + _WAITING_RESOLVED + r")", re.I)
+
+
 def waiting_resolved(text: str) -> bool:
     """Require an explicit resolution of the dependency, not merely 'done'."""
-    return _has(
-        r"\bno longer (?:waiting|blocked|paused|need)|"
-        r"\b(?:approval|permission|confirmation|answer|decision) (?:is |was |has been )?(?:received|granted|provided|given|obtained)|"
-        r"\b(?:received|obtained|got|have) (?:your |the )(?:approval|permission|confirmation|answer|decision)|"
-        r"\byou (?:have |had )?(?:approved|authorized|confirmed|answered|chosen|selected)|"
-        r"\byou (?:granted|provided|gave) (?:the |your )?(?:approval|permission|confirmation|answer|decision)", text)
+    return _has(_WAITING_RESOLVED, text)
 
 
 class RulesClassifier:
@@ -87,11 +112,18 @@ class RulesClassifier:
             return None
         parts = sentences(prose)
         meaningful = [s for s in parts if not is_optional(s)] or parts
+        # Search joined prose once, preserving resolution phrases spanning
+        # lines without joining and rescanning every remaining sentence.
+        last_resolution = max((match.start() for match in
+                               _WAITING_RESOLUTION_STARTS.finditer(" ".join(meaningful))),
+                              default=-1)
         resolved_waiting = set()
+        suffix_start = 0
         for index, sentence in enumerate(meaningful):
+            suffix_start += len(sentence) + 1
             if is_waiting(sentence):
                 # A later 'done' alone does not imply permission was granted.
-                if waiting_resolved(" ".join(meaningful[index + 1:])):
+                if last_resolution >= suffix_start:
                     resolved_waiting.add(index)
                     continue
                 if not _has(r"\b(?:no longer|not waiting|don't need|do not need|previously|earlier|initially)\b", sentence):

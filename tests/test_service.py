@@ -12,6 +12,7 @@ import wave
 
 import pytest
 
+from awaitonal.adapter import MAX_INPUT
 from awaitonal.classify import RulesClassifier
 from awaitonal.client import send_event
 from awaitonal.service import EventQueue, Service
@@ -163,6 +164,31 @@ def test_slow_incomplete_client_does_not_block_others():
             slow.sendall(b'{"session_id":')
             send_event(Event("ok", "1", "Done."), path)
             eventually(lambda: len(played) == 1)
+
+
+@pytest.mark.parametrize("text", [
+    "[" * MAX_INPUT,
+    "which " * (MAX_INPUT // len("which ")),
+    "I need your approval. " * ((MAX_INPUT - 40) // len("I need your approval. "))
+    + "Your approval was granted. Done.",
+], ids=["unmatched-links", "question-prefixes", "resolved-waiting-history"])
+def test_near_limit_adversarial_prose_keeps_other_sessions_responsive(text):
+    played = []
+    assert MAX_INPUT - 100 < len(text.encode("utf-8")) <= MAX_INPUT
+    with running_service(player=lambda state, length: played.append((state, length))) as (_, path, _, logs):
+        started = time.monotonic()
+        send_event(Event("long-input", "1", text), path, timeout=1)
+        send_event(Event("another-session", "1", "Done."), path, timeout=1)
+        # Exercise both the intake priority hint and the playback classifier.
+        # Three seconds is generous for bounded text processing, but catches
+        # the multi-second stalls caused by repeated scans of adversarial text.
+        eventually(lambda: len(played) == 2, timeout=3)
+        # Regex work can hold the GIL, so an eventual check alone might resume
+        # only after a long stall and then incorrectly succeed.
+        assert time.monotonic() - started < 3
+        assert ("done", len("Done.")) in played
+        assert any(length == len(text) for _, length in played)
+        assert not any("error" in record for record in logs)
 
 
 def test_bad_wire_and_player_failure_leave_service_available():

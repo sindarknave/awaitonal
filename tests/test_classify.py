@@ -1,5 +1,8 @@
+import subprocess
+import sys
+
 import pytest
-from awaitonal.classify import RulesClassifier
+from awaitonal.classify import RulesClassifier, is_waiting
 from awaitonal.text import assistant_prose
 from awaitonal.types import Event
 
@@ -82,3 +85,46 @@ def test_completion_does_not_imply_permission_resolution():
 def test_temporary_inability_with_permission_is_waiting():
     text = "I cannot help because I need your approval before proceeding."
     assert RulesClassifier().classify(Event("s", "e", text)).state == "needs-you"
+
+
+@pytest.mark.parametrize("text,expected", [
+    ("Which option before proceeding?", True),
+    ("WHAT should happen until we continue?", True),
+    ("How should I proceed? Pick before continuing.", True),
+    ("Which option\nbefore I continue?", True),
+    ("Which option. Work before proceeding.", False),
+    ("How should I proceed! Work before continuing.", False),
+    ("Before proceeding, which option?", False),
+    ("Somewhat before proceeding.", False),
+])
+def test_waiting_question_preserves_dependency_order_and_boundaries(text, expected):
+    assert is_waiting(text) is expected
+
+
+@pytest.mark.parametrize("text,expected", [
+    ("I need your approval.\nYou have\napproved. Done.", "done"),
+    ("I need your approval got your\napproval was granted. Done.", "done"),
+    ("Approval was granted. I need your approval.", "needs-you"),
+    ("I need your approval. Approval was granted. I need your decision.", "needs-you"),
+])
+def test_only_later_resolution_resolves_waiting_across_sentences(text, expected):
+    assert RulesClassifier().classify(Event("s", "e", text)).state == expected
+
+
+@pytest.mark.parametrize("text,expected", [
+    ("which " * 21_000, "caveats"),
+    ("I need your approval.\n" * 5_000 + "You approved. Done.", "done"),
+    ("Previously waiting for your approval.\n" * 3_000, "caveats"),
+])
+def test_adversarial_prose_finishes_promptly(text, expected):
+    # A process timeout bounds failures even if quadratic scanning returns.
+    # These inputs previously took seconds; allow ample headroom over the
+    # corrected millisecond-scale work and interpreter startup on CI runners.
+    process = subprocess.run(
+        [sys.executable, "-c",
+         "import sys; from awaitonal.classify import RulesClassifier; "
+         "from awaitonal.types import Event; "
+         "print(RulesClassifier().classify(Event('s', 'e', sys.stdin.read())).state)"],
+        input=text, capture_output=True, text=True, timeout=5, check=True,
+    )
+    assert process.stdout.strip() == expected

@@ -1,5 +1,40 @@
 # Observed validation
 
+## Reliability fix validation
+
+The long-input parsing fix was checked on 2026-09-25, on the same macOS/Python
+environment described below. The offline core suite now reports **243 passed,
+2 skipped** in 7.95 s; the skips require the optional real model. Rules evaluation
+remains **30/30** with no false attention or rejection cases. The older reports
+below describe the original v0.1.0 release.
+
+Regression tests cover unmatched link brackets and curly quotation marks,
+repeated question prefixes, and long histories of resolved or historical waiting
+statements. Extraction/classification tests run adversarial inputs up to the
+131,072-character prose limit in subprocesses with a five-second timeout.
+Service tests send near-limit 65,536-byte events and verify both their processing
+and a subsequent notification from another session within three seconds.
+
+Measured medians of five resident calls, in milliseconds:
+
+| Input | UTF-8 bytes | Prose extraction | Full rules classification |
+| --- | ---: | ---: | ---: |
+| Unmatched `[` | 65,536 | 2.307 | 11.342 |
+| Repeated `which ` | 49,152 | 2.377 | 16.680 |
+| Unmatched curly opening quotes | 65,535 | 4.371 | 7.993 |
+| Repeated waiting statements, followed by explicit resolution | 63,832 | 3.111 | 13.047 |
+
+The audit measured 10.759 seconds for bracket extraction and 2.794 seconds for
+waiting detection on the corresponding inputs before the fix. These are local
+wall-clock observations, not latency guarantees. Prose content and existing
+priority/deduplication behavior are preserved; no service scheduling changes were
+needed.
+
+Run the regressions with `python -m pytest -q tests/test_text.py
+tests/test_classify.py tests/test_service.py`.
+
+## Original release validation
+
 Run on 2026-09-25, Apple Silicon macOS 26.6, Python 3.13.1. The core environment
 contains Awaitonal, NumPy, and test dependencies. A separate environment was used
 for optional ML installation and explicit model setup; weights are not bundled in

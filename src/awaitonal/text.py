@@ -7,13 +7,57 @@ MAX_PROSE_CHARS = 131_072
 SALIENCE = re.compile(r"\b(wait|await|approval|approve|permission|choose|choice|decide|answer|before|cannot|can't|refus|declin|won't|unable|fail|error|recover|fixed|resolved|unavailable|blocked|remaining|caveat)", re.I)
 
 
+def _strip_quotes(text: str) -> str:
+    """Remove paired quotations without rescanning unmatched opening marks."""
+    closers = {'"': '"', '“': '”', '‘': '’'}
+    lines = []
+    for line in text.split("\n"):
+        # An unmatched opener must not trigger a search of the remaining line
+        # at every subsequent opener. Successful searches consume their span.
+        last = {opener: line.rfind(closer) for opener, closer in closers.items()}
+        parts = []
+        cursor = 0
+        for match in re.finditer('["“‘]', line):
+            start = match.start()
+            if start < cursor or start >= last[match.group()]:
+                continue
+            end = line.find(closers[match.group()], start + 1)
+            parts.extend((line[cursor:start], " "))
+            cursor = end + 1
+        parts.append(line[cursor:])
+        lines.append("".join(parts))
+    return "\n".join(lines)
+
+
+def _strip_link_destinations(text: str) -> str:
+    """Keep inline-link labels, examining each possible delimiter only once."""
+    parts = []
+    cursor = 0
+    while (opening := text.find("[", cursor)) != -1:
+        closing = text.find("]", opening + 1)
+        if closing == -1:
+            break
+        if closing == opening + 1 or text[closing + 1:closing + 2] != "(":
+            # Every opener before this same closing bracket also fails.
+            parts.append(text[cursor:closing + 1])
+            cursor = closing + 1
+            continue
+        end = text.find(")", closing + 2)
+        if end == -1:
+            break
+        parts.extend((text[cursor:opening], text[opening + 1:closing]))
+        cursor = end + 1
+    parts.append(text[cursor:])
+    return "".join(parts)
+
+
 def assistant_prose(text: str) -> str:
     """Discard code and quoted material, returning empty for invalid/oversize input.
 
     This is deliberately not a Markdown parser. An unclosed fence consumes the
     remaining text, so copied code cannot accidentally become attention evidence.
     """
-    if not isinstance(text, str) or not text.strip() or len(text) > MAX_PROSE_CHARS:
+    if not isinstance(text, str) or len(text) > MAX_PROSE_CHARS or not text.strip():
         return ""
     lines = []
     fence = None
@@ -31,9 +75,9 @@ def assistant_prose(text: str) -> str:
         lines.append(line)
     prose = "\n".join(lines)
     prose = re.sub(r"`+[^`]*`+", " ", prose)
-    prose = re.sub(r'"[^"\n]*"|“[^”\n]*”|‘[^’\n]*’', " ", prose)
+    prose = _strip_quotes(prose)
     prose = re.sub(r"(?<!\w)'[^'\n]+'(?!\w)", " ", prose)
-    prose = re.sub(r"\[([^]]+)\]\([^)]*\)", r"\1", prose)
+    prose = _strip_link_destinations(prose)
     prose = prose.replace("’", "'")
     return re.sub(r"[ \t]+", " ", prose).strip()
 
