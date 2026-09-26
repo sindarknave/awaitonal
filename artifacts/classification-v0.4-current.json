@@ -1,0 +1,1653 @@
+{
+  "label": "v0.4-working-tree",
+  "scope": "Authored synthetic development contrasts, evaluated after selecting the proposed taxonomy; not held-out or population accuracy. Baseline does not support new metadata dimensions.",
+  "cases": 115,
+  "dimensions": {
+    "activity": {
+      "cases": 34,
+      "correct": 34,
+      "failures": []
+    },
+    "assessment_kind": {
+      "cases": 11,
+      "correct": 11,
+      "failures": []
+    },
+    "delivery_kind": {
+      "cases": 42,
+      "correct": 42,
+      "failures": []
+    },
+    "expectancy": {
+      "cases": 68,
+      "correct": 68,
+      "failures": []
+    },
+    "gesture": {
+      "cases": 115,
+      "correct": 115,
+      "failures": []
+    },
+    "handoff_kind": {
+      "cases": 12,
+      "correct": 12,
+      "failures": []
+    },
+    "state": {
+      "cases": 115,
+      "correct": 115,
+      "failures": []
+    }
+  },
+  "quality": {
+    "false_caveats": [],
+    "false_handoffs": [],
+    "missed_handoffs": []
+  },
+  "results": [
+    {
+      "id": "neutral-ack",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "expectancy": "none",
+        "activity": "unknown"
+      },
+      "actual": {
+        "state": "unknown",
+        "gesture": "answer",
+        "expectancy": "none",
+        "activity": "unknown"
+      }
+    },
+    {
+      "id": "neutral-fact",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "expectancy": "none",
+        "activity": "unknown"
+      },
+      "actual": {
+        "state": "unknown",
+        "gesture": "answer",
+        "expectancy": "none",
+        "activity": "unknown"
+      }
+    },
+    {
+      "id": "neutral-offer",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "expectancy": "none",
+        "activity": "unknown"
+      },
+      "actual": {
+        "state": "unknown",
+        "gesture": "answer",
+        "expectancy": "none",
+        "activity": "unknown"
+      }
+    },
+    {
+      "id": "future-promise",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "expectancy": "none",
+        "activity": "unknown"
+      },
+      "actual": {
+        "state": "unknown",
+        "gesture": "answer",
+        "expectancy": "none",
+        "activity": "unknown"
+      }
+    },
+    {
+      "id": "hypothetical-publish",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "expectancy": "none",
+        "activity": "unknown"
+      },
+      "actual": {
+        "state": "unknown",
+        "gesture": "answer",
+        "expectancy": "none",
+        "activity": "unknown"
+      }
+    },
+    {
+      "id": "subject-error",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "expectancy": "none",
+        "activity": "unknown"
+      },
+      "actual": {
+        "state": "unknown",
+        "gesture": "answer",
+        "expectancy": "none",
+        "activity": "unknown"
+      }
+    },
+    {
+      "id": "subject-pending",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "expectancy": "none",
+        "activity": "unknown"
+      },
+      "actual": {
+        "state": "unknown",
+        "gesture": "answer",
+        "expectancy": "none",
+        "activity": "unknown"
+      }
+    },
+    {
+      "id": "unframed-yes",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "expectancy": "none",
+        "activity": "unknown"
+      },
+      "actual": {
+        "state": "unknown",
+        "gesture": "answer",
+        "expectancy": "none",
+        "activity": "unknown"
+      }
+    },
+    {
+      "id": "unframed-no",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "expectancy": "none",
+        "activity": "unknown"
+      },
+      "actual": {
+        "state": "unknown",
+        "gesture": "answer",
+        "expectancy": "none",
+        "activity": "unknown"
+      }
+    },
+    {
+      "id": "house-heading",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "expectancy": "none",
+        "activity": "unknown"
+      },
+      "actual": {
+        "state": "unknown",
+        "gesture": "answer",
+        "expectancy": "none",
+        "activity": "unknown"
+      }
+    },
+    {
+      "id": "fixed-error-handling",
+      "expected": {
+        "state": "done",
+        "gesture": "done",
+        "delivery_kind": "unknown",
+        "activity": "final"
+      },
+      "actual": {
+        "state": "done",
+        "gesture": "done",
+        "delivery_kind": "unknown",
+        "activity": "final"
+      }
+    },
+    {
+      "id": "explained-errors",
+      "expected": {
+        "state": "done",
+        "gesture": "answer",
+        "delivery_kind": "answer",
+        "activity": "final"
+      },
+      "actual": {
+        "state": "done",
+        "gesture": "answer",
+        "delivery_kind": "answer",
+        "activity": "final"
+      }
+    },
+    {
+      "id": "explained-failure-rate",
+      "expected": {
+        "state": "done",
+        "gesture": "answer",
+        "delivery_kind": "answer",
+        "activity": "final"
+      },
+      "actual": {
+        "state": "done",
+        "gesture": "answer",
+        "delivery_kind": "answer",
+        "activity": "final"
+      }
+    },
+    {
+      "id": "found-inability",
+      "expected": {
+        "state": "done",
+        "gesture": "answer",
+        "delivery_kind": "answer",
+        "activity": "final"
+      },
+      "actual": {
+        "state": "done",
+        "gesture": "answer",
+        "delivery_kind": "answer",
+        "activity": "final"
+      }
+    },
+    {
+      "id": "complete-review-negative",
+      "expected": {
+        "state": "done",
+        "gesture": "answer",
+        "delivery_kind": "answer",
+        "activity": "final"
+      },
+      "actual": {
+        "state": "done",
+        "gesture": "answer",
+        "delivery_kind": "answer",
+        "activity": "final"
+      }
+    },
+    {
+      "id": "ordinary-definition",
+      "expected": {
+        "state": "done",
+        "gesture": "answer",
+        "delivery_kind": "answer",
+        "activity": "final"
+      },
+      "actual": {
+        "state": "done",
+        "gesture": "answer",
+        "delivery_kind": "answer",
+        "activity": "final"
+      }
+    },
+    {
+      "id": "own-analysis-unfinished",
+      "expected": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "own-tests-failed",
+      "expected": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "own-test-gap",
+      "expected": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "own-not-implemented",
+      "expected": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "own-verify-gap",
+      "expected": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "own-report-unavailable",
+      "expected": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "own-help-temporary",
+      "expected": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "own-cause-unverified",
+      "expected": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "own-not-ready",
+      "expected": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "own-unavailable-runtime",
+      "expected": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "artifact-current-bare",
+      "expected": {
+        "state": "done",
+        "gesture": "artifact",
+        "delivery_kind": "artifact",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "done",
+        "gesture": "artifact",
+        "delivery_kind": "artifact",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "artifact-current-markdown",
+      "expected": {
+        "state": "done",
+        "gesture": "artifact",
+        "delivery_kind": "artifact",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "done",
+        "gesture": "artifact",
+        "delivery_kind": "artifact",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "artifact-google-doc",
+      "expected": {
+        "state": "done",
+        "gesture": "artifact",
+        "delivery_kind": "artifact",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "done",
+        "gesture": "artifact",
+        "delivery_kind": "artifact",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "artifact-sandbox",
+      "expected": {
+        "state": "done",
+        "gesture": "artifact",
+        "delivery_kind": "artifact",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "done",
+        "gesture": "artifact",
+        "delivery_kind": "artifact",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "artifact-share-usage",
+      "expected": {
+        "state": "done",
+        "gesture": "artifact",
+        "delivery_kind": "artifact",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "done",
+        "gesture": "artifact",
+        "delivery_kind": "artifact",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "artifact-bare-reference",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "unknown",
+        "gesture": "answer",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "artifact-old-reference",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "unknown",
+        "gesture": "answer",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "artifact-quoted-reference",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "unknown",
+        "gesture": "answer",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "artifact-code-reference",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "unknown",
+        "gesture": "answer",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "artifact-host-spoof",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "unknown",
+        "gesture": "answer",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "artifact-marker-spoof",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "unknown",
+        "gesture": "answer",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "artifact-example-heading",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "unknown",
+        "gesture": "answer",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "artifact-conditional",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "unknown",
+        "gesture": "answer",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "pr-bare-reference",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "unknown",
+        "gesture": "answer",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "pr-markdown-reference",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "unknown",
+        "gesture": "answer",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "pr-history",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "unknown",
+        "gesture": "answer",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "pr-negated",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "unknown",
+        "gesture": "answer",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "pr-spoof",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "unknown",
+        "gesture": "answer",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "pr-marker-spoof",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "unknown",
+        "gesture": "answer",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "pr-malformed",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "unknown",
+        "gesture": "answer",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "pr-documentation",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "unknown",
+        "gesture": "answer",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "opened-file",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "unknown",
+        "gesture": "answer",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "posted-local",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "unknown",
+        "gesture": "answer",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "pr-opened-bare",
+      "expected": {
+        "state": "done",
+        "gesture": "published",
+        "delivery_kind": "published"
+      },
+      "actual": {
+        "state": "done",
+        "gesture": "published",
+        "delivery_kind": "published"
+      }
+    },
+    {
+      "id": "pr-opened-markdown",
+      "expected": {
+        "state": "done",
+        "gesture": "published",
+        "delivery_kind": "published"
+      },
+      "actual": {
+        "state": "done",
+        "gesture": "published",
+        "delivery_kind": "published"
+      }
+    },
+    {
+      "id": "pr-posted-review",
+      "expected": {
+        "state": "done",
+        "gesture": "published",
+        "delivery_kind": "published"
+      },
+      "actual": {
+        "state": "done",
+        "gesture": "published",
+        "delivery_kind": "published"
+      }
+    },
+    {
+      "id": "pr-posted-prose",
+      "expected": {
+        "state": "done",
+        "gesture": "published",
+        "delivery_kind": "published"
+      },
+      "actual": {
+        "state": "done",
+        "gesture": "published",
+        "delivery_kind": "published"
+      }
+    },
+    {
+      "id": "pr-opened-prose",
+      "expected": {
+        "state": "done",
+        "gesture": "published",
+        "delivery_kind": "published"
+      },
+      "actual": {
+        "state": "done",
+        "gesture": "published",
+        "delivery_kind": "published"
+      }
+    },
+    {
+      "id": "pr-merged",
+      "expected": {
+        "state": "done",
+        "gesture": "published",
+        "delivery_kind": "published"
+      },
+      "actual": {
+        "state": "done",
+        "gesture": "published",
+        "delivery_kind": "published"
+      }
+    },
+    {
+      "id": "verdict-explicit",
+      "expected": {
+        "state": "done",
+        "gesture": "verdict",
+        "delivery_kind": "answer",
+        "assessment_kind": "verdict",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "done",
+        "gesture": "verdict",
+        "delivery_kind": "answer",
+        "assessment_kind": "verdict",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "verdict-approve-object",
+      "expected": {
+        "state": "done",
+        "gesture": "verdict",
+        "delivery_kind": "answer",
+        "assessment_kind": "verdict",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "done",
+        "gesture": "verdict",
+        "delivery_kind": "answer",
+        "assessment_kind": "verdict",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "verdict-negative-object",
+      "expected": {
+        "state": "done",
+        "gesture": "verdict",
+        "delivery_kind": "answer",
+        "assessment_kind": "verdict",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "done",
+        "gesture": "verdict",
+        "delivery_kind": "answer",
+        "assessment_kind": "verdict",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "verdict-safe-object",
+      "expected": {
+        "state": "done",
+        "gesture": "verdict",
+        "delivery_kind": "answer",
+        "assessment_kind": "verdict",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "done",
+        "gesture": "verdict",
+        "delivery_kind": "answer",
+        "assessment_kind": "verdict",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "verdict-completed-review",
+      "expected": {
+        "state": "done",
+        "gesture": "verdict",
+        "delivery_kind": "answer",
+        "assessment_kind": "verdict",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "done",
+        "gesture": "verdict",
+        "delivery_kind": "answer",
+        "assessment_kind": "verdict",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "verdict-quoted",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "assessment_kind": "none"
+      },
+      "actual": {
+        "state": "unknown",
+        "gesture": "answer",
+        "assessment_kind": "none"
+      }
+    },
+    {
+      "id": "verdict-historical",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "assessment_kind": "none"
+      },
+      "actual": {
+        "state": "unknown",
+        "gesture": "answer",
+        "assessment_kind": "none"
+      }
+    },
+    {
+      "id": "verdict-example",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "assessment_kind": "none"
+      },
+      "actual": {
+        "state": "unknown",
+        "gesture": "answer",
+        "assessment_kind": "none"
+      }
+    },
+    {
+      "id": "verdict-alone-approve",
+      "expected": {
+        "state": "needs-you",
+        "gesture": "needs-you",
+        "assessment_kind": "none"
+      },
+      "actual": {
+        "state": "needs-you",
+        "gesture": "needs-you",
+        "assessment_kind": "none"
+      }
+    },
+    {
+      "id": "verdict-needs-independent-action",
+      "expected": {
+        "state": "needs-you",
+        "gesture": "needs-you",
+        "assessment_kind": "verdict"
+      },
+      "actual": {
+        "state": "needs-you",
+        "gesture": "needs-you",
+        "assessment_kind": "verdict"
+      }
+    },
+    {
+      "id": "auth-ready-draft",
+      "expected": {
+        "state": "needs-you",
+        "gesture": "authorization",
+        "handoff_kind": "authorization",
+        "expectancy": "required-handoff"
+      },
+      "actual": {
+        "state": "needs-you",
+        "gesture": "authorization",
+        "handoff_kind": "authorization",
+        "expectancy": "required-handoff"
+      }
+    },
+    {
+      "id": "auth-complete-patch",
+      "expected": {
+        "state": "needs-you",
+        "gesture": "authorization",
+        "handoff_kind": "authorization",
+        "expectancy": "required-handoff"
+      },
+      "actual": {
+        "state": "needs-you",
+        "gesture": "authorization",
+        "handoff_kind": "authorization",
+        "expectancy": "required-handoff"
+      }
+    },
+    {
+      "id": "auth-prepared-video",
+      "expected": {
+        "state": "needs-you",
+        "gesture": "authorization",
+        "handoff_kind": "authorization",
+        "expectancy": "required-handoff"
+      },
+      "actual": {
+        "state": "needs-you",
+        "gesture": "authorization",
+        "handoff_kind": "authorization",
+        "expectancy": "required-handoff"
+      }
+    },
+    {
+      "id": "auth-ready-email",
+      "expected": {
+        "state": "needs-you",
+        "gesture": "authorization",
+        "handoff_kind": "authorization",
+        "expectancy": "required-handoff"
+      },
+      "actual": {
+        "state": "needs-you",
+        "gesture": "authorization",
+        "handoff_kind": "authorization",
+        "expectancy": "required-handoff"
+      }
+    },
+    {
+      "id": "auth-optional-draft",
+      "expected": {
+        "state": "done",
+        "gesture": "done",
+        "expectancy": "none",
+        "handoff_kind": "action"
+      },
+      "actual": {
+        "state": "done",
+        "gesture": "done",
+        "expectancy": "none",
+        "handoff_kind": "action"
+      }
+    },
+    {
+      "id": "auth-generic-offer",
+      "expected": {
+        "state": "done",
+        "gesture": "done",
+        "expectancy": "none",
+        "handoff_kind": "action"
+      },
+      "actual": {
+        "state": "done",
+        "gesture": "done",
+        "expectancy": "none",
+        "handoff_kind": "action"
+      }
+    },
+    {
+      "id": "auth-optional-publish",
+      "expected": {
+        "state": "done",
+        "gesture": "artifact",
+        "expectancy": "none",
+        "handoff_kind": "action"
+      },
+      "actual": {
+        "state": "done",
+        "gesture": "artifact",
+        "expectancy": "none",
+        "handoff_kind": "action"
+      }
+    },
+    {
+      "id": "auth-not-prepared",
+      "expected": {
+        "state": "needs-you",
+        "gesture": "needs-you",
+        "handoff_kind": "action"
+      },
+      "actual": {
+        "state": "needs-you",
+        "gesture": "needs-you",
+        "handoff_kind": "action"
+      }
+    },
+    {
+      "id": "auth-resolved",
+      "expected": {
+        "state": "done",
+        "gesture": "published",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "done",
+        "gesture": "published",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "auth-mixed-needs-signin",
+      "expected": {
+        "state": "needs-you",
+        "gesture": "needs-you",
+        "handoff_kind": "action"
+      },
+      "actual": {
+        "state": "needs-you",
+        "gesture": "needs-you",
+        "handoff_kind": "action"
+      }
+    },
+    {
+      "id": "flight-reported",
+      "expected": {
+        "state": "unknown",
+        "gesture": "in-flight",
+        "activity": "in-flight",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "unknown",
+        "gesture": "in-flight",
+        "activity": "in-flight",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "flight-polling",
+      "expected": {
+        "state": "unknown",
+        "gesture": "in-flight",
+        "activity": "in-flight",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "unknown",
+        "gesture": "in-flight",
+        "activity": "in-flight",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "flight-confirmed",
+      "expected": {
+        "state": "unknown",
+        "gesture": "in-flight",
+        "activity": "in-flight",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "unknown",
+        "gesture": "in-flight",
+        "activity": "in-flight",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "flight-one-registry-unknown",
+      "expected": {
+        "state": "unknown",
+        "gesture": "in-flight",
+        "activity": "in-flight",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "unknown",
+        "gesture": "in-flight",
+        "activity": "in-flight",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "flight-absent-context",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "activity": "unknown"
+      },
+      "actual": {
+        "state": "unknown",
+        "gesture": "answer",
+        "activity": "unknown"
+      }
+    },
+    {
+      "id": "flight-empty-registry",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "activity": "unknown"
+      },
+      "actual": {
+        "state": "unknown",
+        "gesture": "answer",
+        "activity": "unknown"
+      }
+    },
+    {
+      "id": "flight-metadata-alone",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "activity": "unknown"
+      },
+      "actual": {
+        "state": "unknown",
+        "gesture": "answer",
+        "activity": "unknown"
+      }
+    },
+    {
+      "id": "flight-optional",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "activity": "unknown"
+      },
+      "actual": {
+        "state": "unknown",
+        "gesture": "answer",
+        "activity": "unknown"
+      }
+    },
+    {
+      "id": "flight-history",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "activity": "unknown"
+      },
+      "actual": {
+        "state": "unknown",
+        "gesture": "answer",
+        "activity": "unknown"
+      }
+    },
+    {
+      "id": "flight-finished",
+      "expected": {
+        "state": "done",
+        "gesture": "done",
+        "activity": "final"
+      },
+      "actual": {
+        "state": "done",
+        "gesture": "done",
+        "activity": "final"
+      }
+    },
+    {
+      "id": "flight-delivered-with-monitor",
+      "expected": {
+        "state": "done",
+        "gesture": "artifact",
+        "activity": "final"
+      },
+      "actual": {
+        "state": "done",
+        "gesture": "artifact",
+        "activity": "final"
+      }
+    },
+    {
+      "id": "flight-required-action",
+      "expected": {
+        "state": "needs-you",
+        "gesture": "needs-you",
+        "activity": "in-flight"
+      },
+      "actual": {
+        "state": "needs-you",
+        "gesture": "needs-you",
+        "activity": "in-flight"
+      }
+    },
+    {
+      "id": "flight-validation-gap",
+      "expected": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "activity": "in-flight"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "activity": "in-flight"
+      }
+    },
+    {
+      "id": "flight-later-completion",
+      "expected": {
+        "state": "done",
+        "gesture": "done",
+        "activity": "final"
+      },
+      "actual": {
+        "state": "done",
+        "gesture": "done",
+        "activity": "final"
+      }
+    },
+    {
+      "id": "flight-future-tense",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "activity": "unknown"
+      },
+      "actual": {
+        "state": "unknown",
+        "gesture": "answer",
+        "activity": "unknown"
+      }
+    },
+    {
+      "id": "flight-historical-tense",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "activity": "unknown"
+      },
+      "actual": {
+        "state": "unknown",
+        "gesture": "answer",
+        "activity": "unknown"
+      }
+    },
+    {
+      "id": "flight-future-copula",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "activity": "unknown"
+      },
+      "actual": {
+        "state": "unknown",
+        "gesture": "answer",
+        "activity": "unknown"
+      }
+    },
+    {
+      "id": "plan-requested-incomplete",
+      "expected": {
+        "state": "caveats",
+        "gesture": "caveats"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats"
+      }
+    },
+    {
+      "id": "own-tests-errors",
+      "expected": {
+        "state": "caveats",
+        "gesture": "caveats"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats"
+      }
+    },
+    {
+      "id": "own-failing-test",
+      "expected": {
+        "state": "caveats",
+        "gesture": "caveats"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats"
+      }
+    },
+    {
+      "id": "own-plain-failed-tests",
+      "expected": {
+        "state": "caveats",
+        "gesture": "caveats"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats"
+      }
+    },
+    {
+      "id": "own-explicit-caveats",
+      "expected": {
+        "state": "caveats",
+        "gesture": "caveats"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats"
+      }
+    },
+    {
+      "id": "auth-example-preparation",
+      "expected": {
+        "state": "needs-you",
+        "gesture": "needs-you",
+        "handoff_kind": "action"
+      },
+      "actual": {
+        "state": "needs-you",
+        "gesture": "needs-you",
+        "handoff_kind": "action"
+      }
+    },
+    {
+      "id": "auth-unrelated-optional-publication",
+      "expected": {
+        "state": "needs-you",
+        "gesture": "needs-you",
+        "handoff_kind": "action"
+      },
+      "actual": {
+        "state": "needs-you",
+        "gesture": "needs-you",
+        "handoff_kind": "action"
+      }
+    },
+    {
+      "id": "url-query-done",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "unknown",
+        "gesture": "answer",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "url-path-completed",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "unknown",
+        "gesture": "answer",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "url-fragment-ready",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "unknown",
+        "gesture": "answer",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "url-query-permission",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "unknown",
+        "gesture": "answer",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "url-path-request",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "unknown",
+        "gesture": "answer",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "url-query-failure",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "unknown",
+        "gesture": "answer",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "url-markdown-label-neutral",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "unknown",
+        "gesture": "answer",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "own-unable-contracted",
+      "expected": {
+        "state": "caveats",
+        "gesture": "caveats"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats"
+      }
+    },
+    {
+      "id": "own-verification-passive",
+      "expected": {
+        "state": "caveats",
+        "gesture": "caveats"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats"
+      }
+    },
+    {
+      "id": "own-tests-terse",
+      "expected": {
+        "state": "caveats",
+        "gesture": "caveats"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats"
+      }
+    },
+    {
+      "id": "artifact-file-over-monitor",
+      "expected": {
+        "state": "done",
+        "gesture": "artifact",
+        "activity": "final"
+      },
+      "actual": {
+        "state": "done",
+        "gesture": "artifact",
+        "activity": "final"
+      }
+    },
+    {
+      "id": "artifact-file-reference-only",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer"
+      },
+      "actual": {
+        "state": "unknown",
+        "gesture": "answer"
+      }
+    },
+    {
+      "id": "verdict-review-found-no-issues",
+      "expected": {
+        "state": "done",
+        "gesture": "verdict",
+        "expectancy": "none",
+        "assessment_kind": "verdict"
+      },
+      "actual": {
+        "state": "done",
+        "gesture": "verdict",
+        "expectancy": "none",
+        "assessment_kind": "verdict"
+      }
+    },
+    {
+      "id": "pr-inspection-not-publication",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "delivery_kind": "unknown"
+      },
+      "actual": {
+        "state": "unknown",
+        "gesture": "answer",
+        "delivery_kind": "unknown"
+      }
+    },
+    {
+      "id": "pr-browser-not-publication",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "delivery_kind": "unknown"
+      },
+      "actual": {
+        "state": "unknown",
+        "gesture": "answer",
+        "delivery_kind": "unknown"
+      }
+    },
+    {
+      "id": "auth-ready-branch",
+      "expected": {
+        "state": "needs-you",
+        "gesture": "authorization",
+        "handoff_kind": "authorization"
+      },
+      "actual": {
+        "state": "needs-you",
+        "gesture": "authorization",
+        "handoff_kind": "authorization"
+      }
+    }
+  ],
+  "classification_ms": {
+    "median": 0.190125,
+    "p95": 0.344583,
+    "max": 5.347708
+  }
+}

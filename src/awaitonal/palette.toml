@@ -23,6 +23,11 @@ caveats_threshold = 0.5
 # Suppress only routine completion cues with a matched prompt start/stop pair.
 # Zero disables suppression. Missing or ambiguous turn IDs always play.
 min_turn_seconds = 0
+# Optional fuller voicing after a matched elapsed turn; zero leaves cues fixed.
+# This measures time waiting for the turn, not time spent reasoning.
+long_turn_seconds = 0
+# Ongoing background work normally stays silent. Enable its small pulse here.
+notify_in_flight = false
 
 # State names below are audio gesture IDs, separate from task outcomes.
 
@@ -79,6 +84,55 @@ attack = 0.012
 decay = 0.17
 release = 0.065
 gain = 0.8041315631
+
+# A completed assessment: answer-like opening, then a low, firm open fifth.
+# No major-chord fanfare: a negative verdict is still a completed assessment.
+[states.verdict]
+duration = 0.98
+[[states.verdict.events]]
+time = 0.02
+notes = ["C4"]
+duration = 0.25
+attack = 0.012
+decay = 0.17
+release = 0.065
+gain = 0.7986943442
+[[states.verdict.events]]
+time = 0.12
+notes = ["E4"]
+duration = 0.26
+attack = 0.012
+decay = 0.17
+release = 0.065
+gain = 0.7986943442
+[[states.verdict.events]]
+time = 0.32
+notes = ["G3", "D4", "G4"]
+duration = 0.58
+attack = 0.012
+decay = 0.17
+release = 0.065
+gain = 0.7986943442
+
+# An optional quiet indication of continuing work, without an attention tail.
+[states.in-flight]
+duration = 0.54
+[[states.in-flight.events]]
+time = 0.02
+notes = ["G4"]
+duration = 0.18
+attack = 0.025
+decay = 0.09
+release = 0.065
+gain = 0.22
+[[states.in-flight.events]]
+time = 0.28
+notes = ["A4"]
+duration = 0.18
+attack = 0.025
+decay = 0.09
+release = 0.065
+gain = 0.22
 
 [states.plan]
 duration = 1.1
@@ -273,6 +327,43 @@ attack = 0.014
 decay = 0.24
 release = 0.075
 gain = 1.0755394881
+
+# Prepared work awaiting authorization: a softer opening and the familiar
+# unresolved A-to-B tail, distinct from login/action and feedback invitations.
+[states.authorization]
+duration = 1.38
+[[states.authorization.events]]
+time = 0.02
+notes = ["G3", "D4"]
+duration = 0.3
+attack = 0.014
+decay = 0.18
+release = 0.075
+gain = 0.8347912493
+[[states.authorization.events]]
+time = 0.22
+notes = ["F4"]
+duration = 0.21
+attack = 0.014
+decay = 0.14
+release = 0.075
+gain = 0.7469184862
+[[states.authorization.events]]
+time = 0.56
+notes = ["A4"]
+duration = 0.21
+attack = 0.014
+decay = 0.14
+release = 0.075
+gain = 0.8347912493
+[[states.authorization.events]]
+time = 0.90
+notes = ["B4"]
+duration = 0.42
+attack = 0.014
+decay = 0.24
+release = 0.075
+gain = 0.8787276308
 
 [states.caveats]
 duration = 1.1

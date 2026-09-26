@@ -1,5 +1,7 @@
 import subprocess
 import sys
+import json
+from pathlib import Path
 
 import pytest
 from awaitonal.classify import RulesClassifier, is_waiting
@@ -22,7 +24,7 @@ from awaitonal.types import Event
     ('> I cannot help with the request.\nDone.\n```python\nprint("Which option?")\n```', "done"),
     ('The log said "I cannot help". The fix is complete.', "done"),
     ("Done. If you want, I can add more examples.", "done"),
-    ("Here is a description of the proposed work.", "caveats"),
+    ("Here is a description of the proposed work.", "unknown"),
     ("The work is not done.", "caveats"),
     ("I inspected the files before I fixed the bug. Done.", "done"),
     ("I am no longer waiting for your approval. Done.", "done"),
@@ -44,7 +46,7 @@ def test_explicit_override_and_invalid():
     answer = classifier.classify(Event("s", "e", "I cannot help", "needs-you", "claude:PermissionRequest"))
     assert answer.state == "needs-you"
     assert answer.controls.needs_you and not answer.controls.rejected
-    assert classifier.classify(Event("s", "e", "Done", "unknown")) is None
+    assert classifier.classify(Event("s", "e", "Done", "bogus")) is None
     assert classifier.classify({"text": "Done"}) is None
 
 
@@ -112,10 +114,10 @@ def test_only_later_resolution_resolves_waiting_across_sentences(text, expected)
 
 
 @pytest.mark.parametrize("text,expected", [
-    ("which " * 21_000, "caveats"),
+    ("which " * 21_000, "unknown"),
     ("I need your approval.\n" * 5_000 + "You approved. Done.", "done"),
-    ("Previously waiting for your approval.\n" * 3_000, "caveats"),
-])
+    ("Previously waiting for your approval.\n" * 3_000, "unknown"),
+], ids=["question-prefixes", "resolved-repeat", "historical-repeat"])
 def test_adversarial_prose_finishes_promptly(text, expected):
     # A process timeout bounds failures even if quadratic scanning returns.
     # These inputs previously took seconds; allow ample headroom over the
@@ -128,3 +130,33 @@ def test_adversarial_prose_finishes_promptly(text, expected):
         input=text, capture_output=True, text=True, timeout=5, check=True,
     )
     assert process.stdout.strip() == expected
+
+
+_CONTRASTS = [json.loads(line) for line in
+              (Path(__file__).parents[1] / "examples/classification-vNext.jsonl").read_text().splitlines()]
+
+
+@pytest.mark.parametrize("case", _CONTRASTS, ids=lambda case: case["id"])
+def test_classification_development_contrasts(case):
+    event = Event("synthetic", case["id"], case["text"],
+                  background_tasks=case.get("background_tasks"), session_crons=case.get("session_crons"))
+    answer = RulesClassifier().classify(event)
+    assert answer is not None
+    for field in ("state", "gesture", "delivery_kind", "expectancy", "handoff_kind", "activity", "assessment_kind"):
+        key = "expected" if field == "state" else "expected_" + field
+        if key in case:
+            assert getattr(answer, field) == case[key], field
+
+
+def test_unknown_does_not_claim_completion_or_loose_ends():
+    answer = RulesClassifier().classify(Event("s", "e", "Understood."))
+    assert answer.state == "unknown"
+    assert answer.gesture == "answer"
+    assert answer.controls.loose_ends == 0
+    assert not answer.attention
+
+
+def test_link_queries_do_not_leak_into_diagnostics():
+    answer = RulesClassifier().classify(Event("s", "e", "Here is your [report](https://claude.ai/artifacts/abc?secret=xyz#private)."))
+    assert answer.gesture == "artifact"
+    assert "secret" not in json.dumps(answer.to_dict())

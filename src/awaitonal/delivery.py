@@ -18,7 +18,7 @@ _CHANGES = {"fixed", "implemented", "updated", "changed", "refactored", "added",
             "renamed", "corrected", "rewrote", "converted", "migrated", "restored", "replaced"}
 _CREATION = {"created", "wrote", "generated", "exported", "saved", "rendered", "prepared", "built"}
 _INSPECTION = {"found", "identified", "diagnosed", "analyzed", "reviewed", "compared", "checked"}
-_ACTIONS = _PUBLICATION | _CHANGES | _CREATION | _INSPECTION | {"made", "completed"}
+_ACTIONS = _PUBLICATION | _CHANGES | _CREATION | _INSPECTION | {"made", "completed", "opened", "posted", "submitted"}
 _MODIFIERS = {"now", "just", "also", "successfully", "already", "finally"}
 _ARTIFACTS = {"pdf", "csv", "xlsx", "docx", "png", "jpg", "svg", "mp4", "mp3",
               "spreadsheet", "workbook", "presentation", "slides", "deck",
@@ -98,6 +98,12 @@ def _action_kind(words: list[str], position: int) -> Delivery:
     if {"no", "not", "nothing", "none", "neither"}.intersection(objects[:3]):
         return "unknown"
     if verb in _PUBLICATION:
+        return "published"
+    if verb == "opened":
+        if {"inspect", "read", "browse", "browser", "view"}.intersection(objects):
+            return "unknown"
+        return "published" if ("awaitonalprlink" in objects or "pr" in objects or objects[:2] == ["pull", "request"]) else "unknown"
+    if verb in {"posted", "submitted"} and set(objects).intersection({"review", "comment", "message", "pr", "issue", "awaitonalprlink"}):
         return "published"
     if verb in _CHANGES:
         return "change"
@@ -204,12 +210,49 @@ def _framing(words: list[str], total_words: int) -> Delivery:
     # A substantive declarative explanation can lack an introductory heading.
     # Avoid promises and requests; they are not delivered information.
     if not set(first).intersection({"i", "we", "if", "will", "would", "could", "should", "please"}):
-        if set(first).intersection({"because", "means", "causes", "occurs", "returns", "uses", "supports", "depends"}):
+        if set(first).intersection({"because", "means", "causes", "occurs", "happens", "explains", "returns", "uses", "supports", "depends"}):
             return "answer"
         if (first[:1] in (["yes"], ["no"]) and len(words) >= 5
                 and first[1:2] in (["this"], ["that"], ["it"], ["the"], ["your"])):
             return "answer"
     return "unknown"
+
+
+def detect_assessment(prose: str) -> str:
+    """Recognize explicit current verdicts, never bare yes/no or imperatives."""
+    if not isinstance(prose, str) or len(prose) > MAX_PROSE_CHARS:
+        return "none"
+    example = False
+    completed_review = False
+    leading_verdict = False
+    assessed_object = False
+    for part in _BREAKS.split(prose):
+        words = _WORDS.findall(part.lower())
+        if not words:
+            continue
+        if part.rstrip().endswith(":"):
+            if tuple(words) in _EXAMPLE_HEADERS:
+                example = True
+            elif tuple(words) in _RESULT_HEADERS:
+                example = False
+        if example or _historical(words) or set(words[:5]).intersection({"if", "would", "will", "example", "says", "said"}):
+            continue
+        if re.search(r"\b(?:review|audit|assessment) (?:is |was |has been )?(?:complete|finished)\b", part, re.I):
+            completed_review = True
+        if re.search(r"\b(?:review|audit|assessment) found no (?:issues|blockers|problems)\b", part, re.I):
+            completed_review = True
+        if re.match(r"\s*(?:#+\s*)?(?:(?:review|audit|assessment) verdict|verdict(?: on [^:\n]{1,60})?)\s*:\s*\S", part, re.I):
+            return "verdict"
+        if re.match(r"\s*(?:approve|request changes|do not merge|don't merge)\b", part, re.I):
+            leading_verdict = True
+        if re.match(r"\s*safe to merge\b", part, re.I):
+            leading_verdict = True
+        if re.search(r"\b(?:patch|implementation|migration|handler|change)\b[^.!?\n]{0,35}"
+                     r"\b(?:matches|loses|breaks|violates|preserves|is reversible|is safe|is unsafe|has a (?:race|failure))\b", part, re.I):
+            assessed_object = True
+        if re.search(r"\b(?:my|our) (?:review|assessment|verdict) (?:of|on|for)\b[^.!?\n]{1,70}\b(?:is|finds|concludes)\b", part, re.I):
+            return "verdict"
+    return "verdict" if (completed_review or assessed_object) and leading_verdict else "none"
 
 
 def detect_delivery(prose: str) -> Delivery:
@@ -248,6 +291,13 @@ def detect_delivery(prose: str) -> Delivery:
         if example:
             continue
         candidates = [_framing(words, total_words)]
+        # A typed URL is evidence of a delivered artifact only when this
+        # clause explicitly presents it. Mere citations remain unknown.
+        if ("awaitonalartifactlink" in words and not _historical(words)
+                and not _SUBJECT_BLOCKERS.intersection(words)
+                and (words[:2] in (["here", "is"], ["here", "are"])
+                     or words[:1] == ["here's"])):
+            candidates.append("artifact")
         if not _historical(words):
             candidates.append(_passive(words))
             position = _action(words)
@@ -273,4 +323,6 @@ def detect_delivery(prose: str) -> Delivery:
         best = max(candidates, key=_PRIORITY.__getitem__)
         if _PRIORITY[best] > _PRIORITY[detected]:
             detected = best
+    if detected == "unknown" and detect_assessment(prose) == "verdict":
+        return "answer"
     return detected

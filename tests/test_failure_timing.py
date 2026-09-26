@@ -118,6 +118,24 @@ def test_timing_is_actual_correlated_intake_and_is_consumed():
     assert clean.finish(stop("next"), 15) == 3
 
 
+def test_duplicate_terminal_does_not_quarantine_the_next_clean_turn():
+    timings = TurnTimings()
+    timings.start(start("first"), 0)
+    assert timings.finish(stop("first"), 10) == 10
+    assert timings.finish(stop("first"), 10.1) is None
+    timings.start(start("second"), 20)
+    assert timings.finish(stop("second"), 40) == 20
+
+
+def test_unmatched_terminal_after_completion_still_quarantines_uncertain_timing():
+    timings = TurnTimings()
+    timings.start(start("first"), 0)
+    assert timings.finish(stop("first"), 10) == 10
+    assert timings.finish(stop("unobserved"), 11) is None
+    timings.start(start("second"), 20)
+    assert timings.finish(stop("second"), 40) is None
+
+
 @pytest.mark.parametrize("first,second,terminal", [
     (start(""), None, stop("")), (start(), start(), stop()),
     (start(), start("other"), stop("other")), (start(), None, stop("other")),
@@ -208,3 +226,68 @@ def test_final_handoff_supersedes_a_queued_authentication_failure():
     final = hook("Stop", last_assistant_message="I need your approval before I can continue.")
     assert queue.put(final, True, state="needs-you")
     assert [p.event for p in queue.items] == [final]
+
+
+def test_long_turn_timing_works_without_enabling_short_turn_suppression():
+    service = Service(RulesClassifier(), lambda *_: None, long_turn_seconds=120)
+    rules = RulesClassifier()
+    service._intake(start(), rules, 10)
+    service._intake(stop(), rules, 140)
+    pending = service.queue.items[0]
+    assert pending.turn_seconds == 130
+    result = rules.classify(stop())
+    assert service._long_turn(result, pending.turn_seconds)
+    assert not service._suppress(result, pending.turn_seconds)
+    # An autonomous continuation cannot reuse the previous user-turn duration.
+    service._intake(stop(), rules, 150)
+    assert service.queue.items[0].turn_seconds is None
+
+
+@pytest.mark.parametrize("seconds,expected", [(None, False), (-1, False), (0, False),
+                                            (119.999, False), (120, True), (300, True)])
+def test_long_turn_boundary_and_absent_timing(seconds, expected):
+    result = RulesClassifier().classify(stop())
+    assert Service(None, None, long_turn_seconds=120)._long_turn(result, seconds) is expected
+    assert Service(None, None)._long_turn(result, seconds) is False
+
+
+@pytest.mark.parametrize("value", [-1, True, float("nan"), float("inf"), "120", [], {}])
+def test_invalid_long_threshold_is_rejected(value):
+    with pytest.raises(ValueError):
+        Service(None, None, long_turn_seconds=value)
+
+
+@pytest.mark.parametrize("value", [0, 1, "true", None, [], {}])
+def test_invalid_in_flight_setting_is_rejected(value):
+    with pytest.raises(ValueError):
+        Service(None, None, notify_in_flight=value)
+
+
+@pytest.mark.parametrize("state,expectancy,handoff", [
+    ("needs-you", "required-handoff", "action"),
+    ("needs-you", "required-handoff", "decision"),
+    ("needs-you", "required-handoff", "authorization"),
+    ("done", "review-requested", "action"),
+    ("failed", "none", "action"), ("rejected", "none", "action"),
+])
+def test_duration_settings_preserve_attention_and_feedback_cues(state, expectancy, handoff):
+    result = Classification(state, controls_for(state), "test", "test", expectancy=expectancy,
+                            handoff_kind=handoff)
+    service = Service(None, None, min_turn_seconds=30, long_turn_seconds=120)
+    assert service._suppression_reason(result, 1) is None
+    assert not service._long_turn(result, 300)
+
+
+def test_in_flight_is_quiet_by_default_and_can_be_enabled_independently_of_timing():
+    result = Classification("unknown", controls_for("unknown"), "test", "test", activity="in-flight")
+    assert result.gesture == "in-flight"
+    assert Service(None, None)._suppression_reason(result, None) == "in-flight"
+    service = Service(None, None, min_turn_seconds=30, long_turn_seconds=120, notify_in_flight=True)
+    assert service._suppression_reason(result, 1) is None
+    assert not service._long_turn(result, 300)
+
+
+def test_timing_is_not_collected_without_either_duration_option():
+    service = Service(RulesClassifier(), lambda *_: None)
+    service._intake(start(), RulesClassifier(), 10)
+    assert not service.timings.sessions

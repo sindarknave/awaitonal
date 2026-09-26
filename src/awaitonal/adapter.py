@@ -6,6 +6,35 @@ from .types import ACTION_FAILURE_CODES, FAILURE_CODES, Event
 
 MAX_INPUT = 65_536
 MAX_WIRE = 131_072
+MAX_BACKGROUND_ITEMS = 512
+
+
+def _background_count(value, *, crons=False):
+    """Keep only bounded counts; an unavailable or unfamiliar registry is unknown.
+
+    These registries are session-wide, not proof that the final reply's task is
+    still running. Descriptions, commands, identifiers and cron prompts never
+    leave the hook. Running/pending are the statuses Claude currently emits.
+    """
+    if not isinstance(value, list) or len(value) > MAX_BACKGROUND_ITEMS:
+        return None
+    count = 0
+    for entry in value:
+        fields = ("id", "schedule") if crons else ("id", "type", "status")
+        if not isinstance(entry, dict) or any(
+            not isinstance(entry.get(key), str) or not entry[key].strip()
+            or len(entry[key].encode("utf-8")) > 256 for key in fields
+        ):
+            return None
+        if crons:
+            if type(entry.get("recurring")) is not bool:
+                return None
+            count += 1
+        elif entry["status"] in ("running", "pending"):
+            count += 1
+        elif entry["status"] not in ("completed", "failed", "killed", "cancelled", "canceled", "stopped"):
+            return None
+    return count
 
 
 def digest(value: str) -> str:
@@ -58,7 +87,9 @@ def adapt_claude(payload: object) -> Event | None:
         if "stop_hook_active" in payload and type(payload["stop_hook_active"]) is not bool:
             return None
         return Event(session, event_identifier("stop:", turn or digest(message)), message,
-                     evidence_source="claude:Stop", turn_id=turn)
+                     evidence_source="claude:Stop", turn_id=turn,
+                     background_tasks=_background_count(payload.get("background_tasks")),
+                     session_crons=_background_count(payload.get("session_crons"), crons=True))
     if name not in ("PreToolUse", "PermissionRequest"):
         return None
     tool = payload.get("tool_name")
@@ -91,7 +122,7 @@ def event_from_wire(payload: object) -> Event | None:
     if not isinstance(payload, dict):
         return None
     allowed = {"session_id", "event_id", "text", "explicit_state", "evidence_source", "turn_id", "dedup_key",
-               "kind", "failure_code"}
+               "kind", "failure_code", "background_tasks", "session_crons"}
     if set(payload) - allowed:
         return None
     for key in ("session_id", "event_id"):
@@ -108,6 +139,14 @@ def event_from_wire(payload: object) -> Event | None:
     code = payload.get("failure_code")
     if code is not None and (not isinstance(code, str) or code not in FAILURE_CODES):
         return None
+    for key in ("background_tasks", "session_crons"):
+        count = payload.get(key)
+        if count is not None and (
+            type(count) is not int or not 0 <= count <= MAX_BACKGROUND_ITEMS
+            or payload.get("evidence_source") != "claude:Stop"
+            or payload.get("explicit_state") is not None or kind != "notification"
+        ):
+            return None
     if kind == "turn-start":
         if (payload.get("text", "") or payload.get("explicit_state") is not None or code is not None
                 or payload.get("dedup_key", "") or payload.get("evidence_source") != "claude:UserPromptSubmit"):

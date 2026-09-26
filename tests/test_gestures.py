@@ -34,14 +34,14 @@ def test_review_invitation_does_not_claim_a_blocking_dependency():
     assert not result.controls.needs_you and not result.attention
 
 
-@pytest.mark.parametrize("text", [
-    "The patch is complete. Please approve it so I can publish.",
-    "I rendered the preview. Sign in to SSO so I can continue.",
-    "I pushed the code. Please run the diagnostic and send the output so I can continue.",
+@pytest.mark.parametrize("text,gesture", [
+    ("The patch is complete. Please approve it so I can publish.", "authorization"),
+    ("I rendered the preview. Sign in to SSO so I can continue.", "needs-you"),
+    ("I pushed the code. Please run the diagnostic and send the output so I can continue.", "needs-you"),
 ])
-def test_required_handoff_wins_over_reported_delivery(text):
+def test_required_handoff_wins_over_reported_delivery(text, gesture):
     result = RulesClassifier().classify(Event("s", "e", text))
-    assert result.gesture == "needs-you" and result.attention
+    assert result.gesture == gesture and result.attention
     assert result.expectancy == "required-handoff"
 
 
@@ -77,7 +77,33 @@ def test_original_classification_constructor_and_gesture_precedence():
                             delivery_kind="plan", expectancy="review-requested")
     assert result.gesture == "rejected"
     assert set(GESTURES) == {"done", "answer", "plan", "artifact", "published", "review",
-                             "decision", "needs-you", "caveats", "rejected", "failed"}
+                             "decision", "needs-you", "caveats", "rejected", "failed",
+                             "verdict", "in-flight", "authorization"}
+
+
+def test_uncertainty_uses_answer_without_claiming_completion():
+    result = Classification("unknown", controls_for("unknown"), "text", "No clear outcome")
+    assert result.gesture == "answer" and result.state == "unknown"
+    assert not result.attention
+
+
+@pytest.mark.parametrize("fields,gesture", [
+    ({"assessment_kind": "verdict", "delivery_kind": "answer"}, "verdict"),
+    ({"activity": "in-flight"}, "in-flight"),
+    ({"activity": "in-flight", "expectancy": "review-requested"}, "review"),
+])
+def test_activity_and_assessment_have_distinct_nonblocking_gestures(fields, gesture):
+    result = Classification("done", controls_for("done"), "text", "Reported result", **fields)
+    assert result.gesture == gesture
+    assert not result.attention
+
+
+def test_authorization_remains_a_required_handoff_even_with_background_work():
+    result = Classification("needs-you", controls_for("needs-you"), "text", "Awaiting approval",
+                            expectancy="required-handoff", handoff_kind="authorization",
+                            activity="in-flight", delivery_kind="artifact")
+    assert result.gesture == "authorization"
+    assert result.attention
 
 
 @pytest.mark.parametrize("text,state,gesture", [
@@ -93,7 +119,7 @@ def test_original_classification_constructor_and_gesture_precedence():
     ("I cannot help with this request right now because the service is offline.", "caveats", "caveats"),
     ("I cannot provide exploit code. Here is a safer plan: audit permissions and patch the server.", "rejected", "rejected"),
     ("I cannot help steal credentials. Please choose a defensive alternative.", "rejected", "rejected"),
-    ("I will mark the task done tomorrow.", "caveats", "caveats"),
+    ("I will mark the task done tomorrow.", "unknown", "answer"),
     ("I need your approval and your choice of deployment region. Approval was granted. Done.", "needs-you", "decision"),
     ("Please review the draft and sign in. Authentication succeeded. The draft is ready.", "done", "review"),
 ])

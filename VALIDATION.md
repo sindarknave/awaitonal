@@ -1,5 +1,64 @@
 # Observed validation
 
+## Classification boundaries and elapsed-time voicing, v0.4.0
+
+Checked on 2026-09-26 on the same M2 Pro/macOS/Python environment below.
+The core suite reports **949 passed, 2 optional-model skips**; see
+[core output](artifacts/tests-v0.4-core.txt). A separate offline MiniLM run passes all **13 semantic/CLI integration tests**,
+including real model loading and service integration; see
+[semantic output](artifacts/tests-v0.4-semantic.txt).
+
+All **115 new synthetic development contrasts** pass, along with all 30 outcome
+and 35 existing gesture cases. One existing approval-to-publish gesture label
+was deliberately updated to the new authorization subtype; outcomes are unchanged.
+The fixtures were written during implementation, not sampled or held out from
+private history. No private transcripts were read or included. On these targeted
+contrasts the previous rules matched 41/115 outcome labels and 33/115 gesture
+labels, with 63 false caveats; current rules match all labels with no false
+caveats or missed handoffs. New uncertainty/activity concepts were not supported
+by the old classifier. These figures demonstrate development coverage, not
+population accuracy or an unbiased estimate of improvement.
+
+Reports: [previous baseline](artifacts/classification-v0.4-baseline.json),
+[current comparison](artifacts/classification-v0.4-current.json),
+[new fixture evaluation](artifacts/v0.4-classification-vNext.json),
+[legacy outcome evaluation](artifacts/v0.4-evaluation.json), and
+[legacy gesture evaluation](artifacts/v0.4-gesture-evaluation.json).
+The [optional semantic evaluation](artifacts/v0.4-semantic-evaluation.json) matches
+110/115 outcomes and gestures, with one false caveat and no false or missed
+handoffs. Model-quality limitations are not hidden by passing infrastructure
+tests. Rules remains the default.
+
+Current rule classification measured 0.190 ms median and 0.345 ms p95 across the
+115 contrasts. A separate 25-notification measurement exercised fresh Python hook
+processes, the private socket, warm rules service, and synthesis to samples:
+**56.4 ms median, 59.0 ms p95, 62.0 ms maximum**. It excludes WAV writing, audio
+player/device onset, and competing traffic; no sound was played. See the
+[notification timing report](artifacts/notification-latency-v0.4.json). These are
+observations on this Mac, not latency guarantees.
+
+The old eleven cues remain sample-identical under default and optional character
+brightness rendering. New verdict and authorization cues have the existing
+approximately 0.065 RMS level; in-flight is deliberately quieter at approximately
+0.0123 RMS. Longer-turn variants preserve duration and RMS while adding a fuller
+voicing; handoffs, feedback, caveats, refusals, and failures remain unchanged.
+Headroom, finite samples, deterministic rendering, and quiet endpoints are tested.
+The complete demo is now 20.07 seconds. No blind recognition or device-level
+loudness study was performed.
+
+Regression checks cover current versus cited links, URL-target exclusion, explicit
+verification gaps, optional offers, framed verdicts, background registry presence
+and limits, future versus running work, default-silent activity preserving queued
+results, duplicate Stop timing, subsequent clean turns, and handoff/result sequences.
+A [fresh-wheel smoke check](artifacts/wheel-v0.4-smoke.json) runs from an unrelated
+directory using only the installed wheel and NumPy. It covers real quiet hooks,
+long-turn config forwarding, suppressed in-flight output, neutral uncertainty,
+private-data exclusion from logs, WAV rendering, version identity, and shutdown.
+Existing hook input limits, private peer checks, bounded queues, and resident
+service behavior remain in place. No per-tool hooks or model dependency were added.
+
+The following sections describe earlier releases and historical measurements.
+
 ## Plugin, service management, and failure handling, v0.3.0
 
 Checked on 2026-09-26 on the same M2 Pro/macOS/Python environment as below.

@@ -9,7 +9,7 @@ input is malformed or the service is unavailable. Do not use `--dry-run` in sett
 ## Verified compatibility
 
 Checked the [official hook reference](https://code.claude.com/docs/en/hooks) on
-2026-09-25 and the installed Apple Silicon Claude Code **2.1.158** using `claude
+2026-09-26 and the installed Apple Silicon Claude Code **2.1.158** using `claude
 --version`, `--help`, and read-only inspection of its bundled schemas. No live Claude
 conversation or settings edit was used for this check.
 
@@ -17,7 +17,7 @@ The current reference documents these inputs:
 
 | Event | Relevant fields | Awaitonal behavior |
 | --- | --- | --- |
-| `Stop` | `last_assistant_message`, `stop_hook_active` | Classify final assistant prose if present. |
+| `Stop` | `last_assistant_message`, `stop_hook_active`, optional `background_tasks`/`session_crons` | Classify final prose; retain only bounded active-task and cron counts. |
 | `PreToolUse` | `tool_name`, `tool_input`, `tool_use_id` | `AskUserQuestion` selects `needs-you`. |
 | `PermissionRequest` | `tool_name`, `tool_input`; **no `tool_use_id`** | Select `needs-you`. |
 | `StopFailure` | Structured `error` code | Account/authentication problems select `needs-you`; other errors select `failed`. Error prose is discarded. |
@@ -132,6 +132,25 @@ completed-result cues are eligible. Review, caveats, required handoffs, refusals
 and failures always remain eligible for playback. Without a matching prompt ID
 or start marker, the service plays normally; suppression therefore does not apply
 to Claude 2.1.158, which lacks hook prompt IDs. Restarting clears timing state.
+
+## Background metadata and longer turns
+
+The installed 2.1.158 binary schema includes Stop background-task and scheduled-task
+arrays. This is schema support, not a live event-delivery check. Awaitonal keeps
+only counts (at most 512); missing or malformed metadata remains unknown. Commands,
+descriptions, prompts, and task results are discarded. Session-wide activity only
+corroborates a reply reporting ongoing work; a monitor does not override delivery.
+An in-flight report is silent unless `[notifications] notify_in_flight = true`.
+
+Set `[notifications] long_turn_seconds = 120` to enable the slightly fuller motif
+for routine results after a matched two-minute turn. Zero disables this option.
+It uses the same bounded timing registry as short-turn suppression, and works when
+only the long threshold is enabled. There are no additional per-tool hooks.
+
+These timestamps measure elapsed waiting, not model reasoning. Claude's thinking
+setting and cumulative API-wait statistic are not thinking duration. Missing or
+ambiguous timing keeps ordinary playback. Handoffs, feedback requests, caveats,
+refusals, and failures preserve their normal treatment.
 
 ## Disable or remove
 

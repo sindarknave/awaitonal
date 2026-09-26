@@ -1,6 +1,7 @@
 """Small conservative rules baseline, independent of ML libraries."""
 import re
-from .delivery import detect_delivery
+from .activity import detect_activity
+from .delivery import detect_assessment, detect_delivery
 from .handoff import analyze_handoff
 from .text import assistant_prose, sentences
 from .types import Classification, Event, STATES, controls_for, map_controls
@@ -12,12 +13,13 @@ def _has(pattern: str, text: str) -> bool:
 
 def result(state: str, event: Event, reason: str, threshold: float,
            diagnostics: dict | None = None, *, delivery_kind="unknown",
-           expectancy="none", handoff_kind="action") -> Classification:
+           expectancy="none", handoff_kind="action", activity="unknown",
+           assessment_kind="none") -> Classification:
     controls = controls_for(state)
-    return Classification(map_controls(controls, threshold), controls,
+    return Classification("unknown" if state == "unknown" else map_controls(controls, threshold), controls,
                           event.evidence_source, reason, diagnostics or {}, delivery_kind,
                           "required-handoff" if state == "needs-you" else expectancy, handoff_kind,
-                          event.failure_code)
+                          event.failure_code, activity, assessment_kind)
 
 
 def explicit_result(event: Event, threshold: float) -> Classification | None:
@@ -89,7 +91,39 @@ def is_refusal(text: str) -> bool:
 def unresolved(text: str) -> bool:
     if _has(NEGATED_COMPLETION, text):
         return True
-    return _has(r"\b(caveat|unverified|untested|unavailable|incomplete|unresolved|remaining|blocked|pending|not (?:done|run|tested|verified|complete|implemented)|no tests (?:were )?run|could not|couldn't|cannot|can't|unable|failed|fails|fail|failure|errors?|limitation|may not|might not)\b", text)
+    # Subject-matter words (error/failure/cannot/pending) are not evidence of
+    # unfinished work. Require a status assertion or the assistant's inability
+    # to carry out an action, keeping negative diagnostic findings neutral.
+    return unfinished_work(text) or _has(
+        r"\b(?:caveat|limitation)\s*:|\bwith (?:some |one |a )?caveats?\b|"
+        r"\b(?:tests?|checks?|build) (?:still )?(?:fail(?:s|ed|ing)?)\b|"
+        r"\b(?:failing|failed|unverified|untested) (?:tests?|checks?)\b|"
+        r"\b(?:errors?|failures?) (?:remain|persist|in (?:the |our |my )?(?:tests?|checks?|build))\b|"
+        r"\b(?:tests?|checks?|build|implementation|work|task|review|analysis|assessment|validation|verification|behavior)\b"
+        r"[^.!?\n]{0,65}\b(?:remains? |is |are |was |were |still |has |have )+"
+        r"(?:unverified|untested|unavailable|incomplete|unresolved|blocked|pending|failing|failed|fails?|errors?)\b|"
+        r"\b(?:no tests (?:were )?run|tests? (?:were |was )?not (?:run|tested)|"
+        r"remaining (?:work|checks|tests)|unverified (?:work|checks|tests)|untested (?:work|changes|code))\b", text)
+
+
+def unfinished_work(text: str) -> bool:
+    return _has(
+        r"\b(?:i|we) (?:wasn't|weren't|was not|were not|haven't been|have not been) able to "
+        r"(?:finish|complete|verify|validate|test|run|execute|check|fix|implement|build|inspect)\b|"
+        r"(?:^|[.!?;]\s*)(?:could not|couldn't|unable to|failed to) "
+        r"(?:finish|complete|verify|validate|test|run|execute|check|fix|implement|build|inspect)\b|"
+        r"\b(?:verification|validation|tests?|checks?) (?:could not|couldn't|cannot|can't) be "
+        r"(?:completed|finished|run|executed|performed)\b|"
+        r"\b(?:i|we) (?:have |had )?(?:not|haven't|hadn't) (?:(?:yet|fully) )?(?:finished|completed|implemented|verified|validated|tested|fixed|built)\b|"
+        r"\b(?:i|we) (?:was |were |am |are )?(?:could not|couldn't|cannot|can't|unable to|did not|didn't|have not|haven't|failed to) "
+        r"(?:(?:yet|fully) )?(?:finish|complete|produce|provide|help|prepare|verify|validate|test|run|execute|check|fix|implement|build|deploy|publish|inspect)\b|"
+        r"\b(?:tests?|checks?) (?:could not|couldn't|cannot|can't|were not|was not|have not been) (?:run|executed|completed|verified)\b|"
+        r"\b(?:requested (?:work|task|change|implementation)|my (?:work|implementation)|our (?:work|implementation)) "
+        r"(?:is |remains )?not (?:yet )?(?:done|complete|completed|ready|implemented)\b|"
+        r"\b(?:work|task|review|analysis|assessment|cause|result|tests?|checks?|implementation|validation|verification) "
+        r"(?:(?:is|are|was|were|remains?|still) ){1,3}(?:unfinished|unverified|untested|incomplete|unavailable|pending)\b|"
+        r"\b(?:still investigating|not yet (?:finished|complete|ready)|"
+        r"review (?:is |remains )?incomplete|analysis (?:is |remains )?incomplete)\b", text)
 
 
 _WAITING_RESOLVED = (
@@ -119,15 +153,26 @@ class RulesClassifier:
             return None
         if event.explicit_state is not None:
             return explicit_result(event, self.threshold)
-        prose = assistant_prose(event.text)
+        # Strip URL targets before *all* routing. Words in paths, queries, or
+        # fragments are reference data, not claims about this turn's outcome.
+        prose = assistant_prose(event.text, link_types=True)
         if not prose:
             return None
         handoff = analyze_handoff(prose)
         delivery = detect_delivery(prose)
+        assessment = detect_assessment(prose)
+        activity, activity_source = detect_activity(prose, event.background_tasks, event.session_crons)
+        # Background registries are session-wide. A completed artifact or
+        # assessment must not turn into an activity pulse due to a monitor.
+        if delivery != "unknown":
+            activity = "final"
 
         def classified(state, reason):
             return result(state, event, reason, self.threshold, delivery_kind=delivery,
-                          expectancy=handoff.expectancy, handoff_kind=handoff.kind)
+                          expectancy=handoff.expectancy, handoff_kind=handoff.kind,
+                          activity=activity if activity != "unknown" else "final" if state == "done" else "unknown",
+                          assessment_kind=assessment,
+                          diagnostics={"activity_evidence": activity_source} if activity_source != "none" else None)
 
         parts = sentences(prose)
         meaningful = [s for s in parts if not is_optional(s)] or parts
@@ -174,28 +219,25 @@ class RulesClassifier:
         joined = " ".join(active)
         # Negative findings can be the requested deliverable. A reported
         # explanation or plan is distinct from a failed attempt to produce it.
-        incomplete_delivery = _has(NEGATED_COMPLETION, joined) or _has(
-            r"\b(?:could not|couldn't|cannot|can't|unable to|did not|didn't|failed to) "
-            r"(?:finish|complete|produce|prepare|verify|validate|test|run|check|fix|implement|build|deploy|publish)\b|"
-            r"\b(?:work|task|review|analysis|assessment|cause|result|tests?|checks?|implementation) "
-            r"(?:(?:is|are|was|were|remains?|still) ){1,3}(?:unfinished|unverified|untested|incomplete|unavailable|pending)\b|"
-            r"\b(?:still investigating|not yet (?:finished|complete|ready)|"
-            r"review (?:is |remains )?incomplete|analysis (?:is |remains )?incomplete)\b", joined)
+        incomplete_delivery = unfinished_work(joined) or (
+            _has(NEGATED_COMPLETION, joined) and delivery not in ("answer", "plan"))
         if delivery in ("answer", "plan") and not incomplete_delivery:
             return classified("done", "A requested answer, assessment, or proposal is reported delivered.")
         if incomplete_delivery:
             return classified("caveats", "Prose explicitly reports unfinished work or a validation gap.")
         if unresolved(joined):
             previous = " ".join(active[:-1])
-            final = active[-1]
+            final = active[-1] if active else ""
             # A later success resolves earlier errors, but not skipped validation.
             earlier_only_failure = _has(r"\b(?:fail|error|broke)", previous) and not _has(r"\b(?:unverified|untested|unavailable|not tested|not run|could not|couldn't|remaining)\b", previous)
             if not (earlier_only_failure and has_completion(final) and not unresolved(final)):
                 return classified("caveats", "Prose reports unresolved work or limited verification.")
+        if activity == "in-flight":
+            return classified("unknown", "Work is reported ongoing without a required user action.")
         if has_completion(joined):
             return classified("done", "Prose reports completion; correctness is not independently verified.")
         if delivery != "unknown":
             return classified("done", "Prose reports a delivered result; correctness is not independently verified.")
         if handoff.expectancy == "review-requested":
             return classified("done", "The assistant directly invites review or feedback; no blocking dependency is stated.")
-        return classified("caveats", "Ambiguous prose; conservative non-attention fallback.")
+        return classified("unknown", "No clear completion, limitation, or required action; neutral uncertain fallback.")

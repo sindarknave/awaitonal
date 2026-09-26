@@ -91,17 +91,37 @@ def test_model_loaded_once_offline_and_structured_override(tmp_path, monkeypatch
         ("Which option should I implement? I need your choice before continuing.", "decision"),
         ("I rendered the video and saved the output file.", "artifact"),
         ("I pushed the commits to the requested branch.", "published"),
+        ("Review verdict: request changes. The patch loses writes.", "verdict"),
+        ("The draft is ready. I need your approval to publish.", "authorization"),
+        ("CI is running. I will report back when it finishes.", "in-flight"),
+        ("I could not verify the fix.", "caveats"),
+        ("The error handling is fixed and all tests passed.", "done"),
     ):
         outcome = classifier.classify(Event("s", gesture, text))
         assert outcome.gesture == gesture
         assert outcome.diagnostics["backend"] == "rules-routing"
+        if gesture == "verdict":
+            assert outcome.assessment_kind == "verdict"
+        if gesture == "in-flight":
+            assert outcome.activity == "in-flight" and outcome.state == "unknown"
+        if gesture == "authorization":
+            assert outcome.handoff_kind == "authorization" and outcome.attention
     assert len(encodings) == 1  # Anchors only; prose went through shared routing.
+    contradictory = classifier.classify(Event("s", "empty-registry", "CI is running. I will report back.",
+                                               background_tasks=0, session_crons=0))
+    assert contradictory.state == "unknown" and contradictory.activity == "unknown"
+    assert contradictory.diagnostics["backend"] == "rules-routing"
+    assert len(encodings) == 1  # The encoder must not override structured contradiction.
     # Equal similarities must abstain to the non-attention fallback.
     for number in range(3):
         outcome = classifier.classify(Event("s", str(number), "The work is described."))
-        assert outcome.state == "caveats"
+        assert outcome.state == "unknown"
+        assert outcome.gesture == "answer"
         assert outcome.diagnostics["accepted"] is False
         assert "The work" not in json.dumps(outcome.to_dict())
+    outcome = classifier.classify(Event("s", "url", "See https://example.com/?status=done&token=PRIVATE-URL-TARGET"))
+    assert outcome.state == "unknown"
+    assert "PRIVATE-URL-TARGET" not in json.dumps(encodings[-1])
     assert len(calls) == 1
 
 
@@ -125,7 +145,7 @@ def test_real_model_offline(monkeypatch):
     monkeypatch.setattr(socket.socket, "connect", no_network)
     monkeypatch.setattr(socket.socket, "connect_ex", no_network)
     classifier = SemanticClassifier(Path(path))
-    result = classifier.classify(Event("offline", "1", "The requested change is finished."))
+    result = classifier.classify(Event("offline", "1", "The work is described."))
     assert result is not None and result.diagnostics["backend"] == "sentence-transformers"
     assert all(np.isfinite(value) for value in result.diagnostics["scores"].values())
     def no_encoding(*args, **kwargs):

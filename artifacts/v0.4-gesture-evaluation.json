@@ -1,0 +1,437 @@
+{
+  "cases": 35,
+  "correct": 35,
+  "accuracy": 1.0,
+  "confusion_matrix": {
+    "done": {
+      "done": 19,
+      "caveats": 0,
+      "needs-you": 0,
+      "rejected": 0,
+      "failed": 0,
+      "unknown": 0,
+      "ignored": 0
+    },
+    "caveats": {
+      "done": 0,
+      "caveats": 6,
+      "needs-you": 0,
+      "rejected": 0,
+      "failed": 0,
+      "unknown": 0,
+      "ignored": 0
+    },
+    "needs-you": {
+      "done": 0,
+      "caveats": 0,
+      "needs-you": 8,
+      "rejected": 0,
+      "failed": 0,
+      "unknown": 0,
+      "ignored": 0
+    },
+    "rejected": {
+      "done": 0,
+      "caveats": 0,
+      "needs-you": 0,
+      "rejected": 2,
+      "failed": 0,
+      "unknown": 0,
+      "ignored": 0
+    },
+    "failed": {
+      "done": 0,
+      "caveats": 0,
+      "needs-you": 0,
+      "rejected": 0,
+      "failed": 0,
+      "unknown": 0,
+      "ignored": 0
+    },
+    "unknown": {
+      "done": 0,
+      "caveats": 0,
+      "needs-you": 0,
+      "rejected": 0,
+      "failed": 0,
+      "unknown": 0,
+      "ignored": 0
+    }
+  },
+  "failures": [],
+  "false_attention": [],
+  "false_rejection": [],
+  "quality": {
+    "false_caveats": [],
+    "missed_handoffs": [],
+    "unknown_count": 0,
+    "unknown_fraction": 0.0
+  },
+  "classification_ms": {
+    "first": 0.3888329956680536,
+    "warm_median": 0.20700000459328294,
+    "max": 0.41691691149026155
+  },
+  "dimensions": {
+    "gesture": {
+      "cases": 35,
+      "correct": 35,
+      "accuracy": 1.0,
+      "confusion_matrix": {
+        "done": {
+          "done": 6,
+          "answer": 0,
+          "plan": 0,
+          "artifact": 0,
+          "published": 0,
+          "review": 0,
+          "decision": 0,
+          "needs-you": 0,
+          "caveats": 0,
+          "rejected": 0,
+          "failed": 0,
+          "verdict": 0,
+          "in-flight": 0,
+          "authorization": 0,
+          "ignored": 0
+        },
+        "answer": {
+          "done": 0,
+          "answer": 2,
+          "plan": 0,
+          "artifact": 0,
+          "published": 0,
+          "review": 0,
+          "decision": 0,
+          "needs-you": 0,
+          "caveats": 0,
+          "rejected": 0,
+          "failed": 0,
+          "verdict": 0,
+          "in-flight": 0,
+          "authorization": 0,
+          "ignored": 0
+        },
+        "plan": {
+          "done": 0,
+          "answer": 0,
+          "plan": 2,
+          "artifact": 0,
+          "published": 0,
+          "review": 0,
+          "decision": 0,
+          "needs-you": 0,
+          "caveats": 0,
+          "rejected": 0,
+          "failed": 0,
+          "verdict": 0,
+          "in-flight": 0,
+          "authorization": 0,
+          "ignored": 0
+        },
+        "artifact": {
+          "done": 0,
+          "answer": 0,
+          "plan": 0,
+          "artifact": 6,
+          "published": 0,
+          "review": 0,
+          "decision": 0,
+          "needs-you": 0,
+          "caveats": 0,
+          "rejected": 0,
+          "failed": 0,
+          "verdict": 0,
+          "in-flight": 0,
+          "authorization": 0,
+          "ignored": 0
+        },
+        "published": {
+          "done": 0,
+          "answer": 0,
+          "plan": 0,
+          "artifact": 0,
+          "published": 1,
+          "review": 0,
+          "decision": 0,
+          "needs-you": 0,
+          "caveats": 0,
+          "rejected": 0,
+          "failed": 0,
+          "verdict": 0,
+          "in-flight": 0,
+          "authorization": 0,
+          "ignored": 0
+        },
+        "review": {
+          "done": 0,
+          "answer": 0,
+          "plan": 0,
+          "artifact": 0,
+          "published": 0,
+          "review": 3,
+          "decision": 0,
+          "needs-you": 0,
+          "caveats": 0,
+          "rejected": 0,
+          "failed": 0,
+          "verdict": 0,
+          "in-flight": 0,
+          "authorization": 0,
+          "ignored": 0
+        },
+        "decision": {
+          "done": 0,
+          "answer": 0,
+          "plan": 0,
+          "artifact": 0,
+          "published": 0,
+          "review": 0,
+          "decision": 2,
+          "needs-you": 0,
+          "caveats": 0,
+          "rejected": 0,
+          "failed": 0,
+          "verdict": 0,
+          "in-flight": 0,
+          "authorization": 0,
+          "ignored": 0
+        },
+        "needs-you": {
+          "done": 0,
+          "answer": 0,
+          "plan": 0,
+          "artifact": 0,
+          "published": 0,
+          "review": 0,
+          "decision": 0,
+          "needs-you": 5,
+          "caveats": 0,
+          "rejected": 0,
+          "failed": 0,
+          "verdict": 0,
+          "in-flight": 0,
+          "authorization": 0,
+          "ignored": 0
+        },
+        "caveats": {
+          "done": 0,
+          "answer": 0,
+          "plan": 0,
+          "artifact": 0,
+          "published": 0,
+          "review": 0,
+          "decision": 0,
+          "needs-you": 0,
+          "caveats": 5,
+          "rejected": 0,
+          "failed": 0,
+          "verdict": 0,
+          "in-flight": 0,
+          "authorization": 0,
+          "ignored": 0
+        },
+        "rejected": {
+          "done": 0,
+          "answer": 0,
+          "plan": 0,
+          "artifact": 0,
+          "published": 0,
+          "review": 0,
+          "decision": 0,
+          "needs-you": 0,
+          "caveats": 0,
+          "rejected": 2,
+          "failed": 0,
+          "verdict": 0,
+          "in-flight": 0,
+          "authorization": 0,
+          "ignored": 0
+        },
+        "failed": {
+          "done": 0,
+          "answer": 0,
+          "plan": 0,
+          "artifact": 0,
+          "published": 0,
+          "review": 0,
+          "decision": 0,
+          "needs-you": 0,
+          "caveats": 0,
+          "rejected": 0,
+          "failed": 0,
+          "verdict": 0,
+          "in-flight": 0,
+          "authorization": 0,
+          "ignored": 0
+        },
+        "verdict": {
+          "done": 0,
+          "answer": 0,
+          "plan": 0,
+          "artifact": 0,
+          "published": 0,
+          "review": 0,
+          "decision": 0,
+          "needs-you": 0,
+          "caveats": 0,
+          "rejected": 0,
+          "failed": 0,
+          "verdict": 0,
+          "in-flight": 0,
+          "authorization": 0,
+          "ignored": 0
+        },
+        "in-flight": {
+          "done": 0,
+          "answer": 0,
+          "plan": 0,
+          "artifact": 0,
+          "published": 0,
+          "review": 0,
+          "decision": 0,
+          "needs-you": 0,
+          "caveats": 0,
+          "rejected": 0,
+          "failed": 0,
+          "verdict": 0,
+          "in-flight": 0,
+          "authorization": 0,
+          "ignored": 0
+        },
+        "authorization": {
+          "done": 0,
+          "answer": 0,
+          "plan": 0,
+          "artifact": 0,
+          "published": 0,
+          "review": 0,
+          "decision": 0,
+          "needs-you": 0,
+          "caveats": 0,
+          "rejected": 0,
+          "failed": 0,
+          "verdict": 0,
+          "in-flight": 0,
+          "authorization": 1,
+          "ignored": 0
+        }
+      },
+      "failures": []
+    },
+    "expectancy": {
+      "cases": 35,
+      "correct": 35,
+      "accuracy": 1.0,
+      "confusion_matrix": {
+        "none": {
+          "none": 24,
+          "review-requested": 0,
+          "required-handoff": 0,
+          "ignored": 0
+        },
+        "review-requested": {
+          "none": 0,
+          "review-requested": 3,
+          "required-handoff": 0,
+          "ignored": 0
+        },
+        "required-handoff": {
+          "none": 0,
+          "review-requested": 0,
+          "required-handoff": 8,
+          "ignored": 0
+        }
+      },
+      "failures": []
+    },
+    "delivery_kind": {
+      "cases": 34,
+      "correct": 34,
+      "accuracy": 1.0,
+      "confusion_matrix": {
+        "change": {
+          "change": 7,
+          "answer": 0,
+          "plan": 0,
+          "artifact": 0,
+          "published": 0,
+          "unknown": 0,
+          "ignored": 0
+        },
+        "answer": {
+          "change": 0,
+          "answer": 3,
+          "plan": 0,
+          "artifact": 0,
+          "published": 0,
+          "unknown": 0,
+          "ignored": 0
+        },
+        "plan": {
+          "change": 0,
+          "answer": 0,
+          "plan": 3,
+          "artifact": 0,
+          "published": 0,
+          "unknown": 0,
+          "ignored": 0
+        },
+        "artifact": {
+          "change": 0,
+          "answer": 0,
+          "plan": 0,
+          "artifact": 9,
+          "published": 0,
+          "unknown": 0,
+          "ignored": 0
+        },
+        "published": {
+          "change": 0,
+          "answer": 0,
+          "plan": 0,
+          "artifact": 0,
+          "published": 2,
+          "unknown": 0,
+          "ignored": 0
+        },
+        "unknown": {
+          "change": 0,
+          "answer": 0,
+          "plan": 0,
+          "artifact": 0,
+          "published": 0,
+          "unknown": 10,
+          "ignored": 0
+        }
+      },
+      "failures": []
+    },
+    "handoff_kind": {
+      "cases": 1,
+      "correct": 1,
+      "accuracy": 1.0,
+      "confusion_matrix": {
+        "decision": {
+          "decision": 0,
+          "action": 0,
+          "authorization": 0,
+          "ignored": 0
+        },
+        "action": {
+          "decision": 0,
+          "action": 0,
+          "authorization": 0,
+          "ignored": 0
+        },
+        "authorization": {
+          "decision": 0,
+          "action": 0,
+          "authorization": 1,
+          "ignored": 0
+        }
+      },
+      "failures": []
+    }
+  }
+}

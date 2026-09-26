@@ -23,10 +23,23 @@ def test_render_and_classify_commands(tmp_path):
     with wave.open(str(target)) as sound:
         assert sound.getnchannels() == 1
         assert sound.getframerate() == 48000
-        assert 16 < sound.getnframes() / sound.getframerate() < 18
+        assert 19 < sound.getnframes() / sound.getframerate() < 22
     result = cli("classify", "--text", "Done. Integration tests were unavailable.", "--json")
     assert result.returncode == 0, result.stderr
     assert json.loads(result.stdout)["state"] == "caveats"
+
+
+def test_neutral_outcome_and_long_turn_audition(tmp_path):
+    result = cli("classify", "--text", "Thanks for the context.", "--json")
+    assert result.returncode == 0, result.stderr
+    output = json.loads(result.stdout)
+    assert output["state"] == "unknown" and output["gesture"] == "answer"
+    normal, long = tmp_path / "normal.wav", tmp_path / "long.wav"
+    for path, flags in ((normal, ()), (long, ("--long-turn",))):
+        rendered = cli("play", "verdict", "--out", path, *flags)
+        assert rendered.returncode == 0, rendered.stderr
+    assert normal.stat().st_size == long.stat().st_size
+    assert normal.read_bytes() != long.read_bytes()
 
 
 def test_explicit_cli_reports_service_missing(tmp_path):

@@ -65,13 +65,19 @@ class TurnTimings:
         timing = self.sessions.pop(event.session_id, None)
         if timing is None:
             return None
+        if (not timing.ambiguous and timing.started is None and event.turn_id
+                and event.turn_id == timing.turn_id):
+            # Duplicate terminal delivery consumes no timing and must not poison
+            # the next fresh prompt. A different unmatched terminal stays unknown.
+            self.sessions[event.session_id] = TurnTiming(timing.turn_id, None, now)
+            return None
         valid = (not timing.ambiguous and bool(event.turn_id.strip()) and event.turn_id == timing.turn_id
                  and timing.started is not None and now >= timing.started)
         elapsed = now - timing.started if valid else None
         # Keep the ambiguity marker through subsequent starts, but release a
         # clean completed turn so a normal next turn can be measured.
         ambiguous = timing.ambiguous or not valid
-        self.sessions[event.session_id] = TurnTiming("", None, now, ambiguous)
+        self.sessions[event.session_id] = TurnTiming(event.turn_id if valid else "", None, now, ambiguous)
         return elapsed
 
 
@@ -93,15 +99,22 @@ class EventQueue:
                 p.event.session_id == event.session_id and p.event.failure_code is not None))
             self.seen = {k: v for k, v in self.seen.items() if not (k[0] == event.session_id and v[3])}
 
-    def put(self, event: Event, attention=False, now=None, state=None, turn_seconds=None) -> bool:
+    def put(self, event: Event, attention=False, now=None, state=None, turn_seconds=None,
+            classification=None, supersede=True) -> bool:
         now = time.monotonic() if now is None else now
         with self.condition:
             if self.closed:
                 return False
             self.seen = {k: v for k, v in self.seen.items() if now - v[0] < self.dedup_seconds}
-            if event.evidence_source == "claude:Stop" and state == "needs-you":
+            uninformative = (classification is not None and classification.state == "unknown"
+                             and classification.delivery_kind == "unknown"
+                             and classification.expectancy == "none" and classification.activity == "unknown")
+            if event.evidence_source == "claude:Stop" and (state == "needs-you" or uninformative):
                 # A question or permission hook already announced this waiting
-                # state. Missing prompt IDs get only the short dedup window.
+                # state. An ambiguous closing sentence is not a second outcome.
+                # Keep the window short even with prompt IDs: a later question
+                # in the same prompt may be a new dependency. A real delivery,
+                # caveat, review request, refusal or failure is never collapsed.
                 if any(k[:2] == (event.session_id, event.turn_id) and v[2]
                        for k, v in self.seen.items()):
                     return False
@@ -116,13 +129,17 @@ class EventQueue:
                 if previous_id.split(":", 1)[0] != event.event_id.split(":", 1)[0]:
                     return False
             self.items = deque(p for p in self.items if now - p.received < self.ttl)
-            resolves_attention = event.evidence_source == "claude:Stop" and not attention
-            self.items = deque(p for p in self.items if not (
-                p.event.session_id == event.session_id and (
-                    not p.attention or resolves_attention or
-                    (event.evidence_source == "claude:Stop" and p.event.failure_code is not None) or
-                    (event.turn_id and p.event.turn_id and event.turn_id != p.event.turn_id))))
+            resolves_attention = (event.evidence_source == "claude:Stop" and not attention
+                                  and not uninformative)
+            if supersede:
+                self.items = deque(p for p in self.items if not (
+                    p.event.session_id == event.session_id and (
+                        not p.attention or resolves_attention or
+                        (event.evidence_source == "claude:Stop" and p.event.failure_code is not None) or
+                        (event.turn_id and p.event.turn_id and event.turn_id != p.event.turn_id))))
             if len(self.items) >= self.capacity:
+                if not supersede:
+                    return False
                 routine = next((p for p in self.items if not p.attention), None)
                 if routine is not None:
                     self.items.remove(routine)
@@ -173,10 +190,15 @@ def private_directory(directory: Path):
 
 
 class Service:
-    def __init__(self, classifier, player, socket_path=None, queue_size=8, logger=None, min_turn_seconds=0):
-        if (type(min_turn_seconds) not in (int, float) or not math.isfinite(min_turn_seconds)
-                or min_turn_seconds < 0):
-            raise ValueError("min_turn_seconds must be finite and nonnegative")
+    def __init__(self, classifier, player, socket_path=None, queue_size=8, logger=None, min_turn_seconds=0,
+                 long_turn_seconds=0, notify_in_flight=False, long_turn_player=None):
+        for name, value in (("min_turn_seconds", min_turn_seconds), ("long_turn_seconds", long_turn_seconds)):
+            if type(value) not in (int, float) or not math.isfinite(value) or value < 0:
+                raise ValueError(f"{name} must be finite and nonnegative")
+        if type(notify_in_flight) is not bool:
+            raise ValueError("notify_in_flight must be a boolean")
+        if long_turn_player is not None and not callable(long_turn_player):
+            raise ValueError("long_turn_player must be callable")
         self.classifier, self.player = classifier, player
         self.socket_path = Path(socket_path or default_socket())
         self.queue = EventQueue(queue_size)
@@ -184,13 +206,26 @@ class Service:
         self.ready = threading.Event()
         self._stop = threading.Event()
         self.min_turn_seconds = min_turn_seconds
+        self.long_turn_seconds = long_turn_seconds
+        self.notify_in_flight = notify_in_flight
+        self.long_turn_player = long_turn_player
         self.timings = TurnTimings()
         self.instance_id = uuid.uuid4().hex
 
     def _suppress(self, result, turn_seconds):
         return (self.min_turn_seconds > 0 and turn_seconds is not None
                 and 0 <= turn_seconds < self.min_turn_seconds
-                and result.gesture in ("done", "answer", "plan", "artifact", "published"))
+                and result.gesture in ("done", "answer", "verdict", "plan", "artifact", "published"))
+
+    def _long_turn(self, result, turn_seconds):
+        return (self.long_turn_seconds > 0 and turn_seconds is not None
+                and turn_seconds >= self.long_turn_seconds
+                and result.gesture in ("done", "answer", "verdict", "plan", "artifact", "published"))
+
+    def _suppression_reason(self, result, turn_seconds):
+        if result.gesture == "in-flight" and not self.notify_in_flight:
+            return "in-flight"
+        return "short-turn" if self._suppress(result, turn_seconds) else None
 
     def _control(self, payload, connection, stop):
         """Handle authenticated lifecycle requests before the connection closes."""
@@ -219,15 +254,19 @@ class Service:
     def _intake(self, event, hints, now):
         if event.kind == "turn-start":
             self.queue.begin_turn(event)
-            if self.min_turn_seconds > 0:
+            if self.min_turn_seconds > 0 or self.long_turn_seconds > 0:
                 self.timings.start(event, now)
             return
         turn_seconds = None
-        if self.min_turn_seconds > 0 and event.evidence_source in ("claude:Stop", "claude:StopFailure"):
+        if ((self.min_turn_seconds > 0 or self.long_turn_seconds > 0)
+                and event.evidence_source in ("claude:Stop", "claude:StopFailure")):
             turn_seconds = self.timings.finish(event, now)
         hint = hints.classify(event)
+        # A default-silent activity update must not erase an unplayed delivery
+        # or question. Queue it only when there is room so suppression still logs.
+        silent_activity = hint and hint.gesture == "in-flight" and not self.notify_in_flight
         self.queue.put(event, bool(hint and hint.attention), state=hint.state if hint else None,
-                       now=now, turn_seconds=turn_seconds)
+                       now=now, turn_seconds=turn_seconds, classification=hint, supersede=not silent_activity)
 
     def _worker(self):
         while (pending := self.queue.get_pending()) is not None:
@@ -239,14 +278,19 @@ class Service:
                 if self.queue.closed or self._stop.is_set():
                     break
                 if result is not None:
-                    suppressed = self._suppress(result, pending.turn_seconds)
+                    suppressed = self._suppression_reason(result, pending.turn_seconds)
+                    long_turn = not suppressed and self._long_turn(result, pending.turn_seconds)
                     self.logger({"state": result.state, "gesture": result.gesture,
                                  "expectancy": result.expectancy, "delivery_kind": result.delivery_kind,
                                  "evidence_source": result.evidence_source,
                                  "classification_ms": round(elapsed, 3), "failure_code": result.failure_code,
-                                 "suppressed": "short-turn" if suppressed else None})
+                                 "activity": result.activity,
+                                 "turn_seconds": (round(pending.turn_seconds, 3)
+                                                  if pending.turn_seconds is not None else None),
+                                 "long_turn": long_turn, "suppressed": suppressed})
                     if not suppressed and not self.queue.closed and not self._stop.is_set():
-                        self.player(result.gesture, len(event.text))
+                        player = self.long_turn_player if long_turn and self.long_turn_player else self.player
+                        player(result.gesture, len(event.text))
             except Exception as error:
                 # Don't log exception strings: third-party errors may quote input.
                 if not self.queue.closed and not self._stop.is_set():

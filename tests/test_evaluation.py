@@ -25,7 +25,43 @@ def fixtures(tmp_path, cases):
 def outcome(state, gesture, expectancy="none", delivery_kind="unknown"):
     return SimpleNamespace(state=state, gesture=gesture, expectancy=expectancy,
                            delivery_kind=delivery_kind,
+                           activity="unknown", assessment_kind="none", handoff_kind="action",
                            reason="PRIVATE-CLASSIFIER-REASON", diagnostics={"text": "PRIVATE-DIAGNOSTICS"})
+
+
+def test_uncertainty_and_action_errors_are_not_hidden_in_aggregate_score(tmp_path):
+    path = fixtures(tmp_path, [
+        {"id": "neutral", "expected": "unknown", "expected_activity": "unknown", "text": "PRIVATE"},
+        {"id": "missed", "expected": "needs-you", "expected_handoff_kind": "authorization"},
+        {"id": "false-limit", "expected": "done", "expected_assessment_kind": "verdict"},
+    ])
+    classifier = FixtureClassifier({"neutral": outcome("unknown", "answer"),
+                                    "missed": outcome("unknown", "answer"),
+                                    "false-limit": outcome("caveats", "caveats")})
+    report = evaluate(classifier, path)
+    assert report["quality"] == {"false_caveats": ["false-limit"], "missed_handoffs": ["missed"],
+                                 "unknown_count": 2, "unknown_fraction": 2 / 3}
+    assert report["dimensions"]["activity"]["correct"] == 1
+    assert report["dimensions"]["assessment_kind"]["correct"] == 0
+    assert report["dimensions"]["handoff_kind"]["correct"] == 0
+    assert "PRIVATE" not in json.dumps(report)
+
+
+@pytest.mark.parametrize("value", [True, -1, 513, "running", []])
+def test_invalid_background_evaluation_metadata_is_rejected(tmp_path, value):
+    path = fixtures(tmp_path, [{"id": "bad", "expected": "unknown", "background_tasks": value}])
+    with pytest.raises(ValueError, match="background counts"):
+        evaluate(FixtureClassifier({}), path)
+
+
+def test_background_context_reaches_evaluator_without_retaining_text(tmp_path):
+    path = fixtures(tmp_path, [{"id": "ongoing", "expected": "unknown", "background_tasks": 2,
+                                "session_crons": 0, "text": "PRIVATE"}])
+    classifier = FixtureClassifier({"ongoing": outcome("unknown", "answer")})
+    report = evaluate(classifier, path)
+    assert classifier.events[0].background_tasks == 2
+    assert classifier.events[0].session_crons == 0
+    assert "PRIVATE" not in json.dumps(report)
 
 
 def test_outcome_only_fixtures_preserve_original_report_shape(tmp_path):
@@ -39,7 +75,7 @@ def test_outcome_only_fixtures_preserve_original_report_shape(tmp_path):
     })
     report = evaluate(classifier, path)
     assert set(report) == {"cases", "correct", "accuracy", "confusion_matrix", "failures",
-                           "false_attention", "false_rejection", "classification_ms"}
+                           "false_attention", "false_rejection", "classification_ms", "quality"}
     assert report["cases"] == 2 and report["correct"] == 1 and report["accuracy"] == 0.5
     assert report["false_attention"] == ["attention"]
     assert report["confusion_matrix"]["done"]["needs-you"] == 1

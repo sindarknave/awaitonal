@@ -9,7 +9,7 @@ import pytest
 
 from awaitonal.config import load_config
 from awaitonal import playback
-from awaitonal.synth import STATE_ORDER, note_frequency, render, render_demo, write_wav
+from awaitonal.synth import LONG_TURN_GESTURES, STATE_ORDER, note_frequency, render, render_demo, write_wav
 
 
 @pytest.mark.parametrize("state", STATE_ORDER)
@@ -19,7 +19,7 @@ def test_render_is_deterministic_safe_and_smooth(state, tmp_path):
     audio = render(state, config)
     assert audio.ndim == 1 and np.isfinite(audio).all()
     assert len(audio) == round(config["states"][state]["duration"] * rate)
-    assert 0.6 <= len(audio) / rate <= 2.0
+    assert 0.5 <= len(audio) / rate <= 2.0
     assert 0.01 < np.max(np.abs(audio)) < 0.5
     assert np.array_equal(audio, render(state, config))
     assert np.count_nonzero(audio[:int(0.01 * rate)]) == 0
@@ -48,10 +48,32 @@ def test_render_is_deterministic_safe_and_smooth(state, tmp_path):
 
 
 def test_richer_chords_do_not_simply_get_louder():
-    levels = {state: np.sqrt(np.mean(render(state) ** 2)) for state in STATE_ORDER}
+    levels = {state: np.sqrt(np.mean(render(state) ** 2))
+              for state in STATE_ORDER if state != "in-flight"}
     assert max(levels.values()) / min(levels.values()) < 1.4
     assert 0.85 < levels["caveats"] / levels["done"] < 1.1
     assert levels["rejected"] <= levels["done"]
+
+
+def test_continuing_work_pulse_is_short_and_deliberately_quiet():
+    pulse = render("in-flight")
+    answer = render("answer")
+    assert len(pulse) / 48000 < 0.6
+    assert 0.1 < np.sqrt(np.mean(pulse ** 2) / np.mean(answer ** 2)) < 0.25
+    # A small pair of pulses, with neither a held chord nor an attention tail.
+    assert not np.any(pulse[round(.2 * 48000):round(.28 * 48000)])
+    assert not np.any(pulse[round(.46 * 48000):])
+
+
+def test_new_gestures_have_distinct_audio_from_each_existing_cue():
+    sounds = {state: render(state) for state in STATE_ORDER}
+    for added in ("verdict", "in-flight", "authorization"):
+        for other, audio in sounds.items():
+            if other != added:
+                size = max(len(sounds[added]), len(audio))
+                left = np.pad(sounds[added], (0, size - len(sounds[added])))
+                right = np.pad(audio, (0, size - len(audio)))
+                assert np.sqrt(np.mean((left - right) ** 2)) > 0.01
 
 
 def _dominant_frequency(samples, rate):
@@ -61,6 +83,7 @@ def _dominant_frequency(samples, rate):
 
 @pytest.mark.parametrize("gesture,first,last,end", [
     ("needs-you", 1.03, 1.34, 1.76), ("review", .74, 1.04, 1.46),
+    ("authorization", .56, .90, 1.32),
 ])
 def test_expectant_tail_leaves_space_before_unresolved_rising_notes(gesture, first, last, end):
     audio = render(gesture)
@@ -119,6 +142,41 @@ def test_brightness_is_opt_in_bounded_and_volume_neutral():
         assert np.mean(bright ** 2) == pytest.approx(np.mean(original ** 2), rel=1e-12)
         assert np.max(np.abs(bright)) < config["synth"]["peak_limit"]
     assert np.sqrt(np.mean((long - saturated) ** 2)) < 0.001
+
+
+@pytest.mark.parametrize("state", STATE_ORDER)
+def test_elapsed_turn_treatment_preserves_duration_level_and_attention_cues(state):
+    config = load_config()
+    before = deepcopy(config)
+    fixed = render(state, config)
+    fuller = render(state, config, long_turn=True)
+    assert config == before
+    assert np.array_equal(fixed, render(state, config, long_turn=False))
+    assert len(fuller) == len(fixed)
+    assert np.isfinite(fuller).all()
+    assert np.mean(fuller ** 2) == pytest.approx(np.mean(fixed ** 2), rel=1e-12)
+    assert np.max(np.abs(fuller)) < config["synth"]["peak_limit"]
+    assert fuller[0] == fuller[-1] == 0
+    if state in LONG_TURN_GESTURES:
+        assert not np.array_equal(fixed, fuller)
+        # The same rhythm remains; elapsed time introduces no new onsets.
+        assert np.array_equal(fixed == 0, fuller == 0)
+    else:
+        assert np.array_equal(fixed, fuller)
+
+
+@pytest.mark.parametrize("state", sorted(LONG_TURN_GESTURES))
+def test_elapsed_turn_and_character_brightness_remain_independent_and_bounded(state):
+    config = load_config()
+    config["synth"]["brightness"]["enabled"] = True
+    fixed = render(state, config)
+    bright = render(state, config, response_length=100000)
+    both = render(state, config, response_length=100000, long_turn=True)
+    assert not np.array_equal(both, bright)
+    assert not np.array_equal(both, render(state, config, long_turn=True))
+    assert len(both) == len(fixed)
+    assert np.mean(both ** 2) == pytest.approx(np.mean(fixed ** 2), rel=1e-12)
+    assert np.max(np.abs(both)) < config["synth"]["peak_limit"]
 
 
 def test_partials_above_nyquist_are_omitted():

@@ -1,0 +1,75 @@
+{
+  "cases": 30,
+  "correct": 30,
+  "accuracy": 1.0,
+  "confusion_matrix": {
+    "done": {
+      "done": 12,
+      "caveats": 0,
+      "needs-you": 0,
+      "rejected": 0,
+      "failed": 0,
+      "unknown": 0,
+      "ignored": 0
+    },
+    "caveats": {
+      "done": 0,
+      "caveats": 5,
+      "needs-you": 0,
+      "rejected": 0,
+      "failed": 0,
+      "unknown": 0,
+      "ignored": 0
+    },
+    "needs-you": {
+      "done": 0,
+      "caveats": 0,
+      "needs-you": 8,
+      "rejected": 0,
+      "failed": 0,
+      "unknown": 0,
+      "ignored": 0
+    },
+    "rejected": {
+      "done": 0,
+      "caveats": 0,
+      "needs-you": 0,
+      "rejected": 5,
+      "failed": 0,
+      "unknown": 0,
+      "ignored": 0
+    },
+    "failed": {
+      "done": 0,
+      "caveats": 0,
+      "needs-you": 0,
+      "rejected": 0,
+      "failed": 0,
+      "unknown": 0,
+      "ignored": 0
+    },
+    "unknown": {
+      "done": 0,
+      "caveats": 0,
+      "needs-you": 0,
+      "rejected": 0,
+      "failed": 0,
+      "unknown": 0,
+      "ignored": 0
+    }
+  },
+  "failures": [],
+  "false_attention": [],
+  "false_rejection": [],
+  "quality": {
+    "false_caveats": [],
+    "missed_handoffs": [],
+    "unknown_count": 0,
+    "unknown_fraction": 0.0
+  },
+  "classification_ms": {
+    "first": 4.090582951903343,
+    "warm_median": 0.23200002033263445,
+    "max": 80.53158293478191
+  }
+}

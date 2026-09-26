@@ -1,0 +1,2853 @@
+{
+  "label": "v0.3-c37fe03",
+  "scope": "Authored synthetic development contrasts, evaluated after selecting the proposed taxonomy; not held-out or population accuracy. Baseline does not support new metadata dimensions.",
+  "cases": 115,
+  "dimensions": {
+    "activity": {
+      "cases": 34,
+      "correct": 0,
+      "failures": [
+        {
+          "id": "neutral-ack",
+          "expected": "unknown",
+          "actual": "unsupported"
+        },
+        {
+          "id": "neutral-fact",
+          "expected": "unknown",
+          "actual": "unsupported"
+        },
+        {
+          "id": "neutral-offer",
+          "expected": "unknown",
+          "actual": "unsupported"
+        },
+        {
+          "id": "future-promise",
+          "expected": "unknown",
+          "actual": "unsupported"
+        },
+        {
+          "id": "hypothetical-publish",
+          "expected": "unknown",
+          "actual": "unsupported"
+        },
+        {
+          "id": "subject-error",
+          "expected": "unknown",
+          "actual": "unsupported"
+        },
+        {
+          "id": "subject-pending",
+          "expected": "unknown",
+          "actual": "unsupported"
+        },
+        {
+          "id": "unframed-yes",
+          "expected": "unknown",
+          "actual": "unsupported"
+        },
+        {
+          "id": "unframed-no",
+          "expected": "unknown",
+          "actual": "unsupported"
+        },
+        {
+          "id": "house-heading",
+          "expected": "unknown",
+          "actual": "unsupported"
+        },
+        {
+          "id": "fixed-error-handling",
+          "expected": "final",
+          "actual": "unsupported"
+        },
+        {
+          "id": "explained-errors",
+          "expected": "final",
+          "actual": "unsupported"
+        },
+        {
+          "id": "explained-failure-rate",
+          "expected": "final",
+          "actual": "unsupported"
+        },
+        {
+          "id": "found-inability",
+          "expected": "final",
+          "actual": "unsupported"
+        },
+        {
+          "id": "complete-review-negative",
+          "expected": "final",
+          "actual": "unsupported"
+        },
+        {
+          "id": "ordinary-definition",
+          "expected": "final",
+          "actual": "unsupported"
+        },
+        {
+          "id": "flight-reported",
+          "expected": "in-flight",
+          "actual": "unsupported"
+        },
+        {
+          "id": "flight-polling",
+          "expected": "in-flight",
+          "actual": "unsupported"
+        },
+        {
+          "id": "flight-confirmed",
+          "expected": "in-flight",
+          "actual": "unsupported"
+        },
+        {
+          "id": "flight-one-registry-unknown",
+          "expected": "in-flight",
+          "actual": "unsupported"
+        },
+        {
+          "id": "flight-absent-context",
+          "expected": "unknown",
+          "actual": "unsupported"
+        },
+        {
+          "id": "flight-empty-registry",
+          "expected": "unknown",
+          "actual": "unsupported"
+        },
+        {
+          "id": "flight-metadata-alone",
+          "expected": "unknown",
+          "actual": "unsupported"
+        },
+        {
+          "id": "flight-optional",
+          "expected": "unknown",
+          "actual": "unsupported"
+        },
+        {
+          "id": "flight-history",
+          "expected": "unknown",
+          "actual": "unsupported"
+        },
+        {
+          "id": "flight-finished",
+          "expected": "final",
+          "actual": "unsupported"
+        },
+        {
+          "id": "flight-delivered-with-monitor",
+          "expected": "final",
+          "actual": "unsupported"
+        },
+        {
+          "id": "flight-required-action",
+          "expected": "in-flight",
+          "actual": "unsupported"
+        },
+        {
+          "id": "flight-validation-gap",
+          "expected": "in-flight",
+          "actual": "unsupported"
+        },
+        {
+          "id": "flight-later-completion",
+          "expected": "final",
+          "actual": "unsupported"
+        },
+        {
+          "id": "flight-future-tense",
+          "expected": "unknown",
+          "actual": "unsupported"
+        },
+        {
+          "id": "flight-historical-tense",
+          "expected": "unknown",
+          "actual": "unsupported"
+        },
+        {
+          "id": "flight-future-copula",
+          "expected": "unknown",
+          "actual": "unsupported"
+        },
+        {
+          "id": "artifact-file-over-monitor",
+          "expected": "final",
+          "actual": "unsupported"
+        }
+      ]
+    },
+    "assessment_kind": {
+      "cases": 11,
+      "correct": 0,
+      "failures": [
+        {
+          "id": "verdict-explicit",
+          "expected": "verdict",
+          "actual": "unsupported"
+        },
+        {
+          "id": "verdict-approve-object",
+          "expected": "verdict",
+          "actual": "unsupported"
+        },
+        {
+          "id": "verdict-negative-object",
+          "expected": "verdict",
+          "actual": "unsupported"
+        },
+        {
+          "id": "verdict-safe-object",
+          "expected": "verdict",
+          "actual": "unsupported"
+        },
+        {
+          "id": "verdict-completed-review",
+          "expected": "verdict",
+          "actual": "unsupported"
+        },
+        {
+          "id": "verdict-quoted",
+          "expected": "none",
+          "actual": "unsupported"
+        },
+        {
+          "id": "verdict-historical",
+          "expected": "none",
+          "actual": "unsupported"
+        },
+        {
+          "id": "verdict-example",
+          "expected": "none",
+          "actual": "unsupported"
+        },
+        {
+          "id": "verdict-alone-approve",
+          "expected": "none",
+          "actual": "unsupported"
+        },
+        {
+          "id": "verdict-needs-independent-action",
+          "expected": "verdict",
+          "actual": "unsupported"
+        },
+        {
+          "id": "verdict-review-found-no-issues",
+          "expected": "verdict",
+          "actual": "unsupported"
+        }
+      ]
+    },
+    "delivery_kind": {
+      "cases": 42,
+      "correct": 27,
+      "failures": [
+        {
+          "id": "explained-errors",
+          "expected": "answer",
+          "actual": "unknown"
+        },
+        {
+          "id": "explained-failure-rate",
+          "expected": "answer",
+          "actual": "unknown"
+        },
+        {
+          "id": "artifact-current-bare",
+          "expected": "artifact",
+          "actual": "unknown"
+        },
+        {
+          "id": "artifact-current-markdown",
+          "expected": "artifact",
+          "actual": "unknown"
+        },
+        {
+          "id": "artifact-google-doc",
+          "expected": "artifact",
+          "actual": "unknown"
+        },
+        {
+          "id": "artifact-sandbox",
+          "expected": "artifact",
+          "actual": "unknown"
+        },
+        {
+          "id": "artifact-share-usage",
+          "expected": "artifact",
+          "actual": "unknown"
+        },
+        {
+          "id": "pr-opened-bare",
+          "expected": "published",
+          "actual": "unknown"
+        },
+        {
+          "id": "pr-opened-markdown",
+          "expected": "published",
+          "actual": "unknown"
+        },
+        {
+          "id": "pr-posted-review",
+          "expected": "published",
+          "actual": "unknown"
+        },
+        {
+          "id": "pr-posted-prose",
+          "expected": "published",
+          "actual": "unknown"
+        },
+        {
+          "id": "pr-opened-prose",
+          "expected": "published",
+          "actual": "unknown"
+        },
+        {
+          "id": "verdict-approve-object",
+          "expected": "answer",
+          "actual": "unknown"
+        },
+        {
+          "id": "verdict-negative-object",
+          "expected": "answer",
+          "actual": "unknown"
+        },
+        {
+          "id": "verdict-safe-object",
+          "expected": "answer",
+          "actual": "unknown"
+        }
+      ]
+    },
+    "expectancy": {
+      "cases": 68,
+      "correct": 64,
+      "failures": [
+        {
+          "id": "artifact-share-usage",
+          "expected": "none",
+          "actual": "required-handoff"
+        },
+        {
+          "id": "verdict-explicit",
+          "expected": "none",
+          "actual": "review-requested"
+        },
+        {
+          "id": "verdict-approve-object",
+          "expected": "none",
+          "actual": "required-handoff"
+        },
+        {
+          "id": "verdict-review-found-no-issues",
+          "expected": "none",
+          "actual": "required-handoff"
+        }
+      ]
+    },
+    "gesture": {
+      "cases": 115,
+      "correct": 33,
+      "failures": [
+        {
+          "id": "neutral-ack",
+          "expected": "answer",
+          "actual": "caveats"
+        },
+        {
+          "id": "neutral-fact",
+          "expected": "answer",
+          "actual": "caveats"
+        },
+        {
+          "id": "neutral-offer",
+          "expected": "answer",
+          "actual": "caveats"
+        },
+        {
+          "id": "future-promise",
+          "expected": "answer",
+          "actual": "caveats"
+        },
+        {
+          "id": "hypothetical-publish",
+          "expected": "answer",
+          "actual": "caveats"
+        },
+        {
+          "id": "subject-error",
+          "expected": "answer",
+          "actual": "caveats"
+        },
+        {
+          "id": "subject-pending",
+          "expected": "answer",
+          "actual": "caveats"
+        },
+        {
+          "id": "unframed-yes",
+          "expected": "answer",
+          "actual": "caveats"
+        },
+        {
+          "id": "unframed-no",
+          "expected": "answer",
+          "actual": "caveats"
+        },
+        {
+          "id": "house-heading",
+          "expected": "answer",
+          "actual": "caveats"
+        },
+        {
+          "id": "fixed-error-handling",
+          "expected": "done",
+          "actual": "caveats"
+        },
+        {
+          "id": "explained-errors",
+          "expected": "answer",
+          "actual": "caveats"
+        },
+        {
+          "id": "explained-failure-rate",
+          "expected": "answer",
+          "actual": "caveats"
+        },
+        {
+          "id": "artifact-current-bare",
+          "expected": "artifact",
+          "actual": "caveats"
+        },
+        {
+          "id": "artifact-current-markdown",
+          "expected": "artifact",
+          "actual": "caveats"
+        },
+        {
+          "id": "artifact-google-doc",
+          "expected": "artifact",
+          "actual": "caveats"
+        },
+        {
+          "id": "artifact-sandbox",
+          "expected": "artifact",
+          "actual": "caveats"
+        },
+        {
+          "id": "artifact-share-usage",
+          "expected": "artifact",
+          "actual": "needs-you"
+        },
+        {
+          "id": "artifact-bare-reference",
+          "expected": "answer",
+          "actual": "caveats"
+        },
+        {
+          "id": "artifact-old-reference",
+          "expected": "answer",
+          "actual": "caveats"
+        },
+        {
+          "id": "artifact-quoted-reference",
+          "expected": "answer",
+          "actual": "caveats"
+        },
+        {
+          "id": "artifact-code-reference",
+          "expected": "answer",
+          "actual": "caveats"
+        },
+        {
+          "id": "artifact-host-spoof",
+          "expected": "answer",
+          "actual": "caveats"
+        },
+        {
+          "id": "artifact-marker-spoof",
+          "expected": "answer",
+          "actual": "caveats"
+        },
+        {
+          "id": "artifact-example-heading",
+          "expected": "answer",
+          "actual": "caveats"
+        },
+        {
+          "id": "artifact-conditional",
+          "expected": "answer",
+          "actual": "caveats"
+        },
+        {
+          "id": "pr-bare-reference",
+          "expected": "answer",
+          "actual": "caveats"
+        },
+        {
+          "id": "pr-markdown-reference",
+          "expected": "answer",
+          "actual": "caveats"
+        },
+        {
+          "id": "pr-history",
+          "expected": "answer",
+          "actual": "caveats"
+        },
+        {
+          "id": "pr-negated",
+          "expected": "answer",
+          "actual": "caveats"
+        },
+        {
+          "id": "pr-spoof",
+          "expected": "answer",
+          "actual": "caveats"
+        },
+        {
+          "id": "pr-marker-spoof",
+          "expected": "answer",
+          "actual": "caveats"
+        },
+        {
+          "id": "pr-malformed",
+          "expected": "answer",
+          "actual": "caveats"
+        },
+        {
+          "id": "pr-documentation",
+          "expected": "answer",
+          "actual": "caveats"
+        },
+        {
+          "id": "opened-file",
+          "expected": "answer",
+          "actual": "caveats"
+        },
+        {
+          "id": "posted-local",
+          "expected": "answer",
+          "actual": "caveats"
+        },
+        {
+          "id": "pr-opened-bare",
+          "expected": "published",
+          "actual": "caveats"
+        },
+        {
+          "id": "pr-opened-markdown",
+          "expected": "published",
+          "actual": "caveats"
+        },
+        {
+          "id": "pr-posted-review",
+          "expected": "published",
+          "actual": "caveats"
+        },
+        {
+          "id": "pr-posted-prose",
+          "expected": "published",
+          "actual": "caveats"
+        },
+        {
+          "id": "pr-opened-prose",
+          "expected": "published",
+          "actual": "caveats"
+        },
+        {
+          "id": "verdict-explicit",
+          "expected": "verdict",
+          "actual": "review"
+        },
+        {
+          "id": "verdict-approve-object",
+          "expected": "verdict",
+          "actual": "needs-you"
+        },
+        {
+          "id": "verdict-negative-object",
+          "expected": "verdict",
+          "actual": "caveats"
+        },
+        {
+          "id": "verdict-safe-object",
+          "expected": "verdict",
+          "actual": "done"
+        },
+        {
+          "id": "verdict-completed-review",
+          "expected": "verdict",
+          "actual": "answer"
+        },
+        {
+          "id": "verdict-quoted",
+          "expected": "answer",
+          "actual": "caveats"
+        },
+        {
+          "id": "verdict-historical",
+          "expected": "answer",
+          "actual": "caveats"
+        },
+        {
+          "id": "verdict-example",
+          "expected": "answer",
+          "actual": "review"
+        },
+        {
+          "id": "auth-ready-draft",
+          "expected": "authorization",
+          "actual": "needs-you"
+        },
+        {
+          "id": "auth-complete-patch",
+          "expected": "authorization",
+          "actual": "needs-you"
+        },
+        {
+          "id": "auth-prepared-video",
+          "expected": "authorization",
+          "actual": "needs-you"
+        },
+        {
+          "id": "auth-ready-email",
+          "expected": "authorization",
+          "actual": "needs-you"
+        },
+        {
+          "id": "flight-reported",
+          "expected": "in-flight",
+          "actual": "caveats"
+        },
+        {
+          "id": "flight-polling",
+          "expected": "in-flight",
+          "actual": "caveats"
+        },
+        {
+          "id": "flight-confirmed",
+          "expected": "in-flight",
+          "actual": "caveats"
+        },
+        {
+          "id": "flight-one-registry-unknown",
+          "expected": "in-flight",
+          "actual": "caveats"
+        },
+        {
+          "id": "flight-absent-context",
+          "expected": "answer",
+          "actual": "caveats"
+        },
+        {
+          "id": "flight-empty-registry",
+          "expected": "answer",
+          "actual": "caveats"
+        },
+        {
+          "id": "flight-metadata-alone",
+          "expected": "answer",
+          "actual": "caveats"
+        },
+        {
+          "id": "flight-optional",
+          "expected": "answer",
+          "actual": "caveats"
+        },
+        {
+          "id": "flight-history",
+          "expected": "answer",
+          "actual": "caveats"
+        },
+        {
+          "id": "flight-future-tense",
+          "expected": "answer",
+          "actual": "caveats"
+        },
+        {
+          "id": "flight-historical-tense",
+          "expected": "answer",
+          "actual": "caveats"
+        },
+        {
+          "id": "flight-future-copula",
+          "expected": "answer",
+          "actual": "caveats"
+        },
+        {
+          "id": "own-failing-test",
+          "expected": "caveats",
+          "actual": "done"
+        },
+        {
+          "id": "own-explicit-caveats",
+          "expected": "caveats",
+          "actual": "done"
+        },
+        {
+          "id": "url-query-done",
+          "expected": "answer",
+          "actual": "done"
+        },
+        {
+          "id": "url-path-completed",
+          "expected": "answer",
+          "actual": "done"
+        },
+        {
+          "id": "url-fragment-ready",
+          "expected": "answer",
+          "actual": "done"
+        },
+        {
+          "id": "url-query-permission",
+          "expected": "answer",
+          "actual": "caveats"
+        },
+        {
+          "id": "url-path-request",
+          "expected": "answer",
+          "actual": "caveats"
+        },
+        {
+          "id": "url-query-failure",
+          "expected": "answer",
+          "actual": "caveats"
+        },
+        {
+          "id": "url-markdown-label-neutral",
+          "expected": "answer",
+          "actual": "caveats"
+        },
+        {
+          "id": "own-unable-contracted",
+          "expected": "caveats",
+          "actual": "answer"
+        },
+        {
+          "id": "own-verification-passive",
+          "expected": "caveats",
+          "actual": "answer"
+        },
+        {
+          "id": "artifact-file-over-monitor",
+          "expected": "artifact",
+          "actual": "caveats"
+        },
+        {
+          "id": "artifact-file-reference-only",
+          "expected": "answer",
+          "actual": "caveats"
+        },
+        {
+          "id": "verdict-review-found-no-issues",
+          "expected": "verdict",
+          "actual": "needs-you"
+        },
+        {
+          "id": "pr-inspection-not-publication",
+          "expected": "answer",
+          "actual": "caveats"
+        },
+        {
+          "id": "pr-browser-not-publication",
+          "expected": "answer",
+          "actual": "caveats"
+        },
+        {
+          "id": "auth-ready-branch",
+          "expected": "authorization",
+          "actual": "needs-you"
+        }
+      ]
+    },
+    "handoff_kind": {
+      "cases": 12,
+      "correct": 7,
+      "failures": [
+        {
+          "id": "auth-ready-draft",
+          "expected": "authorization",
+          "actual": "action"
+        },
+        {
+          "id": "auth-complete-patch",
+          "expected": "authorization",
+          "actual": "action"
+        },
+        {
+          "id": "auth-prepared-video",
+          "expected": "authorization",
+          "actual": "action"
+        },
+        {
+          "id": "auth-ready-email",
+          "expected": "authorization",
+          "actual": "action"
+        },
+        {
+          "id": "auth-ready-branch",
+          "expected": "authorization",
+          "actual": "action"
+        }
+      ]
+    },
+    "state": {
+      "cases": 115,
+      "correct": 41,
+      "failures": [
+        {
+          "id": "neutral-ack",
+          "expected": "unknown",
+          "actual": "caveats"
+        },
+        {
+          "id": "neutral-fact",
+          "expected": "unknown",
+          "actual": "caveats"
+        },
+        {
+          "id": "neutral-offer",
+          "expected": "unknown",
+          "actual": "caveats"
+        },
+        {
+          "id": "future-promise",
+          "expected": "unknown",
+          "actual": "caveats"
+        },
+        {
+          "id": "hypothetical-publish",
+          "expected": "unknown",
+          "actual": "caveats"
+        },
+        {
+          "id": "subject-error",
+          "expected": "unknown",
+          "actual": "caveats"
+        },
+        {
+          "id": "subject-pending",
+          "expected": "unknown",
+          "actual": "caveats"
+        },
+        {
+          "id": "unframed-yes",
+          "expected": "unknown",
+          "actual": "caveats"
+        },
+        {
+          "id": "unframed-no",
+          "expected": "unknown",
+          "actual": "caveats"
+        },
+        {
+          "id": "house-heading",
+          "expected": "unknown",
+          "actual": "caveats"
+        },
+        {
+          "id": "fixed-error-handling",
+          "expected": "done",
+          "actual": "caveats"
+        },
+        {
+          "id": "explained-errors",
+          "expected": "done",
+          "actual": "caveats"
+        },
+        {
+          "id": "explained-failure-rate",
+          "expected": "done",
+          "actual": "caveats"
+        },
+        {
+          "id": "artifact-current-bare",
+          "expected": "done",
+          "actual": "caveats"
+        },
+        {
+          "id": "artifact-current-markdown",
+          "expected": "done",
+          "actual": "caveats"
+        },
+        {
+          "id": "artifact-google-doc",
+          "expected": "done",
+          "actual": "caveats"
+        },
+        {
+          "id": "artifact-sandbox",
+          "expected": "done",
+          "actual": "caveats"
+        },
+        {
+          "id": "artifact-share-usage",
+          "expected": "done",
+          "actual": "needs-you"
+        },
+        {
+          "id": "artifact-bare-reference",
+          "expected": "unknown",
+          "actual": "caveats"
+        },
+        {
+          "id": "artifact-old-reference",
+          "expected": "unknown",
+          "actual": "caveats"
+        },
+        {
+          "id": "artifact-quoted-reference",
+          "expected": "unknown",
+          "actual": "caveats"
+        },
+        {
+          "id": "artifact-code-reference",
+          "expected": "unknown",
+          "actual": "caveats"
+        },
+        {
+          "id": "artifact-host-spoof",
+          "expected": "unknown",
+          "actual": "caveats"
+        },
+        {
+          "id": "artifact-marker-spoof",
+          "expected": "unknown",
+          "actual": "caveats"
+        },
+        {
+          "id": "artifact-example-heading",
+          "expected": "unknown",
+          "actual": "caveats"
+        },
+        {
+          "id": "artifact-conditional",
+          "expected": "unknown",
+          "actual": "caveats"
+        },
+        {
+          "id": "pr-bare-reference",
+          "expected": "unknown",
+          "actual": "caveats"
+        },
+        {
+          "id": "pr-markdown-reference",
+          "expected": "unknown",
+          "actual": "caveats"
+        },
+        {
+          "id": "pr-history",
+          "expected": "unknown",
+          "actual": "caveats"
+        },
+        {
+          "id": "pr-negated",
+          "expected": "unknown",
+          "actual": "caveats"
+        },
+        {
+          "id": "pr-spoof",
+          "expected": "unknown",
+          "actual": "caveats"
+        },
+        {
+          "id": "pr-marker-spoof",
+          "expected": "unknown",
+          "actual": "caveats"
+        },
+        {
+          "id": "pr-malformed",
+          "expected": "unknown",
+          "actual": "caveats"
+        },
+        {
+          "id": "pr-documentation",
+          "expected": "unknown",
+          "actual": "caveats"
+        },
+        {
+          "id": "opened-file",
+          "expected": "unknown",
+          "actual": "caveats"
+        },
+        {
+          "id": "posted-local",
+          "expected": "unknown",
+          "actual": "caveats"
+        },
+        {
+          "id": "pr-opened-bare",
+          "expected": "done",
+          "actual": "caveats"
+        },
+        {
+          "id": "pr-opened-markdown",
+          "expected": "done",
+          "actual": "caveats"
+        },
+        {
+          "id": "pr-posted-review",
+          "expected": "done",
+          "actual": "caveats"
+        },
+        {
+          "id": "pr-posted-prose",
+          "expected": "done",
+          "actual": "caveats"
+        },
+        {
+          "id": "pr-opened-prose",
+          "expected": "done",
+          "actual": "caveats"
+        },
+        {
+          "id": "verdict-approve-object",
+          "expected": "done",
+          "actual": "needs-you"
+        },
+        {
+          "id": "verdict-negative-object",
+          "expected": "done",
+          "actual": "caveats"
+        },
+        {
+          "id": "verdict-quoted",
+          "expected": "unknown",
+          "actual": "caveats"
+        },
+        {
+          "id": "verdict-historical",
+          "expected": "unknown",
+          "actual": "caveats"
+        },
+        {
+          "id": "verdict-example",
+          "expected": "unknown",
+          "actual": "done"
+        },
+        {
+          "id": "flight-reported",
+          "expected": "unknown",
+          "actual": "caveats"
+        },
+        {
+          "id": "flight-polling",
+          "expected": "unknown",
+          "actual": "caveats"
+        },
+        {
+          "id": "flight-confirmed",
+          "expected": "unknown",
+          "actual": "caveats"
+        },
+        {
+          "id": "flight-one-registry-unknown",
+          "expected": "unknown",
+          "actual": "caveats"
+        },
+        {
+          "id": "flight-absent-context",
+          "expected": "unknown",
+          "actual": "caveats"
+        },
+        {
+          "id": "flight-empty-registry",
+          "expected": "unknown",
+          "actual": "caveats"
+        },
+        {
+          "id": "flight-metadata-alone",
+          "expected": "unknown",
+          "actual": "caveats"
+        },
+        {
+          "id": "flight-optional",
+          "expected": "unknown",
+          "actual": "caveats"
+        },
+        {
+          "id": "flight-history",
+          "expected": "unknown",
+          "actual": "caveats"
+        },
+        {
+          "id": "flight-future-tense",
+          "expected": "unknown",
+          "actual": "caveats"
+        },
+        {
+          "id": "flight-historical-tense",
+          "expected": "unknown",
+          "actual": "caveats"
+        },
+        {
+          "id": "flight-future-copula",
+          "expected": "unknown",
+          "actual": "caveats"
+        },
+        {
+          "id": "own-failing-test",
+          "expected": "caveats",
+          "actual": "done"
+        },
+        {
+          "id": "own-explicit-caveats",
+          "expected": "caveats",
+          "actual": "done"
+        },
+        {
+          "id": "url-query-done",
+          "expected": "unknown",
+          "actual": "done"
+        },
+        {
+          "id": "url-path-completed",
+          "expected": "unknown",
+          "actual": "done"
+        },
+        {
+          "id": "url-fragment-ready",
+          "expected": "unknown",
+          "actual": "done"
+        },
+        {
+          "id": "url-query-permission",
+          "expected": "unknown",
+          "actual": "caveats"
+        },
+        {
+          "id": "url-path-request",
+          "expected": "unknown",
+          "actual": "caveats"
+        },
+        {
+          "id": "url-query-failure",
+          "expected": "unknown",
+          "actual": "caveats"
+        },
+        {
+          "id": "url-markdown-label-neutral",
+          "expected": "unknown",
+          "actual": "caveats"
+        },
+        {
+          "id": "own-unable-contracted",
+          "expected": "caveats",
+          "actual": "done"
+        },
+        {
+          "id": "own-verification-passive",
+          "expected": "caveats",
+          "actual": "done"
+        },
+        {
+          "id": "artifact-file-over-monitor",
+          "expected": "done",
+          "actual": "caveats"
+        },
+        {
+          "id": "artifact-file-reference-only",
+          "expected": "unknown",
+          "actual": "caveats"
+        },
+        {
+          "id": "verdict-review-found-no-issues",
+          "expected": "done",
+          "actual": "needs-you"
+        },
+        {
+          "id": "pr-inspection-not-publication",
+          "expected": "unknown",
+          "actual": "caveats"
+        },
+        {
+          "id": "pr-browser-not-publication",
+          "expected": "unknown",
+          "actual": "caveats"
+        }
+      ]
+    }
+  },
+  "quality": {
+    "false_caveats": [
+      "neutral-ack",
+      "neutral-fact",
+      "neutral-offer",
+      "future-promise",
+      "hypothetical-publish",
+      "subject-error",
+      "subject-pending",
+      "unframed-yes",
+      "unframed-no",
+      "house-heading",
+      "fixed-error-handling",
+      "explained-errors",
+      "explained-failure-rate",
+      "artifact-current-bare",
+      "artifact-current-markdown",
+      "artifact-google-doc",
+      "artifact-sandbox",
+      "artifact-bare-reference",
+      "artifact-old-reference",
+      "artifact-quoted-reference",
+      "artifact-code-reference",
+      "artifact-host-spoof",
+      "artifact-marker-spoof",
+      "artifact-example-heading",
+      "artifact-conditional",
+      "pr-bare-reference",
+      "pr-markdown-reference",
+      "pr-history",
+      "pr-negated",
+      "pr-spoof",
+      "pr-marker-spoof",
+      "pr-malformed",
+      "pr-documentation",
+      "opened-file",
+      "posted-local",
+      "pr-opened-bare",
+      "pr-opened-markdown",
+      "pr-posted-review",
+      "pr-posted-prose",
+      "pr-opened-prose",
+      "verdict-negative-object",
+      "verdict-quoted",
+      "verdict-historical",
+      "flight-reported",
+      "flight-polling",
+      "flight-confirmed",
+      "flight-one-registry-unknown",
+      "flight-absent-context",
+      "flight-empty-registry",
+      "flight-metadata-alone",
+      "flight-optional",
+      "flight-history",
+      "flight-future-tense",
+      "flight-historical-tense",
+      "flight-future-copula",
+      "url-query-permission",
+      "url-path-request",
+      "url-query-failure",
+      "url-markdown-label-neutral",
+      "artifact-file-over-monitor",
+      "artifact-file-reference-only",
+      "pr-inspection-not-publication",
+      "pr-browser-not-publication"
+    ],
+    "false_handoffs": [
+      "artifact-share-usage",
+      "verdict-approve-object",
+      "verdict-review-found-no-issues"
+    ],
+    "missed_handoffs": []
+  },
+  "results": [
+    {
+      "id": "neutral-ack",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "expectancy": "none",
+        "activity": "unknown"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "expectancy": "none",
+        "activity": "unsupported"
+      }
+    },
+    {
+      "id": "neutral-fact",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "expectancy": "none",
+        "activity": "unknown"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "expectancy": "none",
+        "activity": "unsupported"
+      }
+    },
+    {
+      "id": "neutral-offer",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "expectancy": "none",
+        "activity": "unknown"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "expectancy": "none",
+        "activity": "unsupported"
+      }
+    },
+    {
+      "id": "future-promise",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "expectancy": "none",
+        "activity": "unknown"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "expectancy": "none",
+        "activity": "unsupported"
+      }
+    },
+    {
+      "id": "hypothetical-publish",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "expectancy": "none",
+        "activity": "unknown"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "expectancy": "none",
+        "activity": "unsupported"
+      }
+    },
+    {
+      "id": "subject-error",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "expectancy": "none",
+        "activity": "unknown"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "expectancy": "none",
+        "activity": "unsupported"
+      }
+    },
+    {
+      "id": "subject-pending",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "expectancy": "none",
+        "activity": "unknown"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "expectancy": "none",
+        "activity": "unsupported"
+      }
+    },
+    {
+      "id": "unframed-yes",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "expectancy": "none",
+        "activity": "unknown"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "expectancy": "none",
+        "activity": "unsupported"
+      }
+    },
+    {
+      "id": "unframed-no",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "expectancy": "none",
+        "activity": "unknown"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "expectancy": "none",
+        "activity": "unsupported"
+      }
+    },
+    {
+      "id": "house-heading",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "expectancy": "none",
+        "activity": "unknown"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "expectancy": "none",
+        "activity": "unsupported"
+      }
+    },
+    {
+      "id": "fixed-error-handling",
+      "expected": {
+        "state": "done",
+        "gesture": "done",
+        "delivery_kind": "unknown",
+        "activity": "final"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "delivery_kind": "unknown",
+        "activity": "unsupported"
+      }
+    },
+    {
+      "id": "explained-errors",
+      "expected": {
+        "state": "done",
+        "gesture": "answer",
+        "delivery_kind": "answer",
+        "activity": "final"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "delivery_kind": "unknown",
+        "activity": "unsupported"
+      }
+    },
+    {
+      "id": "explained-failure-rate",
+      "expected": {
+        "state": "done",
+        "gesture": "answer",
+        "delivery_kind": "answer",
+        "activity": "final"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "delivery_kind": "unknown",
+        "activity": "unsupported"
+      }
+    },
+    {
+      "id": "found-inability",
+      "expected": {
+        "state": "done",
+        "gesture": "answer",
+        "delivery_kind": "answer",
+        "activity": "final"
+      },
+      "actual": {
+        "state": "done",
+        "gesture": "answer",
+        "delivery_kind": "answer",
+        "activity": "unsupported"
+      }
+    },
+    {
+      "id": "complete-review-negative",
+      "expected": {
+        "state": "done",
+        "gesture": "answer",
+        "delivery_kind": "answer",
+        "activity": "final"
+      },
+      "actual": {
+        "state": "done",
+        "gesture": "answer",
+        "delivery_kind": "answer",
+        "activity": "unsupported"
+      }
+    },
+    {
+      "id": "ordinary-definition",
+      "expected": {
+        "state": "done",
+        "gesture": "answer",
+        "delivery_kind": "answer",
+        "activity": "final"
+      },
+      "actual": {
+        "state": "done",
+        "gesture": "answer",
+        "delivery_kind": "answer",
+        "activity": "unsupported"
+      }
+    },
+    {
+      "id": "own-analysis-unfinished",
+      "expected": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "own-tests-failed",
+      "expected": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "own-test-gap",
+      "expected": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "own-not-implemented",
+      "expected": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "own-verify-gap",
+      "expected": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "own-report-unavailable",
+      "expected": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "own-help-temporary",
+      "expected": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "own-cause-unverified",
+      "expected": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "own-not-ready",
+      "expected": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "own-unavailable-runtime",
+      "expected": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "artifact-current-bare",
+      "expected": {
+        "state": "done",
+        "gesture": "artifact",
+        "delivery_kind": "artifact",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "artifact-current-markdown",
+      "expected": {
+        "state": "done",
+        "gesture": "artifact",
+        "delivery_kind": "artifact",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "artifact-google-doc",
+      "expected": {
+        "state": "done",
+        "gesture": "artifact",
+        "delivery_kind": "artifact",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "artifact-sandbox",
+      "expected": {
+        "state": "done",
+        "gesture": "artifact",
+        "delivery_kind": "artifact",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "artifact-share-usage",
+      "expected": {
+        "state": "done",
+        "gesture": "artifact",
+        "delivery_kind": "artifact",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "needs-you",
+        "gesture": "needs-you",
+        "delivery_kind": "unknown",
+        "expectancy": "required-handoff"
+      }
+    },
+    {
+      "id": "artifact-bare-reference",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "artifact-old-reference",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "artifact-quoted-reference",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "artifact-code-reference",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "artifact-host-spoof",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "artifact-marker-spoof",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "artifact-example-heading",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "artifact-conditional",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "pr-bare-reference",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "pr-markdown-reference",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "pr-history",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "pr-negated",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "pr-spoof",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "pr-marker-spoof",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "pr-malformed",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "pr-documentation",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "opened-file",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "posted-local",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "delivery_kind": "unknown",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "pr-opened-bare",
+      "expected": {
+        "state": "done",
+        "gesture": "published",
+        "delivery_kind": "published"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "delivery_kind": "unknown"
+      }
+    },
+    {
+      "id": "pr-opened-markdown",
+      "expected": {
+        "state": "done",
+        "gesture": "published",
+        "delivery_kind": "published"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "delivery_kind": "unknown"
+      }
+    },
+    {
+      "id": "pr-posted-review",
+      "expected": {
+        "state": "done",
+        "gesture": "published",
+        "delivery_kind": "published"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "delivery_kind": "unknown"
+      }
+    },
+    {
+      "id": "pr-posted-prose",
+      "expected": {
+        "state": "done",
+        "gesture": "published",
+        "delivery_kind": "published"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "delivery_kind": "unknown"
+      }
+    },
+    {
+      "id": "pr-opened-prose",
+      "expected": {
+        "state": "done",
+        "gesture": "published",
+        "delivery_kind": "published"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "delivery_kind": "unknown"
+      }
+    },
+    {
+      "id": "pr-merged",
+      "expected": {
+        "state": "done",
+        "gesture": "published",
+        "delivery_kind": "published"
+      },
+      "actual": {
+        "state": "done",
+        "gesture": "published",
+        "delivery_kind": "published"
+      }
+    },
+    {
+      "id": "verdict-explicit",
+      "expected": {
+        "state": "done",
+        "gesture": "verdict",
+        "delivery_kind": "answer",
+        "assessment_kind": "verdict",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "done",
+        "gesture": "review",
+        "delivery_kind": "answer",
+        "assessment_kind": "unsupported",
+        "expectancy": "review-requested"
+      }
+    },
+    {
+      "id": "verdict-approve-object",
+      "expected": {
+        "state": "done",
+        "gesture": "verdict",
+        "delivery_kind": "answer",
+        "assessment_kind": "verdict",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "needs-you",
+        "gesture": "needs-you",
+        "delivery_kind": "unknown",
+        "assessment_kind": "unsupported",
+        "expectancy": "required-handoff"
+      }
+    },
+    {
+      "id": "verdict-negative-object",
+      "expected": {
+        "state": "done",
+        "gesture": "verdict",
+        "delivery_kind": "answer",
+        "assessment_kind": "verdict",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "delivery_kind": "unknown",
+        "assessment_kind": "unsupported",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "verdict-safe-object",
+      "expected": {
+        "state": "done",
+        "gesture": "verdict",
+        "delivery_kind": "answer",
+        "assessment_kind": "verdict",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "done",
+        "gesture": "done",
+        "delivery_kind": "unknown",
+        "assessment_kind": "unsupported",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "verdict-completed-review",
+      "expected": {
+        "state": "done",
+        "gesture": "verdict",
+        "delivery_kind": "answer",
+        "assessment_kind": "verdict",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "done",
+        "gesture": "answer",
+        "delivery_kind": "answer",
+        "assessment_kind": "unsupported",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "verdict-quoted",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "assessment_kind": "none"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "assessment_kind": "unsupported"
+      }
+    },
+    {
+      "id": "verdict-historical",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "assessment_kind": "none"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "assessment_kind": "unsupported"
+      }
+    },
+    {
+      "id": "verdict-example",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "assessment_kind": "none"
+      },
+      "actual": {
+        "state": "done",
+        "gesture": "review",
+        "assessment_kind": "unsupported"
+      }
+    },
+    {
+      "id": "verdict-alone-approve",
+      "expected": {
+        "state": "needs-you",
+        "gesture": "needs-you",
+        "assessment_kind": "none"
+      },
+      "actual": {
+        "state": "needs-you",
+        "gesture": "needs-you",
+        "assessment_kind": "unsupported"
+      }
+    },
+    {
+      "id": "verdict-needs-independent-action",
+      "expected": {
+        "state": "needs-you",
+        "gesture": "needs-you",
+        "assessment_kind": "verdict"
+      },
+      "actual": {
+        "state": "needs-you",
+        "gesture": "needs-you",
+        "assessment_kind": "unsupported"
+      }
+    },
+    {
+      "id": "auth-ready-draft",
+      "expected": {
+        "state": "needs-you",
+        "gesture": "authorization",
+        "handoff_kind": "authorization",
+        "expectancy": "required-handoff"
+      },
+      "actual": {
+        "state": "needs-you",
+        "gesture": "needs-you",
+        "handoff_kind": "action",
+        "expectancy": "required-handoff"
+      }
+    },
+    {
+      "id": "auth-complete-patch",
+      "expected": {
+        "state": "needs-you",
+        "gesture": "authorization",
+        "handoff_kind": "authorization",
+        "expectancy": "required-handoff"
+      },
+      "actual": {
+        "state": "needs-you",
+        "gesture": "needs-you",
+        "handoff_kind": "action",
+        "expectancy": "required-handoff"
+      }
+    },
+    {
+      "id": "auth-prepared-video",
+      "expected": {
+        "state": "needs-you",
+        "gesture": "authorization",
+        "handoff_kind": "authorization",
+        "expectancy": "required-handoff"
+      },
+      "actual": {
+        "state": "needs-you",
+        "gesture": "needs-you",
+        "handoff_kind": "action",
+        "expectancy": "required-handoff"
+      }
+    },
+    {
+      "id": "auth-ready-email",
+      "expected": {
+        "state": "needs-you",
+        "gesture": "authorization",
+        "handoff_kind": "authorization",
+        "expectancy": "required-handoff"
+      },
+      "actual": {
+        "state": "needs-you",
+        "gesture": "needs-you",
+        "handoff_kind": "action",
+        "expectancy": "required-handoff"
+      }
+    },
+    {
+      "id": "auth-optional-draft",
+      "expected": {
+        "state": "done",
+        "gesture": "done",
+        "expectancy": "none",
+        "handoff_kind": "action"
+      },
+      "actual": {
+        "state": "done",
+        "gesture": "done",
+        "expectancy": "none",
+        "handoff_kind": "action"
+      }
+    },
+    {
+      "id": "auth-generic-offer",
+      "expected": {
+        "state": "done",
+        "gesture": "done",
+        "expectancy": "none",
+        "handoff_kind": "action"
+      },
+      "actual": {
+        "state": "done",
+        "gesture": "done",
+        "expectancy": "none",
+        "handoff_kind": "action"
+      }
+    },
+    {
+      "id": "auth-optional-publish",
+      "expected": {
+        "state": "done",
+        "gesture": "artifact",
+        "expectancy": "none",
+        "handoff_kind": "action"
+      },
+      "actual": {
+        "state": "done",
+        "gesture": "artifact",
+        "expectancy": "none",
+        "handoff_kind": "action"
+      }
+    },
+    {
+      "id": "auth-not-prepared",
+      "expected": {
+        "state": "needs-you",
+        "gesture": "needs-you",
+        "handoff_kind": "action"
+      },
+      "actual": {
+        "state": "needs-you",
+        "gesture": "needs-you",
+        "handoff_kind": "action"
+      }
+    },
+    {
+      "id": "auth-resolved",
+      "expected": {
+        "state": "done",
+        "gesture": "published",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "done",
+        "gesture": "published",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "auth-mixed-needs-signin",
+      "expected": {
+        "state": "needs-you",
+        "gesture": "needs-you",
+        "handoff_kind": "action"
+      },
+      "actual": {
+        "state": "needs-you",
+        "gesture": "needs-you",
+        "handoff_kind": "action"
+      }
+    },
+    {
+      "id": "flight-reported",
+      "expected": {
+        "state": "unknown",
+        "gesture": "in-flight",
+        "activity": "in-flight",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "activity": "unsupported",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "flight-polling",
+      "expected": {
+        "state": "unknown",
+        "gesture": "in-flight",
+        "activity": "in-flight",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "activity": "unsupported",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "flight-confirmed",
+      "expected": {
+        "state": "unknown",
+        "gesture": "in-flight",
+        "activity": "in-flight",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "activity": "unsupported",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "flight-one-registry-unknown",
+      "expected": {
+        "state": "unknown",
+        "gesture": "in-flight",
+        "activity": "in-flight",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "activity": "unsupported",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "flight-absent-context",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "activity": "unknown"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "activity": "unsupported"
+      }
+    },
+    {
+      "id": "flight-empty-registry",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "activity": "unknown"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "activity": "unsupported"
+      }
+    },
+    {
+      "id": "flight-metadata-alone",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "activity": "unknown"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "activity": "unsupported"
+      }
+    },
+    {
+      "id": "flight-optional",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "activity": "unknown"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "activity": "unsupported"
+      }
+    },
+    {
+      "id": "flight-history",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "activity": "unknown"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "activity": "unsupported"
+      }
+    },
+    {
+      "id": "flight-finished",
+      "expected": {
+        "state": "done",
+        "gesture": "done",
+        "activity": "final"
+      },
+      "actual": {
+        "state": "done",
+        "gesture": "done",
+        "activity": "unsupported"
+      }
+    },
+    {
+      "id": "flight-delivered-with-monitor",
+      "expected": {
+        "state": "done",
+        "gesture": "artifact",
+        "activity": "final"
+      },
+      "actual": {
+        "state": "done",
+        "gesture": "artifact",
+        "activity": "unsupported"
+      }
+    },
+    {
+      "id": "flight-required-action",
+      "expected": {
+        "state": "needs-you",
+        "gesture": "needs-you",
+        "activity": "in-flight"
+      },
+      "actual": {
+        "state": "needs-you",
+        "gesture": "needs-you",
+        "activity": "unsupported"
+      }
+    },
+    {
+      "id": "flight-validation-gap",
+      "expected": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "activity": "in-flight"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "activity": "unsupported"
+      }
+    },
+    {
+      "id": "flight-later-completion",
+      "expected": {
+        "state": "done",
+        "gesture": "done",
+        "activity": "final"
+      },
+      "actual": {
+        "state": "done",
+        "gesture": "done",
+        "activity": "unsupported"
+      }
+    },
+    {
+      "id": "flight-future-tense",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "activity": "unknown"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "activity": "unsupported"
+      }
+    },
+    {
+      "id": "flight-historical-tense",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "activity": "unknown"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "activity": "unsupported"
+      }
+    },
+    {
+      "id": "flight-future-copula",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "activity": "unknown"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "activity": "unsupported"
+      }
+    },
+    {
+      "id": "plan-requested-incomplete",
+      "expected": {
+        "state": "caveats",
+        "gesture": "caveats"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats"
+      }
+    },
+    {
+      "id": "own-tests-errors",
+      "expected": {
+        "state": "caveats",
+        "gesture": "caveats"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats"
+      }
+    },
+    {
+      "id": "own-failing-test",
+      "expected": {
+        "state": "caveats",
+        "gesture": "caveats"
+      },
+      "actual": {
+        "state": "done",
+        "gesture": "done"
+      }
+    },
+    {
+      "id": "own-plain-failed-tests",
+      "expected": {
+        "state": "caveats",
+        "gesture": "caveats"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats"
+      }
+    },
+    {
+      "id": "own-explicit-caveats",
+      "expected": {
+        "state": "caveats",
+        "gesture": "caveats"
+      },
+      "actual": {
+        "state": "done",
+        "gesture": "done"
+      }
+    },
+    {
+      "id": "auth-example-preparation",
+      "expected": {
+        "state": "needs-you",
+        "gesture": "needs-you",
+        "handoff_kind": "action"
+      },
+      "actual": {
+        "state": "needs-you",
+        "gesture": "needs-you",
+        "handoff_kind": "action"
+      }
+    },
+    {
+      "id": "auth-unrelated-optional-publication",
+      "expected": {
+        "state": "needs-you",
+        "gesture": "needs-you",
+        "handoff_kind": "action"
+      },
+      "actual": {
+        "state": "needs-you",
+        "gesture": "needs-you",
+        "handoff_kind": "action"
+      }
+    },
+    {
+      "id": "url-query-done",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "done",
+        "gesture": "done",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "url-path-completed",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "done",
+        "gesture": "done",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "url-fragment-ready",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "done",
+        "gesture": "done",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "url-query-permission",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "url-path-request",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "url-query-failure",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "url-markdown-label-neutral",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "expectancy": "none"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "expectancy": "none"
+      }
+    },
+    {
+      "id": "own-unable-contracted",
+      "expected": {
+        "state": "caveats",
+        "gesture": "caveats"
+      },
+      "actual": {
+        "state": "done",
+        "gesture": "answer"
+      }
+    },
+    {
+      "id": "own-verification-passive",
+      "expected": {
+        "state": "caveats",
+        "gesture": "caveats"
+      },
+      "actual": {
+        "state": "done",
+        "gesture": "answer"
+      }
+    },
+    {
+      "id": "own-tests-terse",
+      "expected": {
+        "state": "caveats",
+        "gesture": "caveats"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats"
+      }
+    },
+    {
+      "id": "artifact-file-over-monitor",
+      "expected": {
+        "state": "done",
+        "gesture": "artifact",
+        "activity": "final"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "activity": "unsupported"
+      }
+    },
+    {
+      "id": "artifact-file-reference-only",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats"
+      }
+    },
+    {
+      "id": "verdict-review-found-no-issues",
+      "expected": {
+        "state": "done",
+        "gesture": "verdict",
+        "expectancy": "none",
+        "assessment_kind": "verdict"
+      },
+      "actual": {
+        "state": "needs-you",
+        "gesture": "needs-you",
+        "expectancy": "required-handoff",
+        "assessment_kind": "unsupported"
+      }
+    },
+    {
+      "id": "pr-inspection-not-publication",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "delivery_kind": "unknown"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "delivery_kind": "unknown"
+      }
+    },
+    {
+      "id": "pr-browser-not-publication",
+      "expected": {
+        "state": "unknown",
+        "gesture": "answer",
+        "delivery_kind": "unknown"
+      },
+      "actual": {
+        "state": "caveats",
+        "gesture": "caveats",
+        "delivery_kind": "unknown"
+      }
+    },
+    {
+      "id": "auth-ready-branch",
+      "expected": {
+        "state": "needs-you",
+        "gesture": "authorization",
+        "handoff_kind": "authorization"
+      },
+      "actual": {
+        "state": "needs-you",
+        "gesture": "needs-you",
+        "handoff_kind": "action"
+      }
+    }
+  ],
+  "classification_ms": {
+    "median": 0.130083,
+    "p95": 0.260916,
+    "max": 2.047792
+  }
+}

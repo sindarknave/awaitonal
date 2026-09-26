@@ -32,6 +32,7 @@ def parser():
         command = sub.add_parser(name, help="audition or render the palette" if name == "demo" else "play or render one gesture")
         if name == "play":
             command.add_argument("state", choices=GESTURES, metavar="GESTURE")
+            command.add_argument("--long-turn", action="store_true", help="audition the elapsed-time variant of a routine cue")
         command.add_argument("--out", type=Path, help="write WAV without playback")
         command.add_argument("--config", type=Path, help="editable palette TOML")
     classify = sub.add_parser("classify", help="inspect a response's reported state")
@@ -188,7 +189,7 @@ def execute(args):
     config = load_config(args.config)
     if args.command in ("play", "demo"):
         from .synth import render, render_demo, write_wav
-        samples = render_demo(config) if args.command == "demo" else render(args.state, config)
+        samples = render_demo(config) if args.command == "demo" else render(args.state, config, long_turn=args.long_turn)
         if args.out:
             write_wav(args.out, samples, config["synth"]["sample_rate"])
             print(args.out.absolute())
@@ -229,13 +230,22 @@ def execute(args):
                 write_wav(audio_path, render(state, config, response_length), config["synth"]["sample_rate"])
                 play_file(audio_path, stop_event=stop)
 
+        def long_turn_player(state, response_length):
+            if not args.silent:
+                write_wav(audio_path, render(state, config, response_length, long_turn=True), config["synth"]["sample_rate"])
+                play_file(audio_path, stop_event=stop)
+
         def logger(record):
             print(json.dumps(record), file=sys.stderr, flush=True)
 
         minimum = args.min_turn_seconds
         if minimum is None:
             minimum = config.get("notifications", {}).get("min_turn_seconds", 0)
-        service = Service(classifier, player, args.socket, args.queue_size, logger, min_turn_seconds=minimum)
+        notifications = config.get("notifications", {})
+        service = Service(classifier, player, args.socket, args.queue_size, logger, min_turn_seconds=minimum,
+                          long_turn_seconds=notifications.get("long_turn_seconds", 0),
+                          notify_in_flight=notifications.get("notify_in_flight", False),
+                          long_turn_player=long_turn_player)
         print(f"Awaitonal starting on {args.socket or default_socket()} ({args.classifier}); Ctrl-C to stop.", file=sys.stderr, flush=True)
         service.run(stop)
     return 0

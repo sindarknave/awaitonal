@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from awaitonal.adapter import MAX_INPUT, adapt_claude, event_from_wire
+from awaitonal.adapter import MAX_BACKGROUND_ITEMS, MAX_INPUT, adapt_claude, event_from_wire
 from awaitonal.classify import RulesClassifier
 
 
@@ -158,3 +158,64 @@ def test_wire_rejects_malformed_and_decision_fields(patch):
     payload = adapt_claude(fixture("stop")).to_dict()
     payload.update(patch)
     assert event_from_wire(payload) is None
+
+
+def test_background_metadata_is_only_bounded_counts_not_private_task_text():
+    payload = fixture("stop")
+    payload.update(background_tasks=[
+        {"id": "private-task-a", "type": "shell", "status": "running", "command": "PRIVATE COMMAND"},
+        {"id": "private-task-b", "type": "subagent", "status": "pending", "description": "PRIVATE TASK"},
+        {"id": "private-task-c", "type": "shell", "status": "completed"},
+    ], session_crons=[{"id": "private-cron", "schedule": "* * * * *", "recurring": True,
+                       "prompt": "PRIVATE PROMPT"}])
+    event = adapt_claude(payload)
+    assert event.background_tasks == 2 and event.session_crons == 1
+    assert event_from_wire(event.to_dict()) == event
+    wire = json.dumps(event.to_dict())
+    assert "PRIVATE" not in wire and "private-" not in wire and "schedule" not in wire
+
+
+def test_background_registry_presence_is_distinct_from_empty():
+    payload = fixture("stop")
+    payload.pop("background_tasks", None)
+    payload.pop("session_crons", None)
+    missing = adapt_claude(payload)
+    assert missing.background_tasks is None and missing.session_crons is None
+    assert "background_tasks" not in missing.to_dict() and "session_crons" not in missing.to_dict()
+    empty = adapt_claude({**fixture("stop"), "background_tasks": [], "session_crons": []})
+    assert empty.background_tasks == empty.session_crons == 0
+    assert event_from_wire(empty.to_dict()) == empty
+
+
+@pytest.mark.parametrize("value", [
+    None, 1, True, {}, [None], [{}],
+    [{"id": "a", "type": "shell", "status": "new-future-status"}],
+    [{"id": "a", "type": "shell", "status": False}],
+    [{"id": "a", "type": "shell", "status": "running"}] * (MAX_BACKGROUND_ITEMS + 1),
+])
+def test_unfamiliar_background_metadata_does_not_lose_valid_final_message(value):
+    event = adapt_claude({**fixture("stop"), "background_tasks": value})
+    assert event is not None and event.background_tasks is None
+    assert event.text == fixture("stop")["last_assistant_message"]
+
+
+@pytest.mark.parametrize("value", [None, {}, [None], [{}],
+                                   [{"id": "a", "schedule": "* * * * *", "recurring": 1}]])
+def test_unavailable_or_malformed_cron_registry_is_unknown(value):
+    event = adapt_claude({**fixture("stop"), "session_crons": value})
+    assert event is not None and event.session_crons is None
+
+
+@pytest.mark.parametrize("field", ["background_tasks", "session_crons"])
+@pytest.mark.parametrize("value", [-1, True, False, 1.5, "1", [], {}, MAX_BACKGROUND_ITEMS + 1])
+def test_wire_rejects_invalid_background_counts(field, value):
+    assert event_from_wire({**adapt_claude(fixture("stop")).to_dict(), field: value}) is None
+
+
+@pytest.mark.parametrize("field", ["background_tasks", "session_crons"])
+def test_background_counts_cannot_be_attached_to_structured_attention_or_start(field):
+    event = adapt_claude(fixture("question")).to_dict()
+    assert event_from_wire({**event, field: 1}) is None
+    marker = {"session_id": "s", "event_id": "start:t", "kind": "turn-start",
+              "evidence_source": "claude:UserPromptSubmit", field: 1}
+    assert event_from_wire(marker) is None

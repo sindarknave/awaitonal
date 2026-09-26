@@ -1,0 +1,16 @@
+{
+  "version": "0.4.0",
+  "environment": "Fresh non-editable wheel and NumPy only, invoked from unrelated temporary directory",
+  "checks": [
+    "quiet real hook processes",
+    "matched start/Stop selects long-turn variant",
+    "bounded background metadata selects suppressed in-flight",
+    "unknown remains neutral answer",
+    "private hook details absent from logs",
+    "long-turn verdict WAV rendering",
+    "authenticated service version",
+    "clean service shutdown"
+  ],
+  "audio_played": false,
+  "passed": true
+}

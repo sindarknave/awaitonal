@@ -16,17 +16,17 @@ from awaitonal.adapter import MAX_INPUT, adapt_claude
 from awaitonal.classify import RulesClassifier
 from awaitonal.client import send_event
 from awaitonal.service import EventQueue, Service
-from awaitonal.types import Controls, Event, map_controls
+from awaitonal.types import Classification, Controls, Event, controls_for, map_controls
 
 
 @contextmanager
-def running_service(player=None, classifier=None, queue_size=32, min_turn_seconds=0):
+def running_service(player=None, classifier=None, queue_size=32, min_turn_seconds=0, **options):
     with tempfile.TemporaryDirectory(prefix="at-", dir="/tmp") as directory:
         path = Path(directory) / "s.sock"
         played, logs, failures = [], [], []
         stop = threading.Event()
         service = Service(classifier or RulesClassifier(), player or (lambda state, length: played.append(state)),
-                          path, queue_size, logs.append, min_turn_seconds=min_turn_seconds)
+                          path, queue_size, logs.append, min_turn_seconds=min_turn_seconds, **options)
 
         def run():
             try:
@@ -351,6 +351,136 @@ def test_stop_waiting_does_not_repeat_structured_attention_but_new_questions_do(
                            evidence_source="claude:Stop", turn_id=turn), True,
                      now=now + 0.3, state="rejected")
     assert queue.put(stopped, True, now=now + 2.3, state="needs-you")
+    queue.close()
+
+
+@pytest.mark.parametrize("turn", ["", "known-turn"])
+@pytest.mark.parametrize("already_played", [False, True])
+def test_ambiguous_stop_does_not_replace_or_repeat_recent_question(turn, already_played):
+    queue = EventQueue()
+    now = time.monotonic()
+    question = Event("s", "question:one", explicit_state="needs-you", turn_id=turn)
+    assert queue.put(question, True, now=now)
+    if already_played:
+        assert queue.get() == question
+    result = Classification("unknown", controls_for("unknown"), "test", "test")
+    closing = Event("s", "stop:one", "Okay.", evidence_source="claude:Stop", turn_id=turn)
+    assert not queue.put(closing, now=now + 0.1, state=result.state, classification=result)
+    assert [p.event for p in queue.items] == ([] if already_played else [question])
+    # Missing IDs and known IDs both fail open after the short overlap window.
+    assert queue.put(closing, now=now + 2.1, state=result.state, classification=result)
+    if not already_played:
+        assert queue.get() == question  # Unknown prose cannot resolve queued attention.
+    assert queue.get() == closing
+    queue.close()
+
+
+@pytest.mark.parametrize("result", [
+    Classification("done", controls_for("done"), "test", "test", delivery_kind="artifact"),
+    Classification("caveats", controls_for("caveats"), "test", "test"),
+    Classification("done", controls_for("done"), "test", "test", expectancy="review-requested"),
+])
+def test_a_real_final_report_after_question_remains_audible_and_resolves_queued_question(result):
+    queue = EventQueue()
+    now = time.monotonic()
+    question = Event("s", "question:one", explicit_state="needs-you", turn_id="t")
+    assert queue.put(question, True, now=now)
+    report = Event("s", "stop:one", "Report.", evidence_source="claude:Stop", turn_id="t")
+    assert queue.put(report, result.attention, now=now + 0.1, state=result.state, classification=result)
+    assert [p.event for p in queue.items] == [report]
+    queue.close()
+
+
+def test_unknown_stop_for_another_turn_or_session_does_not_collide_with_question():
+    queue = EventQueue()
+    now = time.monotonic()
+    assert queue.put(Event("s", "question:one", explicit_state="needs-you", turn_id="old"), True, now=now)
+    result = Classification("unknown", controls_for("unknown"), "test", "test")
+    for session, turn in (("other", "old"), ("s", "new"), ("s", "")):
+        event = Event(session, f"stop:{turn}", "Okay.", evidence_source="claude:Stop", turn_id=turn)
+        assert queue.put(event, now=now + 0.1, state=result.state, classification=result)
+    queue.close()
+
+
+def test_stop_failure_is_preserved_after_question_even_when_both_need_attention():
+    queue = EventQueue()
+    now = time.monotonic()
+    assert queue.put(Event("s", "question:one", explicit_state="needs-you", turn_id="t"), True, now=now)
+    failure = adapt_claude({"session_id": "s", "prompt_id": "t", "hook_event_name": "StopFailure",
+                           "error": "authentication_failed"})
+    result = RulesClassifier().classify(failure)
+    assert queue.put(failure, result.attention, now=now + 0.1, state=result.state, classification=result)
+    assert any(p.event == failure for p in queue.items)
+    queue.close()
+
+
+@pytest.mark.parametrize("contextual_player", [False, True])
+def test_live_long_turn_routes_to_optional_player_and_keeps_two_argument_players(contextual_player):
+    long_played = []
+    options = {"long_turn_player": lambda gesture, length: long_played.append((gesture, length))} if contextual_player else {}
+    with running_service(long_turn_seconds=120, **options) as (service, _, played, logs):
+        now = time.monotonic()
+        rules = RulesClassifier()
+        start = adapt_claude({"session_id": "long", "prompt_id": "t", "hook_event_name": "UserPromptSubmit",
+                              "prompt": "PRIVATE PROMPT"})
+        stop = adapt_claude({"session_id": "long", "prompt_id": "t", "hook_event_name": "Stop",
+                             "last_assistant_message": "Implemented the fix and all tests pass. PRIVATE RESULT"})
+        service._intake(start, rules, now - 150)
+        service._intake(stop, rules, now)
+        eventually(lambda: bool(long_played if contextual_player else played))
+        assert long_played == ([("done", len(stop.text))] if contextual_player else [])
+        assert played == ([] if contextual_player else ["done"])
+        assert logs[0]["long_turn"] is True and logs[0]["turn_seconds"] == 150
+        assert "PRIVATE" not in json.dumps(logs)
+
+
+@pytest.mark.parametrize("enabled", [False, True])
+def test_live_in_flight_notification_default_and_opt_in(enabled):
+    class InFlightClassifier:
+        def classify(self, event):
+            return Classification("unknown", controls_for("unknown"), "test", "test", activity="in-flight")
+
+    with running_service(classifier=InFlightClassifier(), notify_in_flight=enabled) as (_, path, played, logs):
+        send_event(Event("s", "1", "PRIVATE RESULT"), path)
+        eventually(lambda: bool(logs))
+        assert logs[0]["suppressed"] == (None if enabled else "in-flight")
+        if enabled:
+            eventually(lambda: played == ["in-flight"])
+        else:
+            assert not played
+        assert "PRIVATE" not in json.dumps(logs)
+
+
+@pytest.mark.parametrize("queue_size,expected_count", [(1, 1), (2, 2)])
+def test_default_silent_activity_cannot_evict_an_unplayed_artifact(queue_size, expected_count):
+    class Hints:
+        def classify(self, event):
+            if event.event_id == "artifact":
+                return Classification("done", controls_for("done"), "test", "test", delivery_kind="artifact")
+            return Classification("unknown", controls_for("unknown"), "test", "test", activity="in-flight")
+
+    hints = Hints()
+    service = Service(hints, lambda *_: None, queue_size=queue_size)
+    now = time.monotonic()
+    artifact = Event("s", "artifact", "Report.", evidence_source="claude:Stop")
+    background = Event("s", "activity", "Monitoring.", evidence_source="claude:Stop")
+    service._intake(artifact, hints, now)
+    service._intake(background, hints, now + 0.1)
+    assert len(service.queue.items) == expected_count
+    assert service.queue.get() == artifact
+    if expected_count == 2:
+        assert service.queue.get() == background  # The worker can still log its suppression.
+    service.queue.close()
+
+
+def test_explicit_ongoing_work_is_not_deduped_as_ambiguous_question_closing():
+    queue = EventQueue()
+    now = time.monotonic()
+    assert queue.put(Event("s", "question:one", explicit_state="needs-you", turn_id="t"), True, now=now)
+    result = Classification("unknown", controls_for("unknown"), "test", "test", activity="in-flight")
+    event = Event("s", "stop:one", "CI is running. I'll report back.", evidence_source="claude:Stop", turn_id="t")
+    assert queue.put(event, now=now + 0.1, state=result.state, classification=result)
+    assert queue.get() == event
     queue.close()
 
 

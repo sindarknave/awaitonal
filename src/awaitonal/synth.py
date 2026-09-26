@@ -15,6 +15,9 @@ from .types import GESTURES
 GESTURE_ORDER = GESTURES
 # Kept as an import alias for callers of the original renderer.
 STATE_ORDER = GESTURE_ORDER
+# Elapsed time can enrich a routine result without changing its meaning.
+# Attention cues and unfinished/continuing work keep their fixed arrangement.
+LONG_TURN_GESTURES = frozenset(("done", "answer", "verdict", "plan", "artifact", "published"))
 _SEMITONES = {"C": 0, "D": 2, "E": 4, "F": 5, "G": 7, "A": 9, "B": 11}
 
 
@@ -52,7 +55,7 @@ def _sample_rate(config: dict) -> int:
     return int(value)
 
 
-def _render_events(state: str, config: dict, brightness: float) -> np.ndarray:
+def _render_events(state: str, config: dict, brightness: float, *, fuller: bool = False) -> np.ndarray:
     settings = config["synth"]
     sample_rate = _sample_rate(config)
     patch = config["states"][state]
@@ -73,7 +76,7 @@ def _render_events(state: str, config: dict, brightness: float) -> np.ndarray:
     events = patch["events"]
     if not isinstance(events, list) or not 1 <= len(events) <= 32:
         raise ValueError("A state must contain between 1 and 32 events")
-    for event in events:
+    for event_index, event in enumerate(events):
         start = _number(event["time"], "event time", 0.0, duration)
         length = _number(event["duration"], "event duration", 0.005, duration)
         if start + length > duration + 1.0 / sample_rate:
@@ -94,10 +97,15 @@ def _render_events(state: str, config: dict, brightness: float) -> np.ndarray:
         ending = 0.5 - 0.5 * np.cos(np.pi * np.minimum(remaining / release, 1.0))
         envelope = onset * ending * np.exp(-times / decay)
         chord = np.zeros(count, dtype=np.float64)
-        for note in notes:
-            frequency = note_frequency(note)
+        voices = [(note_frequency(note), 1.0) for note in notes]
+        if fuller and event_index == len(events) - 1:
+            # A quiet octave beneath the final event keeps the original
+            # pitches, rhythm, and length recognizable. Its energy is matched
+            # to the unmodified cue below, so a long wait is not a louder cue.
+            voices.append((voices[0][0] / 2.0, 0.32))
+        for frequency, amplitude in voices:
             if frequency >= sample_rate / 2:
-                raise ValueError(f"Fundamental {note} is at or above Nyquist")
+                raise ValueError("Fundamental is at or above Nyquist")
             usable = frequency * harmonics < sample_rate / 2
             local_weights = weights[usable]
             local_harmonics = harmonics[usable]
@@ -106,22 +114,25 @@ def _render_events(state: str, config: dict, brightness: float) -> np.ndarray:
                 raise ValueError("No audible partial has a nonzero weight")
             for harmonic, weight in zip(local_harmonics, local_weights, strict=True):
                 partial_envelope = np.exp(-times * partial_decay * (harmonic - 1) / decay)
-                chord += (weight / norm) * partial_envelope * np.sin(
+                chord += (amplitude * weight / norm) * partial_envelope * np.sin(
                     2.0 * np.pi * frequency * harmonic * times
                 )
         # Energy, rather than peak, scaling stops richer chords becoming louder.
-        chord *= envelope * gain / math.sqrt(len(notes))
+        chord *= envelope * gain / math.sqrt(sum(amplitude ** 2 for _, amplitude in voices))
         offset = round(start * sample_rate)
         end = min(len(samples), offset + count)
         samples[offset:end] += chord[:end - offset]
     return samples
 
 
-def render(state: str, config: dict | None = None, response_length: int = 0) -> np.ndarray:
+def render(state: str, config: dict | None = None, response_length: int = 0,
+           *, long_turn: bool = False) -> np.ndarray:
     """Render one gesture as mono float64 samples, with guaranteed headroom.
 
     Brightness is opt-in, bounded, and RMS-matched to the same fixed gesture.
-    Character count never changes duration or the intended volume.
+    Character count never changes duration or the intended volume. Separately,
+    long_turn enriches the final voicing of routine results at the same RMS
+    level and duration. It describes elapsed time, not reasoning or confidence.
     """
     config = load_config() if config is None else config
     if state not in GESTURE_ORDER:
@@ -130,18 +141,21 @@ def render(state: str, config: dict | None = None, response_length: int = 0) -> 
     master_gain = _number(settings["master_gain"], "master_gain", 0.0, 1.0)
     peak_limit = _number(settings["peak_limit"], "peak_limit", 0.01, 0.98)
     samples = _render_events(state, config, 0.0)
+    reference_energy = float(np.dot(samples, samples))
+    fuller = long_turn and state in LONG_TURN_GESTURES
+    amount = 0.0
     brightness_config = settings.get("brightness", {})
     if brightness_config.get("enabled", False):
         scale = _number(brightness_config["length_scale"], "length_scale", 1.0, 1e9)
         max_boost = _number(brightness_config["max_boost"], "max_boost", 0.0, 2.0)
         count = _number(response_length, "response_length", 0.0, 1e15)
         amount = max_boost * count / (count + scale)
-        if amount > 0:
-            brighter = _render_events(state, config, amount)
-            energy = float(np.dot(brighter, brighter))
-            if energy > 0:
-                brighter *= math.sqrt(float(np.dot(samples, samples)) / energy)
-            samples = brighter
+    if amount > 0 or fuller:
+        variant = _render_events(state, config, amount, fuller=fuller)
+        energy = float(np.dot(variant, variant))
+        if energy > 0:
+            variant *= math.sqrt(reference_energy / energy)
+        samples = variant
     samples *= master_gain
     peak = float(np.max(np.abs(samples)))
     if peak > peak_limit:

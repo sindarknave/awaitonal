@@ -10,9 +10,10 @@ import re
 from typing import Literal
 
 from .text import MAX_PROSE_CHARS
+from .delivery import detect_assessment
 
 Expectancy = Literal["none", "review-requested", "required-handoff"]
-HandoffKind = Literal["decision", "action"]
+HandoffKind = Literal["decision", "action", "authorization"]
 
 
 @dataclass(frozen=True)
@@ -30,6 +31,7 @@ def _rx(pattern: str) -> re.Pattern:
 # All searches below have fixed or bounded spans: no repeated unbounded suffixes.
 _PARTS = _rx(r"(?<=[.!?])\s+|\n+|;\s*|\b(?:but|however|yet)\b\s*,?\s*|,\s*(?=now\b)")
 _DOC = _rx(
+    r"^(?:#+\s*)?(?:example|sample output|expected output|hypothetical example)\s*:|"
     r"\b(?:guide|manual|documentation|readme|tutorial|instructions?|quick[- ]start sheet|example|sample|template|prompt|task description)"
     r"[^.!?\n]{0,65}(?:\bsays?\b|\bexplains?\b|\bcontains?\b|\bincludes?\b|\breads?\b|\bsection\b)|"
     r"\b(?:wrote|created|prepared) (?:the |a |an )?(?:quick[- ]start sheet|instructions|guide|tutorial)[^.!?\n]{0,40}:|"
@@ -106,6 +108,35 @@ _RESOLUTIONS = {
     "action": _rx(r"\b(?:restart|upload|installation) (?:is |was |has )?(?:complete(?:d)?|finished|succeeded)\b|\b(?:service|connection) (?:has )?(?:reconnected|restarted)\b"),
 }
 _UNRESOLVED = _rx(r"\b(?:not|never|hasn't|haven't|isn't|wasn't|weren't|aren't|didn't|don't|without|until|once|when|if)\b")
+_PREPARED = _rx(
+    r"\b(?:draft|patch|branch|changes|preview|release|email|message|report|review|video|package)\b[^.!?\n]{0,45}"
+    r"\b(?:ready|complete|completed|prepared|written|committed|rendered|saved)\b|"
+    r"\b(?:i |we )?(?:prepared|wrote|rendered|saved|committed)\b[^.!?\n]{0,45}"
+    r"\b(?:draft|patch|branch|changes|preview|release|email|message|report|review|video|package)\b"
+)
+_OUTWARD = _rx(r"\b(?:push|publish|post|send|submit|merge|deploy|release)\b")
+
+
+def _staged_authorization(prose: str) -> bool:
+    prepared = outward = False
+    in_instructions = False
+    for part in _PARTS.split(prose):
+        if _CURRENT.search(part) or re.match(r"^(?:actual result|current status|result)\s*:", part, re.I):
+            in_instructions = False
+        if _DOC.search(part):
+            in_instructions = True
+            continue
+        if in_instructions:
+            if _DOC_END.search(part):
+                in_instructions = False
+            continue
+        if (_HISTORICAL.search(part) or _FUTURE.search(part) or _OPTIONAL.search(part)
+                or re.search(r"\b(?:can also|happy to|say the word|want me to)\b", part, re.I)):
+            continue
+        if not re.search(r"\b(?:if|would|will|no|not|never|isn't|is not)\b", part, re.I):
+            prepared |= bool(_PREPARED.search(part))
+        outward |= bool(_OUTWARD.search(part))
+    return prepared and outward
 
 
 def _auth_object(clause: str, verb_end: int) -> bool:
@@ -168,13 +199,14 @@ def analyze_handoff(prose: str) -> Handoff:
     review_approval_coupled = False
     in_instructions = False
     prose = prose.replace("’", "'")
+    verdict = detect_assessment(prose) == "verdict"
     # Preserve explicit line boundaries but join common soft-wrapped phrases.
     prose = re.sub(r"\b(have|has|had|your|the|been|is|are|was|were|need|needs|require|requires|for|to)\s*\n\s*", r"\1 ", prose, flags=re.I)
     for part in _PARTS.split(prose):
         clause = part.strip().lower()
         if not clause:
             continue
-        if _CURRENT.search(clause):
+        if _CURRENT.search(clause) or re.match(r"^(?:actual result|current status|result)\s*:", clause):
             in_instructions = False
         if _DOC.search(clause):
             in_instructions = True
@@ -214,6 +246,14 @@ def analyze_handoff(prose: str) -> Handoff:
         ) if pattern.search(clause)}
         candidates: list[tuple[int, str]] = []
         for match in _DIRECT.finditer(clause):
+            if match["verb"] == "review" and re.match(r"\s+verdict\s*:", clause[match.end():]):
+                continue
+            if (verdict and match["verb"] == "approve"
+                    and re.fullmatch(r"approve[.!]?", clause)):
+                continue  # Completed review verdict, not a request for approval.
+            if (match["verb"] == "share" and "dependency" not in signals
+                    and re.search(r"\b(?:page|share|sharing) menu\b", clause)):
+                continue  # Usage instruction after delivering an artifact.
             kind = _direct_kind(match["verb"], signals, _auth_object(clause, match.end("verb")))
             if kind:
                 candidates.append((match.start(), kind))
@@ -262,6 +302,8 @@ def analyze_handoff(prose: str) -> Handoff:
     required = {kind for kind, value in pending.items() if value == "required-handoff"}
     if required:
         # A required action wins when both action and a preference are pending.
+        if required - {"review"} == {"approval"} and _staged_authorization(prose):
+            return Handoff("required-handoff", "authorization")
         return Handoff("required-handoff", "decision" if required - {"review"} == {"choice"} else "action")
     if pending:
         return Handoff("review-requested")

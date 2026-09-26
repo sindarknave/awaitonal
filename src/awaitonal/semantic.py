@@ -3,9 +3,10 @@
 Positive anchors compete using cosine similarity. Class score blends the final
 context with the strongest selected context. Attention requires an absolute score,
 a margin over the runner-up, AND a margin over labeled negative anchors. Everything
-uncertain falls back to caveats. These values are not calibrated probabilities.
+uncertain retains an unknown outcome with a neutral cue. These values are not calibrated probabilities.
 """
 import json
+from dataclasses import replace
 from pathlib import Path
 import tomllib
 
@@ -88,7 +89,7 @@ class SemanticClassifier:
             return None
         if event.explicit_state is not None:
             return explicit_result(event, self.threshold)
-        prose = assistant_prose(event.text)
+        prose = assistant_prose(event.text, link_types=True)
         if not prose:
             return None
         # The encoder only has four outcome anchors. Explicit delivery and
@@ -96,11 +97,10 @@ class SemanticClassifier:
         # and review requests are not lost to an embedding similarity cutoff.
         routed = self.routing_rules.classify(event)
         if routed and (routed.delivery_kind != "unknown" or routed.expectancy != "none"
-                       or routed.state == "rejected"):
-            return result(routed.state, event, routed.reason, self.threshold,
-                          {"backend": "rules-routing", "requested_backend": "sentence-transformers"},
-                          delivery_kind=routed.delivery_kind, expectancy=routed.expectancy,
-                          handoff_kind=routed.handoff_kind)
+                       or routed.state in ("done", "rejected", "caveats") or routed.activity == "in-flight"
+                       or routed.diagnostics.get("activity_evidence") == "empty-background-registry"):
+            return replace(routed, diagnostics={**routed.diagnostics, "backend": "rules-routing",
+                                               "requested_backend": "sentence-transformers"})
         import numpy as np
         chunks, diagnostics = select_chunks(prose, self.model.tokenizer, self.token_budget,
                                              self.config["max_chunks"])
@@ -132,7 +132,7 @@ class SemanticClassifier:
         contrast = positive[winner] - negative[winner]
         accepted = (positive[winner] >= required_similarity and margin >= required_margin and
                     (not attention or contrast >= cfg["contrast_margin"]))
-        state = winner if accepted else "caveats"
+        state = winner if accepted else "unknown"
         diagnostics.update({"backend": "sentence-transformers", "model": MODEL_ID,
                             "scores": {k: round(v, 6) for k, v in positive.items()},
                             "contrast_scores": {k: round(v, 6) for k, v in negative.items()},

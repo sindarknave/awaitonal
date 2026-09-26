@@ -29,6 +29,10 @@ uv run awaitonal play decision
 uv run awaitonal play caveats
 uv run awaitonal play needs-you
 uv run awaitonal play rejected
+uv run awaitonal play verdict
+uv run awaitonal play authorization
+uv run awaitonal play in-flight
+uv run awaitonal play answer --long-turn
 ```
 
 `--out` renders without playback; `play` accepts it too. Neither audition command
@@ -42,15 +46,18 @@ plays the gestures in this order with 350 ms gaps:
 | `plan` | Plan/proposal: four measured steps | 1.10 s |
 | `artifact` | Output ready to inspect: an arpeggio blooms | 1.12 s |
 | `published` | Result delivered externally: two broad chord strikes | 1.12 s |
-| `review` | Please review/react: a suspended opening and hanging A4 → B4 | 1.52 s |
+| `review` | Feedback requested: a suspended opening and hanging A4 → B4 | 1.52 s |
 | `decision` | Required choice/clarification: taps and a rising question | 1.13 s |
 | `needs-you` | Sign-in, approval, or needed action: knocks, a pause, then A4 → B4 | 1.82 s |
 | `caveats` | Partial result/limitation: an uneven unresolved descent | 1.10 s |
 | `rejected` | C4–F♯4, two dry taps | 0.66 s |
 | `failed` | API/infrastructure failure: three low descending dyad pulses | 1.02 s |
+| `verdict` | Completed assessment: a compact, firm ending | 0.98 s |
+| `in-flight` | Continuing work: a very quiet unresolved pulse (silent by default) | 0.54 s |
+| `authorization` | Prepared outward action awaits approval: an expectant tail | 1.38 s |
 
-These cover eight main result/handoff families, the softer review invitation,
-the retained refusal cue, and a distinct infrastructure failure cue. Each notification plays one gesture once.
+In-flight notifications are silent by default; `play` and
+`demo` let you audition them. Each audible notification plays one gesture once.
 
 All sound settings live in [palette.toml](src/awaitonal/palette.toml): pitches,
 timings, envelopes, partials, headroom, gain, and routing threshold. Use
@@ -109,13 +116,16 @@ success instead. `serve --silent` exercises classification and diagnostics witho
 playing audio. Setup is explicit; notification hooks never install dependencies
 or start the service. The listener remains local to your account.
 
-The core values are `loose_ends` in [0,1], `needs_you`, and `rejected`. Routing is
-deterministic: rejection first, then waiting, then caveats at or above the configured
-threshold (default 0.5), otherwise done. Text classifiers initially use coarse
+The core controls are `loose_ends` in [0,1], `needs_you`, `rejected`, and `failed`.
+Known outcomes route deterministically: rejection first, then waiting, failure,
+then caveats at or above the configured threshold (default 0.5), otherwise done.
+Text classifiers use coarse
 loose-end values 0 or 1; neither similarities nor controls claim calibrated
-probability. Text outcomes remain `done`, `caveats`, `needs-you`, and
-`rejected`; structured infrastructure errors add `failed`. Classification
-also returns `delivery_kind`, `expectancy`, `handoff_kind`, and the selected `gesture`.
+probability. Text outcomes include `done`, `caveats`, `needs-you`, `rejected`,
+and `unknown`; structured infrastructure errors add `failed`. `unknown` is
+uncertainty, not a claim of success, and uses the neutral `answer` cue.
+Classification also returns `delivery_kind`, `expectancy`, `handoff_kind`,
+`assessment_kind`, `activity`, and the selected `gesture`.
 Playback uses `gesture`; queue attention uses the outcome. A direct review request
 gets `review-requested` and the softer cue without claiming a blocking dependency.
 Required sign-in, approval, choices, and needed evidence get `required-handoff`.
@@ -127,8 +137,11 @@ do not imply a current handoff. An explicit request to review and respond does,
 even when work is not blocked. A pending approval still matters after tests pass.
 Completed assessments can report defects without becoming unfinished repairs.
 Optional offers do not imply waiting, and recovered failures do not imply refusal.
-Unclear prose still uses the legacy caveats fallback; empty/code-only input and malformed events
-are ignored. Rules are intentionally small English-language heuristics; Markdown
+Unclear prose retains `state = "unknown"`; empty/code-only input and malformed events
+are ignored. Discussing an error does not itself establish unfinished work.
+Delivered artifact and PR links require current delivery wording, not just a URL.
+A verdict requires an assessment frame or assessed object; an ordinary yes/no
+answer is not enough. Ongoing work is separate from a future plan or optional offer. Rules are intentionally small English-language heuristics; Markdown
 extraction and semantic interpretation are imperfect. The classifier sees the final
 response, not the preceding user request, so task scope and implicit dependencies
 can remain ambiguous. This update adds a deterministic baseline, not a trained
@@ -155,6 +168,34 @@ permanent suppression. No queue or response text is persisted. Default service
 stderr contains outcome/gesture metadata, evidence sources, timings, and error class
 names only. Soft review invitations have routine queue priority; required handoffs
 and refusals have attention priority. Longer cues can increase delay during bursts.
+
+## Elapsed-time and background treatments
+
+These optional settings work with the resident service:
+
+```toml
+[notifications]
+min_turn_seconds = 30
+long_turn_seconds = 120
+notify_in_flight = false
+```
+
+Pass the file with `serve --config PATH` or `service start --config PATH`.
+Defaults are zero for both thresholds and false for the background pulse.
+Short-turn suppression keeps handoffs, feedback requests, caveats, refusals, and
+failures audible. The long-turn variant slightly fills out a routine result's
+existing motif at matched energy and unchanged duration. Preview it with
+`awaitonal play verdict --long-turn`. The in-flight pulse is independent of timing.
+
+Timing means elapsed user-waited time, **not model thinking duration**. It requires
+matching prompt-start/stop IDs (Claude 2.1.196+); missing or ambiguous timing leaves
+the ordinary treatment intact. Autonomous follow-ups cannot inherit an old wait.
+The installed 2.1.158 schema supports background-task metadata but lacks prompt IDs.
+
+Stop metadata contributes only bounded background-task and scheduled-task counts;
+commands, task descriptions, and scheduled prompts are discarded. Counts corroborate
+an ongoing-work reply, rather than turning every result with a background monitor
+into a waiting cue. No hooks are added to every tool call.
 
 ## Connect Claude Code
 
@@ -281,7 +322,7 @@ For each class, a window score is 75% best-anchor similarity plus 25% mean of th
 top three. The class score is 65% conclusion score plus 35% strongest-window score.
 The winner must exceed an absolute threshold and runner-up margin. Attention and
 rejection additionally need stricter thresholds and a margin over negative anchors.
-Uncertain results become caveats. Cosine similarity measures resemblance to examples,
+Uncertain results retain `unknown` and use the neutral answer cue. Cosine similarity measures resemblance to examples,
 not probability or whether the coding agent is correct.
 
 ## Tests, evaluation, and timings
@@ -296,6 +337,7 @@ uv sync --dev
 HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 .venv/bin/python -m pytest -q
 .venv/bin/awaitonal evaluate --classifier rules
 .venv/bin/awaitonal evaluate --fixtures examples/gesture-evaluation.jsonl
+.venv/bin/awaitonal evaluate --fixtures examples/classification-vNext.jsonl
 .venv/bin/python tools/benchmark.py
 ```
 
@@ -322,8 +364,9 @@ skipped; stubbed encoder tests alone do not validate model quality.
 
 Gesture fixtures are authored development contrasts, including direct versus passive
 review, active versus documented authentication, delivery types, and explicit-state overrides.
-Optional `expected_gesture`, `expected_expectancy`, and `expected_delivery_kind` fields
-get separate evaluation denominators and confusion matrices. A correct outcome alone
+Optional gesture, expectancy, delivery, activity, assessment, and handoff labels
+get separate evaluation denominators and confusion matrices. Reports also identify
+false caveats, missed handoffs, and the fraction of unknown outcomes. A correct outcome alone
 does not count as a correct gesture. Evaluation output contains IDs and labels only.
 
 [VALIDATION.md](VALIDATION.md) records observed runs, audio properties, confusion
@@ -351,8 +394,9 @@ to startup settings or installed globally.
 - `service.py`, `cli.py`: serial worker, private socket, and commands.
 - `evaluation.py`, `tools/benchmark.py`: independent evaluation and actual timing.
 
-Only the Claude adapter is implemented. There is no plugin framework, browser UI,
-cloud account, API key requirement, GPU requirement, or background installation.
+Only the Claude adapter is implemented. There is no browser UI,
+cloud account, API key requirement, or GPU requirement. The same-repository Claude
+plugin and optional managed background service are installed explicitly.
 
 ## License
 

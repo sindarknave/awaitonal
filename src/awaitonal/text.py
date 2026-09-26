@@ -1,6 +1,7 @@
 """Conservative assistant-prose extraction and bounded, token-aware selection."""
 from dataclasses import dataclass
 import re
+from urllib.parse import urlsplit
 
 MAX_PROSE_CHARS = 131_072
 # These words select context for the encoder; they do not choose a class.
@@ -29,7 +30,26 @@ def _strip_quotes(text: str) -> str:
     return "\n".join(lines)
 
 
-def _strip_link_destinations(text: str) -> str:
+def _link_marker(url: str) -> str:
+    """Return a bounded URL family, without retaining or fetching the target."""
+    try:
+        parsed = urlsplit(url.strip().strip("<>"))
+        host, path = parsed.hostname, parsed.path
+        if parsed.scheme not in {"https", "http", "sandbox"} or parsed.username or parsed.password:
+            return " awaitonalreferencelink "
+        if host == "github.com" and re.fullmatch(r"/[^/]+/[^/]+/pull/[0-9]+/?", path):
+            return " awaitonalprlink "
+        if (host == "claude.ai" and re.fullmatch(r"/(?:code/)?artifacts?/[^/]+/?", path)
+                or host == "docs.google.com" and re.match(r"/(?:document|spreadsheets|presentation)/d/[^/]+", path)
+                or parsed.scheme == "sandbox" and path.startswith("/")
+                or host and re.search(r"\.(?:pdf|csv|xlsx|docx|png|jpe?g|svg|mp4|mp3|wav|zip)$", path, re.I)):
+            return " awaitonalartifactlink "
+    except ValueError:
+        pass
+    return " awaitonalreferencelink "
+
+
+def _strip_link_destinations(text: str, link_types: bool = False) -> str:
     """Keep inline-link labels, examining each possible delimiter only once."""
     parts = []
     cursor = 0
@@ -46,12 +66,14 @@ def _strip_link_destinations(text: str) -> str:
         if end == -1:
             break
         parts.extend((text[cursor:opening], text[opening + 1:closing]))
+        if link_types:
+            parts.append(_link_marker(text[closing + 2:end]))
         cursor = end + 1
     parts.append(text[cursor:])
     return "".join(parts)
 
 
-def assistant_prose(text: str) -> str:
+def assistant_prose(text: str, *, link_types: bool = False) -> str:
     """Discard code and quoted material, returning empty for invalid/oversize input.
 
     This is deliberately not a Markdown parser. An unclosed fence consumes the
@@ -77,7 +99,13 @@ def assistant_prose(text: str) -> str:
     prose = re.sub(r"`+[^`]*`+", " ", prose)
     prose = _strip_quotes(prose)
     prose = re.sub(r"(?<!\w)'[^'\n]+'(?!\w)", " ", prose)
-    prose = _strip_link_destinations(prose)
+    if link_types:
+        prose = re.sub(r"\bawaitonal(?:pr|artifact|reference)link\b", " ", prose, flags=re.I)
+    prose = _strip_link_destinations(prose, link_types)
+    if link_types:
+        # Match each URL once; only family markers survive. Query text and
+        # fragments must never become outcome or handoff evidence.
+        prose = re.sub(r"(?:https?://|sandbox:/)[^\s<>]+", lambda m: _link_marker(m[0].rstrip(".,;!?)]")), prose)
     prose = prose.replace("’", "'")
     return re.sub(r"[ \t]+", " ", prose).strip()
 
