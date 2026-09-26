@@ -1,0 +1,8 @@
+{
+  "hook_event_name": "StopFailure",
+  "session_id": "example-session",
+  "prompt_id": "example-turn",
+  "error": "server_error",
+  "error_details": "Synthetic detail discarded by the adapter.",
+  "last_assistant_message": "Synthetic rendered API error, never treated as assistant prose."
+}

@@ -1,0 +1,12 @@
+{
+  "name": "awaitonal",
+  "description": "Awaitonal's local musical notification plugin for Claude Code.",
+  "owner": { "name": "sindarknave" },
+  "plugins": [
+    {
+      "name": "awaitonal",
+      "source": "./",
+      "description": "Hear the reported outcome of a Claude Code turn, interpreted locally."
+    }
+  ]
+}

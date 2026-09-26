@@ -11,7 +11,7 @@ import tomllib
 
 from .classify import RulesClassifier, explicit_result, result
 from .text import assistant_prose, select_chunks
-from .types import Event, STATES, controls_for, map_controls
+from .types import Event, MODEL_STATES, controls_for, map_controls
 
 MODEL_ID = "sentence-transformers/all-MiniLM-L6-v2"
 PACKAGE = Path(__file__).parent
@@ -62,7 +62,7 @@ class SemanticClassifier:
         anchor_path = config_file.parent / cfg["anchors"]
         self.anchors = json.loads(anchor_path.read_text())
         texts, self.anchor_slices = [], {}
-        for state in STATES:
+        for state in MODEL_STATES:
             self.anchor_slices[state] = {}
             for kind in ("positive", "negative"):
                 entries = self.anchors[state][kind]
@@ -84,7 +84,7 @@ class SemanticClassifier:
                                                    convert_to_numpy=True, show_progress_bar=False)
 
     def classify(self, event: Event):
-        if not isinstance(event, Event):
+        if not isinstance(event, Event) or event.kind == "turn-start":
             return None
         if event.explicit_state is not None:
             return explicit_result(event, self.threshold)
@@ -114,7 +114,7 @@ class SemanticClassifier:
         final_index = max(range(len(chunks)), key=lambda index: chunks[index].end)
         cfg = self.config
         positive, negative = {}, {}
-        for state in STATES:
+        for state in MODEL_STATES:
             pos = cosine[:, self.anchor_slices[state]["positive"]]
             neg = cosine[:, self.anchor_slices[state]["negative"]]
             top = np.sort(pos, axis=1)[:, -min(3, pos.shape[1]):]
@@ -123,7 +123,7 @@ class SemanticClassifier:
                                     (1 - cfg["conclusion_weight"]) * chunk_scores.max())
             negative[state] = float(cfg["conclusion_weight"] * neg[final_index].max() +
                                     (1 - cfg["conclusion_weight"]) * neg.max())
-        ranked = sorted(STATES, key=lambda state: positive[state], reverse=True)
+        ranked = sorted(MODEL_STATES, key=lambda state: positive[state], reverse=True)
         winner, runner = ranked[:2]
         attention = winner in ("needs-you", "rejected")
         required_similarity = cfg["attention_similarity"] if attention else cfg["minimum_similarity"]

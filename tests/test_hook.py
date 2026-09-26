@@ -196,7 +196,7 @@ def test_generated_hooks_have_only_notification_handlers(tmp_path):
     executable.write_text("#!/bin/sh\nexit 0\n")
     executable.chmod(0o700)
     config = hook_configuration(executable)
-    assert set(config["hooks"]) == {"Stop", "PreToolUse", "PermissionRequest"}
+    assert set(config["hooks"]) == {"Stop", "PreToolUse", "PermissionRequest", "StopFailure", "UserPromptSubmit"}
     assert config["hooks"]["PreToolUse"][0]["matcher"] in ("AskUserQuestion", "^AskUserQuestion$")
     for groups in config["hooks"].values():
         for group in groups:

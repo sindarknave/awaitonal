@@ -7,12 +7,13 @@ stopping.
 
 ## Classification fields
 
-The original four outcome values and semantic controls remain unchanged. New
-fields describe the audio choice without adding states to the hook wire format.
+Text classification keeps its original four outcomes. Structured API errors add
+`failed`, distinct from assistant refusal, with a bounded `failure_code` field.
+Delivery and expectancy metadata describe the audio choice.
 
 | Field | Values | Meaning |
 | --- | --- | --- |
-| `state` | `done`, `caveats`, `needs-you`, `rejected` | Reported outcome; also controls queue attention. |
+| `state` | `done`, `caveats`, `needs-you`, `rejected`, `failed` | Reported outcome or structured failure; also controls queue attention. |
 | `delivery_kind` | `change`, `answer`, `plan`, `artifact`, `published`, `unknown` | The kind of result the assistant reports delivering. `unknown` means no supported delivery cue was recognized. |
 | `expectancy` | `none`, `review-requested`, `required-handoff` | Whether the assistant invites a response or requires participation before continuing. |
 | `handoff_kind` | `decision`, `action` | Distinguishes a required choice/clarification from sign-in, approval, or another action. `action` is the neutral default outside required handoffs. |
@@ -38,7 +39,8 @@ the response text.
 
 ## Selecting one cue
 
-The selector applies these rules in order:
+The selector applies these rules in order (a structured `failed` outcome always
+selects the distinct `failed` cue before delivery/expectancy routing):
 
 1. A `rejected` outcome selects `rejected`.
 2. A `needs-you` outcome selects `decision` for a required choice, otherwise
@@ -59,9 +61,10 @@ The selector applies these rules in order:
 | `needs-you` | Progress requires sign-in, authorization, evidence, or another user action. |
 | `caveats` | Work or requested validation remains incomplete, or prose is unclear. |
 | `rejected` | The assistant refuses the requested assistance. |
+| `failed` | A structured API/infrastructure failure stopped the turn. |
 
-These are eight main families plus the softer review invitation and the retained
-refusal cue. They are not ten mutually exclusive claims about a response. For
+These are eight main families plus the softer review invitation, refusal, and
+infrastructure failure cues. They are not mutually exclusive claims about a response. For
 example, a published change can still require authentication for the next step.
 The result retains `delivery_kind = "published"`, but its required handoff chooses
 the sound.
@@ -93,22 +96,28 @@ explicit wording.
 
 ## Structured hooks, queueing, and compatibility
 
-The Claude adapter still sends the original bounded `Event` fields. It does not
-send gesture metadata, read a transcript, or add prior conversation context.
+The Claude adapter sends bounded events. Optional `failure_code` carries a
+normalized API error type; `kind = "turn-start"` carries timing markers with no
+prompt content. It does not send gesture metadata, read a transcript, or add prior
+conversation context.
 
 - `Stop` supplies final assistant text for classification.
 - `PreToolUse` for `AskUserQuestion` supplies explicit `needs-you` evidence and
   selects `decision`.
 - `PermissionRequest` supplies explicit `needs-you` evidence and selects the
   stronger `needs-you` cue.
+- `StopFailure` selects `failed` for ordinary API failures, or `needs-you` for
+  authentication/account/billing/cloud-credential failures. Raw error text is discarded.
+- `UserPromptSubmit` carries only a session/turn start marker for optional timing.
 
 Structured evidence overrides incidental prose. The outcome remains `needs-you`
 for both required cues, preserving the existing duplicate suppression and
 attention handling. A soft review invitation does not set `needs_you` or receive
-attention priority. Required handoffs and refusals do.
+attention priority. Required handoffs, refusals, and infrastructure failures do.
 
-Existing event fields, the four `State` values, and the original `Classification`
-constructor arguments remain supported. `play` additionally accepts the new
+Existing event fields, the original four `State` values, and the original `Classification`
+constructor arguments remain supported. Consumers must also accept the new `failed`
+state, trailing `Controls.failed` field, and failure metadata. `play` additionally accepts the new
 gesture IDs; `demo` auditions the full palette. Old palette overrides merge with
 the packaged defaults, so an override containing only the original four entries
 does not remove the newer entries.

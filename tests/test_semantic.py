@@ -76,6 +76,14 @@ def test_model_loaded_once_offline_and_structured_override(tmp_path, monkeypatch
     classifier = SemanticClassifier(tmp_path)
     assert calls == [{"device": "cpu", "local_files_only": True, "trust_remote_code": False}]
     assert classifier.classify(Event("s", "1", "I refuse.", "needs-you")).state == "needs-you"
+    from awaitonal.adapter import adapt_claude
+    for code, expected in (("server_error", "failed"), ("authentication_failed", "needs-you")):
+        failure = adapt_claude({"session_id": "s", "hook_event_name": "StopFailure", "error": code,
+                               "last_assistant_message": "PRIVATE ERROR"})
+        outcome = classifier.classify(failure)
+        assert outcome.gesture == expected and outcome.failure_code == code
+    assert classifier.classify(Event("s", "start", kind="turn-start")) is None
+    assert len(encodings) == 1  # Structured failures/start markers never reach the encoder.
     # Known delivery/handoff routes share the rules palette and skip encoding.
     for text, gesture in (
         ("Please review the draft and tell me what you think.", "review"),
@@ -120,6 +128,15 @@ def test_real_model_offline(monkeypatch):
     result = classifier.classify(Event("offline", "1", "The requested change is finished."))
     assert result is not None and result.diagnostics["backend"] == "sentence-transformers"
     assert all(np.isfinite(value) for value in result.diagnostics["scores"].values())
+    def no_encoding(*args, **kwargs):
+        raise AssertionError("Structured hook data reached the encoder")
+    monkeypatch.setattr(classifier.model, "encode", no_encoding)
+    from awaitonal.adapter import adapt_claude
+    for code, expected in (("server_error", "failed"), ("billing_error", "needs-you")):
+        failure = adapt_claude({"session_id": "offline", "hook_event_name": "StopFailure", "error": code,
+                               "last_assistant_message": "PRIVATE RENDERED ERROR"})
+        assert classifier.classify(failure).gesture == expected
+    assert classifier.classify(Event("offline", "start", kind="turn-start")) is None
 
 
 def test_reencode_expansion_preserves_final_tokens():

@@ -12,7 +12,7 @@ import wave
 
 import pytest
 
-from awaitonal.adapter import MAX_INPUT
+from awaitonal.adapter import MAX_INPUT, adapt_claude
 from awaitonal.classify import RulesClassifier
 from awaitonal.client import send_event
 from awaitonal.service import EventQueue, Service
@@ -20,13 +20,13 @@ from awaitonal.types import Controls, Event, map_controls
 
 
 @contextmanager
-def running_service(player=None, classifier=None, queue_size=32):
+def running_service(player=None, classifier=None, queue_size=32, min_turn_seconds=0):
     with tempfile.TemporaryDirectory(prefix="at-", dir="/tmp") as directory:
         path = Path(directory) / "s.sock"
         played, logs, failures = [], [], []
         stop = threading.Event()
         service = Service(classifier or RulesClassifier(), player or (lambda state, length: played.append(state)),
-                          path, queue_size, logs.append)
+                          path, queue_size, logs.append, min_turn_seconds=min_turn_seconds)
 
         def run():
             try:
@@ -164,6 +164,53 @@ def test_slow_incomplete_client_does_not_block_others():
             slow.sendall(b'{"session_id":')
             send_event(Event("ok", "1", "Done."), path)
             eventually(lambda: len(played) == 1)
+
+
+def test_live_short_turn_suppression_and_failure_remain_private_and_responsive():
+    with running_service(min_turn_seconds=60) as (service, path, played, logs):
+        start = adapt_claude({"hook_event_name": "UserPromptSubmit", "session_id": "short", "prompt_id": "t",
+                             "prompt": "PRIVATE PROMPT"})
+        send_event(start, path)
+        eventually(lambda: "short" in service.timings.sessions)
+        send_event(adapt_claude({"hook_event_name": "Stop", "session_id": "short", "prompt_id": "t",
+                                "last_assistant_message": "Implemented the fix and all tests pass."}), path)
+        eventually(lambda: any(row.get("suppressed") == "short-turn" for row in logs))
+        assert not played
+        send_event(adapt_claude({"hook_event_name": "StopFailure", "session_id": "other", "error": "server_error",
+                                "error_details": "PRIVATE KEY", "last_assistant_message": "PRIVATE ERROR"}), path)
+        eventually(lambda: played == ["failed"])
+        # Without matching timing, even an immediate routine completion plays.
+        send_event(Event("unknown", "stop", "Implemented the fix and all tests pass.", evidence_source="claude:Stop"), path)
+        eventually(lambda: played == ["failed", "done"])
+        assert "PRIVATE" not in json.dumps(logs)
+
+
+def test_retry_start_supersedes_a_failure_waiting_behind_another_session():
+    entered, release = threading.Event(), threading.Event()
+
+    class PausedClassifier:
+        def classify(self, event):
+            if event.session_id == "busy":
+                entered.set()
+                assert release.wait(2)
+            return RulesClassifier().classify(event)
+
+    with running_service(classifier=PausedClassifier()) as (service, path, played, _):
+        try:
+            send_event(Event("busy", "1", "Done."), path)
+            assert entered.wait(1)
+            send_event(adapt_claude({"hook_event_name": "StopFailure", "session_id": "retry",
+                                    "error": "server_error"}), path)
+            eventually(lambda: any(p.event.failure_code for p in service.queue.items))
+            send_event(adapt_claude({"hook_event_name": "UserPromptSubmit", "session_id": "retry",
+                                    "prompt": "PRIVATE RETRY"}), path)
+            eventually(lambda: not service.queue.items)
+            send_event(adapt_claude({"hook_event_name": "Stop", "session_id": "retry",
+                                    "last_assistant_message": "Implemented the fix and all tests pass."}), path)
+            eventually(lambda: len(service.queue.items) == 1)
+        finally:
+            release.set()
+        eventually(lambda: played == ["done", "done"])
 
 
 @pytest.mark.parametrize("text", [

@@ -1,0 +1,6 @@
+{
+  "hook_event_name": "UserPromptSubmit",
+  "session_id": "example-session",
+  "prompt_id": "example-turn",
+  "prompt": "Synthetic prompt discarded by the adapter."
+}

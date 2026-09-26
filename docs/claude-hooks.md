@@ -1,6 +1,7 @@
 # Claude Code integration
 
-Awaitonal installs no hooks automatically. Its hooks only send local notifications;
+Awaitonal installs hooks only through explicit CLI setup or plugin installation.
+Its hooks only send local notifications;
 they never approve permissions, block a turn, change tool inputs, or send instructions
 back to Claude. Normal hook execution has empty stdout and exits 0, including when
 input is malformed or the service is unavailable. Do not use `--dry-run` in settings.
@@ -19,6 +20,8 @@ The current reference documents these inputs:
 | `Stop` | `last_assistant_message`, `stop_hook_active` | Classify final assistant prose if present. |
 | `PreToolUse` | `tool_name`, `tool_input`, `tool_use_id` | `AskUserQuestion` selects `needs-you`. |
 | `PermissionRequest` | `tool_name`, `tool_input`; **no `tool_use_id`** | Select `needs-you`. |
+| `StopFailure` | Structured `error` code | Account/authentication problems select `needs-you`; other errors select `failed`. Error prose is discarded. |
+| `UserPromptSubmit` | Session and optional prompt ID | Record a turn-start marker; discard the prompt. |
 
 Common fields include `session_id`, `transcript_path`, `cwd`, and `hook_event_name`.
 `agent_id` identifies a subagent; `agent_type` alone can identify the main session's
@@ -26,12 +29,18 @@ Common fields include `session_id`, `transcript_path`, `cwd`, and `hook_event_na
 The transcript may lag the final response. These details are documented under
 [common input fields](https://code.claude.com/docs/en/hooks#common-input-fields).
 
-The installed binary's schemas and payload builder support the three events above,
+The original 0.2 compatibility check covered the first three events above,
 `last_assistant_message`, and `agent_id`, and omit hook `prompt_id`. Its command-hook
 schema supports shell commands, `args`, `timeout`, and `async`. Awaitonal uses a quoted
 absolute executable path, a two-second hook timeout, and a short synchronous socket
 handoff. It does not set `async` or `asyncRewake`; synthesis, classification, and
 playback happen in the already-running service.
+
+For 0.3, an isolated Claude Code 2.1.158 plugin install successfully registered
+all five hooks and all three plugin skills. Both manifests passed its validator;
+update, disable, and uninstall were exercised without touching the real Claude
+configuration. `StopFailure` and `UserPromptSubmit` behavior is covered by
+synthetic integration fixtures; no live API failure was induced.
 
 ## Conservative routing
 
@@ -78,6 +87,15 @@ uv run awaitonal hook claude < examples/claude-stop.json
 
 ## Add hooks manually
 
+Prefer the [same-repository plugin](plugin.md), or use `awaitonal init` to preview
+a standalone settings change and `awaitonal init --apply` to back up and apply it.
+`--settings PATH` chooses a settings scope. `awaitonal uninstall --apply` removes
+only handlers recorded as owned by this installation. User edits and unrelated
+hooks are preserved. Existing hand-pasted hooks require an explicit
+`--legacy-executable PATH` for exact-command migration. Similar commands are not
+automatically removed. Displayed diffs include only changed hook entries, not
+unrelated settings or unchanged commands that might contain credentials.
+
 Generate an inspectable snippet from your installed environment:
 
 ```sh
@@ -90,16 +108,34 @@ checkout at the same location, or regenerate the snippet after moving them. The
 portable [template](../examples/claude-hooks.template.json) is illustrative; its
 `/absolute/path/...` placeholder must be replaced before use.
 
-Review the snippet, then manually merge its three event groups into the `hooks`
+Review the snippet, then manually merge its five event groups into the `hooks`
 object of the desired Claude settings file: `~/.claude/settings.json` for your user,
 or `.claude/settings.local.json` for one project. Preserve every unrelated setting
 and hook. Do not replace an existing settings file by redirecting this command into
-it. Restart the Claude session after your edit. Start Awaitonal's service explicitly
-whenever you want notifications; no launch agent is installed.
+it. Restart the Claude session after your edit. Start Awaitonal's service with
+`awaitonal service start`. On macOS, `awaitonal service install` explicitly enables
+a per-user login service; `awaitonal service uninstall` removes it. `awaitonal
+doctor` checks setup without playing a sound; `--test-sound` requests an audition.
+
+## Failures and short turns
+
+`StopFailure` is structured infrastructure evidence, not assistant refusal. The
+adapter forwards only a bounded error code, discarding `error_details` and rendered
+error text. Ordinary failures use `failed`; authentication and account problems
+use `needs-you`. Both receive attention priority. A later successful Stop can
+replace a queued failure; a sound already played is not retracted.
+
+Timing is opt-in: set `[notifications] min_turn_seconds = 30` in a TOML config,
+or pass `--min-turn-seconds 30` to `serve`, `service start`, or `service install`.
+The service stores bounded session/turn timestamps in memory. Only routine
+completed-result cues are eligible. Review, caveats, required handoffs, refusals,
+and failures always remain eligible for playback. Without a matching prompt ID
+or start marker, the service plays normally; suppression therefore does not apply
+to Claude 2.1.158, which lacks hook prompt IDs. Restarting clears timing state.
 
 ## Disable or remove
 
-Stop the service with Ctrl-C to silence Awaitonal immediately. Installed hooks then
+Stop a foreground service with Ctrl-C, or use `awaitonal service stop`. Installed hooks then
 return quietly without sounds. To disconnect fully, remove only handlers whose
 commands invoke `awaitonal hook claude`; remove an event group only if it becomes
 empty. Keep all other Claude hooks and settings. Restart the Claude session. You

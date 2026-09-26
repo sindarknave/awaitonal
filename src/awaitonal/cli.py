@@ -46,6 +46,7 @@ def parser():
     serve.add_argument("--socket", type=Path)
     serve.add_argument("--queue-size", type=int, default=8)
     serve.add_argument("--silent", action="store_true", help="classify and log diagnostics without playing (integration testing)")
+    serve.add_argument("--min-turn-seconds", type=float, help="suppress short routine turns with known timing; default 0")
     hook = sub.add_parser("hook", help="quiet notification-only agent hook")
     hook.add_argument("adapter", choices=["claude"])
     hook.add_argument("--socket", type=Path)
@@ -53,6 +54,36 @@ def parser():
     config = sub.add_parser("hook-config", help="print settings fragment; never edits Claude settings")
     config.add_argument("--executable", type=Path, help="absolute installed awaitonal executable")
     config.add_argument("--socket", type=Path)
+    for name in ("init", "uninstall"):
+        command = sub.add_parser(name, help="preview or apply owned Claude hook settings changes")
+        command.add_argument("--settings", type=Path)
+        command.add_argument("--apply", action="store_true", help="back up and apply the displayed changes")
+        command.add_argument("--legacy-executable", type=Path, help="explicitly migrate exact hooks for this old executable")
+        command.add_argument("--socket", type=Path)
+        if name == "init":
+            command.add_argument("--mode", choices=("standalone", "plugin"), default="standalone")
+            command.add_argument("--executable", type=Path)
+    doctor = sub.add_parser("doctor", help="inspect setup without sending response text or playing audio")
+    doctor.add_argument("--settings", type=Path)
+    doctor.add_argument("--socket", type=Path)
+    doctor.add_argument("--json", action="store_true")
+    doctor.add_argument("--test-sound", action="store_true", help="explicitly play one cue after diagnosis")
+    management = sub.add_parser("service", help="manage the resident local service")
+    operations = management.add_subparsers(dest="operation", required=True)
+    for name in ("start", "stop", "status", "install", "uninstall"):
+        command = operations.add_parser(name)
+        command.add_argument("--socket", type=Path)
+        if name in ("start", "install"):
+            command.add_argument("--executable", type=Path)
+            command.add_argument("--classifier", choices=("rules", "semantic"), default="rules")
+            command.add_argument("--model-dir", type=Path)
+            command.add_argument("--semantic-config", type=Path)
+            command.add_argument("--config", type=Path)
+            command.add_argument("--queue-size", type=int, default=8)
+            command.add_argument("--min-turn-seconds", type=float)
+            command.add_argument("--silent", action="store_true")
+        if name in ("stop", "uninstall"):
+            command.add_argument("--expected-executable", type=Path)
     setup = sub.add_parser("model-setup", help="explicitly download the optional sentence encoder")
     setup.add_argument("--model-dir", type=Path, default=model_directory())
     evaluate = sub.add_parser("evaluate", help="evaluate independent labeled fixtures")
@@ -65,12 +96,12 @@ def parser():
     return cli
 
 
-def hook_configuration(executable: Path | None = None, socket_path=None):
+def hook_configuration(executable: Path | None = None, socket_path=None, *, verify=True):
     # sys.executable lives in the active environment, so the default remains
     # valid from any project directory. No uv invocation/download on hook path.
     executable = executable or Path(sys.executable).parent / "awaitonal"
     executable = executable.absolute()
-    if not executable.is_file() or not os.access(executable, os.X_OK):
+    if verify and (not executable.is_file() or not os.access(executable, os.X_OK)):
         raise ValueError(f"installed awaitonal executable not found: {executable}")
     parts = [str(executable), "hook", "claude"]
     if socket_path:
@@ -80,6 +111,8 @@ def hook_configuration(executable: Path | None = None, socket_path=None):
         "Stop": [{"hooks": [handler]}],
         "PreToolUse": [{"matcher": "AskUserQuestion", "hooks": [handler]}],
         "PermissionRequest": [{"hooks": [handler]}],
+        "StopFailure": [{"hooks": [handler]}],
+        "UserPromptSubmit": [{"hooks": [handler]}],
     }}
 
 
@@ -90,6 +123,52 @@ def execute(args):
     if args.command == "hook-config":
         print(json.dumps(hook_configuration(args.executable, args.socket), indent=2))
         return 0
+    if args.command in ("init", "uninstall"):
+        from .setup import configure_hooks, default_settings
+        mode = args.mode if args.command == "init" else "uninstall"
+        fragment = hook_configuration(args.executable, args.socket) if mode == "standalone" else None
+        legacy = hook_configuration(args.legacy_executable, args.socket, verify=False) if args.legacy_executable else None
+        result = configure_hooks(args.settings or default_settings(), fragment, mode=mode,
+                                 apply=args.apply, legacy_fragment=legacy)
+        if result["diff"]:
+            print("Changed hook entries only; unrelated settings are preserved.")
+            print(result["diff"])
+        else:
+            print("No hook settings changes needed.")
+        if result["backup"]:
+            print(f"Backup: {result['backup']}")
+        print("Applied." if args.apply else "Preview only. Use --apply to write these changes.")
+        return 0
+    if args.command == "service":
+        from .lifecycle import (start_service, stop_service, service_status,
+                                install_launch_agent, uninstall_launch_agent)
+        if args.operation in ("start", "install"):
+            options = {name: getattr(args, name) for name in (
+                "executable", "config", "classifier", "model_dir", "semantic_config",
+                "min_turn_seconds", "queue_size", "silent")}
+            options["socket_path"] = args.socket
+            result = (start_service if args.operation == "start" else install_launch_agent)(**options)
+        elif args.operation == "stop":
+            result = stop_service(args.socket, expected_executable=args.expected_executable)
+        elif args.operation == "status":
+            result = service_status(args.socket)
+        else:
+            result = uninstall_launch_agent(expected_executable=args.expected_executable)
+        print(json.dumps(result, indent=2))
+        return 0
+    if args.command == "doctor":
+        from .diagnostics import diagnose
+        result = diagnose(args.settings, args.socket)
+        if args.test_sound:
+            execute(parser().parse_args(["play", "done"]))
+            result["audio_tested"] = True
+            result["audio_note"] = "Audio player finished; device output was not independently verified."
+        if args.json:
+            print(json.dumps(result, indent=2))
+        else:
+            for check in result["checks"]:
+                print(f"{check['status']}: {check['name']}: {check['message']}")
+        return 0 if result["ok"] else 1
     if args.command == "notify":
         from .adapter import MAX_INPUT
         from .client import send_event
@@ -153,7 +232,10 @@ def execute(args):
         def logger(record):
             print(json.dumps(record), file=sys.stderr, flush=True)
 
-        service = Service(classifier, player, args.socket, args.queue_size, logger)
+        minimum = args.min_turn_seconds
+        if minimum is None:
+            minimum = config.get("notifications", {}).get("min_turn_seconds", 0)
+        service = Service(classifier, player, args.socket, args.queue_size, logger, min_turn_seconds=minimum)
         print(f"Awaitonal starting on {args.socket or default_socket()} ({args.classifier}); Ctrl-C to stop.", file=sys.stderr, flush=True)
         service.run(stop)
     return 0

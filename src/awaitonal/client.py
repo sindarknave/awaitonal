@@ -100,6 +100,8 @@ def run_hook(socket_path=None, dry_run: bool = False) -> int:
         if dry_run:
             if event is None:
                 print(json.dumps({"ignored": True, "reason": "unsupported, subagent, or malformed event"}))
+            elif event.kind == "turn-start":
+                print(json.dumps({"recorded": "turn-start", "timing_available": bool(event.turn_id)}))
             else:
                 from .classify import RulesClassifier
                 result = RulesClassifier().classify(event)

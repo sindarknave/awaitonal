@@ -77,7 +77,7 @@ def test_original_classification_constructor_and_gesture_precedence():
                             delivery_kind="plan", expectancy="review-requested")
     assert result.gesture == "rejected"
     assert set(GESTURES) == {"done", "answer", "plan", "artifact", "published", "review",
-                             "decision", "needs-you", "caveats", "rejected"}
+                             "decision", "needs-you", "caveats", "rejected", "failed"}
 
 
 @pytest.mark.parametrize("text,state,gesture", [

@@ -23,7 +23,7 @@ def test_render_and_classify_commands(tmp_path):
     with wave.open(str(target)) as sound:
         assert sound.getnchannels() == 1
         assert sound.getframerate() == 48000
-        assert 14 < sound.getnframes() / sound.getframerate() < 16
+        assert 16 < sound.getnframes() / sound.getframerate() < 18
     result = cli("classify", "--text", "Done. Integration tests were unavailable.", "--json")
     assert result.returncode == 0, result.stderr
     assert json.loads(result.stdout)["state"] == "caveats"

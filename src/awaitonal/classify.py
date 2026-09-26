@@ -16,12 +16,14 @@ def result(state: str, event: Event, reason: str, threshold: float,
     controls = controls_for(state)
     return Classification(map_controls(controls, threshold), controls,
                           event.evidence_source, reason, diagnostics or {}, delivery_kind,
-                          "required-handoff" if state == "needs-you" else expectancy, handoff_kind)
+                          "required-handoff" if state == "needs-you" else expectancy, handoff_kind,
+                          event.failure_code)
 
 
 def explicit_result(event: Event, threshold: float) -> Classification | None:
     if event.explicit_state in STATES:
-        return result(event.explicit_state, event, "Explicit structured event.", threshold,
+        reason = "Structured API failure: " + event.failure_code + "." if event.failure_code else "Explicit structured event."
+        return result(event.explicit_state, event, reason, threshold,
                       handoff_kind="decision" if event.evidence_source == "claude:PreToolUse" else "action")
     return None
 
@@ -113,7 +115,7 @@ class RulesClassifier:
         self.threshold = threshold
 
     def classify(self, event: Event) -> Classification | None:
-        if not isinstance(event, Event):
+        if not isinstance(event, Event) or event.kind == "turn-start":
             return None
         if event.explicit_state is not None:
             return explicit_result(event, self.threshold)

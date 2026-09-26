@@ -1,5 +1,48 @@
 # Observed validation
 
+## Plugin, service management, and failure handling, v0.3.0
+
+Checked on 2026-09-26 on the same M2 Pro/macOS/Python environment as below.
+The final core run reports **713 passed, 2 optional-model skips**;
+see [test output](artifacts/tests-v0.3-core.txt). A separate run of all seven
+semantic tests with the existing offline MiniLM environment passed, including
+structured-failure/start-marker bypass checks against the real model.
+
+The installed Claude Code 2.1.158 validated both plugin manifests. An isolated
+Claude configuration exercised marketplace installation, a plugin version/cache
+update, disable/enable, uninstall, and marketplace removal. It discovered exactly
+five hooks and three skills. The real uv bootstrap installed and updated a stable
+runtime, and that runtime restarted successfully after its plugin source/cache
+directory was deleted. Test paths included spaces. No real Claude settings or
+existing service were changed.
+
+A fresh wheel in a separate NumPy-only environment passed detached service
+start/status/repeated-start/stop, quiet hook execution, structured failure routing,
+demo rendering, and settings init/doctor/uninstall. The macOS LaunchAgent was
+also installed and verified through an authenticated socket, reinstalled, and
+uninstalled using a unique temporary job and non-editable runtime. Temporary
+jobs, files, and processes were cleaned up.
+
+A separate real managed stop/start check confirmed that launchd supervised the
+new service instance and its PID matched the authenticated reply. Saved arguments
+were unchanged, including a 19-second timing threshold. This caught and fixed a
+shutdown race where a plain kickstart could return before scheduling a replacement.
+
+Regression coverage includes private peer authentication, service instance and
+executable ownership, refusing other installations, startup readiness/rollback,
+saved LaunchAgent configuration, settings backups and exact hook ownership,
+credential-free displayed diffs, failure/retry priority, bounded timing state,
+threshold boundaries, uncertain timing, and attention-cue exemptions.
+
+Short-turn suppression is opt-in and requires matching prompt IDs; the installed
+Claude 2.1.158 lacks them, so it conservatively keeps playing. No live Claude API
+failure was induced, no audible device output was measured, and the earlier
+latency figures below were not remeasured for 0.3. The updated demo has eleven
+cues, 773,760 frames at 48 kHz (16.12 seconds). The added `failed` cue passes the
+same deterministic rendering, smooth-envelope, headroom, and level checks.
+
+The remaining sections describe historical releases and measurements.
+
 ## Publication hardening, v0.2.0
 
 On 2026-09-26 the client was hardened against an impostor local Unix socket.

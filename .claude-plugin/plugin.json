@@ -1,0 +1,10 @@
+{
+  "name": "awaitonal",
+  "version": "0.3.0",
+  "description": "Local musical notifications for how your coding agent leaves things.",
+  "author": { "name": "sindarknave" },
+  "homepage": "https://github.com/sindarknave/awaitonal",
+  "repository": "https://github.com/sindarknave/awaitonal",
+  "license": "MIT",
+  "keywords": ["audio", "notifications", "local", "claude-code"]
+}

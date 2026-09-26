@@ -47,9 +47,10 @@ plays the gestures in this order with 350 ms gaps:
 | `needs-you` | Sign-in, approval, or needed action: knocks, a pause, then A4 → B4 | 1.82 s |
 | `caveats` | Partial result/limitation: an uneven unresolved descent | 1.10 s |
 | `rejected` | C4–F♯4, two dry taps | 0.66 s |
+| `failed` | API/infrastructure failure: three low descending dyad pulses | 1.02 s |
 
 These cover eight main result/handoff families, the softer review invitation,
-and the retained refusal cue. Each notification plays one gesture once.
+the retained refusal cue, and a distinct infrastructure failure cue. Each notification plays one gesture once.
 
 All sound settings live in [palette.toml](src/awaitonal/palette.toml): pitches,
 timings, envelopes, partials, headroom, gain, and routing threshold. Use
@@ -85,7 +86,19 @@ uv run awaitonal classify --text "Please complete SSO sign-in so I can continue.
 uv run awaitonal serve --classifier rules
 ```
 
-Keep the service foregrounded; Ctrl-C stops it. In another terminal:
+For a managed background process, use:
+
+```sh
+uv run awaitonal service start
+uv run awaitonal service status
+uv run awaitonal doctor
+uv run awaitonal service stop
+```
+
+On macOS, `awaitonal service install` enables a per-user login service;
+`awaitonal service uninstall` removes it. Use a stable installed executable, such
+as the plugin runtime below, before enabling login startup. `serve` remains the
+foreground mode; Ctrl-C stops it. In another terminal:
 
 ```sh
 uv run awaitonal notify --text "Which database should I use before proceeding?"
@@ -93,15 +106,15 @@ uv run awaitonal notify --text "Which database should I use before proceeding?"
 
 `notify` reports errors when the service is absent. Normal hooks silently return
 success instead. `serve --silent` exercises classification and diagnostics without
-playing audio. There is no launch agent, startup-setting change, network listener,
-or recurring reminder.
+playing audio. Setup is explicit; notification hooks never install dependencies
+or start the service. The listener remains local to your account.
 
 The core values are `loose_ends` in [0,1], `needs_you`, and `rejected`. Routing is
 deterministic: rejection first, then waiting, then caveats at or above the configured
 threshold (default 0.5), otherwise done. Text classifiers initially use coarse
 loose-end values 0 or 1; neither similarities nor controls claim calibrated
-probability. The original outcome states remain `done`, `caveats`, `needs-you`, and
-`rejected`; wire events and semantic controls remain compatible. Classification
+probability. Text outcomes remain `done`, `caveats`, `needs-you`, and
+`rejected`; structured infrastructure errors add `failed`. Classification
 also returns `delivery_kind`, `expectancy`, `handoff_kind`, and the selected `gesture`.
 Playback uses `gesture`; queue attention uses the outcome. A direct review request
 gets `review-requested` and the softer cue without claiming a blocking dependency.
@@ -145,12 +158,34 @@ and refusals have attention priority. Longer cues can increase delay during burs
 
 ## Connect Claude Code
 
+The Claude Code plugin and marketplace live in this repository:
+
+```sh
+claude plugin marketplace add sindarknave/awaitonal
+claude plugin install awaitonal@awaitonal
+```
+
+Then run `/awaitonal:setup` in Claude Code to install the runtime and start the
+service. `/awaitonal:status` diagnoses setup; `/awaitonal:uninstall` removes the
+plugin-owned runtime. See [plugin setup and migration](docs/plugin.md), including
+how to remove old manual hooks without duplicate sounds. Updating the plugin
+requires rerunning setup to update its stable Python runtime.
+
+For standalone hooks, `awaitonal init` previews the settings diff;
+`awaitonal init --apply` backs up and installs owned handlers. `awaitonal uninstall
+--apply` removes only those handlers. Both accept `--settings PATH` for an explicit
+Claude settings scope. Existing manually pasted snippets need an explicit
+`--legacy-executable /absolute/path/to/awaitonal` to migrate them.
+
 Installed Claude **2.1.158** and the current [official hook reference](https://code.claude.com/docs/en/hooks)
 were checked on 2026-09-25. The adapter handles:
 
 - `Stop`: classify `last_assistant_message` if supplied; never infer success from stopping.
 - `PreToolUse` matched to `AskUserQuestion`: explicit `needs-you`, `decision` gesture.
 - `PermissionRequest`: explicit `needs-you`, stronger waiting gesture.
+- `StopFailure`: structured API failure; account/authentication problems need user
+  action, other errors play a distinct `failed` cue. Error prose is discarded.
+- `UserPromptSubmit`: timing metadata only; prompt text is discarded.
 
 It suppresses `agent_id` subagent events and installs no `SubagentStop` hook. Missing
 final text is ignored; transcripts are never opened. `prompt_id` is used when
@@ -163,9 +198,16 @@ uv run awaitonal hook claude < examples/claude-stop.json
 uv run awaitonal hook-config > examples/claude-hooks.local.json
 ```
 
+Optional short-turn suppression uses `[notifications] min_turn_seconds = 30` in a
+TOML config, or `serve/service start --min-turn-seconds 30`. It is off by default.
+Only routine completed-result cues are suppressed; review, caveats, handoffs,
+refusals, and failures remain audible. Timing must match a known turn ID. Missing
+or ambiguous timing, including older Claude versions without `prompt_id`, plays
+normally. Restarting the service loses its bounded in-memory timing map.
+
 The generated `examples/claude-hooks.local.json` settings fragment uses the
 installed executable's absolute, shell-quoted path, so it works from another
-project. **Review and manually merge** the three groups into your chosen Claude
+project. **Review and manually merge** the five groups into your chosen Claude
 settings' `hooks` object. Do not overwrite existing settings. Regenerate after
 moving the checkout or its environment. A [portable template](examples/claude-hooks.template.json)
 and [detailed installation/removal notes](docs/claude-hooks.md) are included.
