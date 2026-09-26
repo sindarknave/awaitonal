@@ -311,3 +311,9 @@ to startup settings or installed globally.
 
 Only the Claude adapter is implemented. There is no plugin framework, browser UI,
 cloud account, API key requirement, GPU requirement, or background installation.
+
+## License
+
+Awaitonal's code, documentation, and included audio assets are available under
+the [MIT License](LICENSE). Third-party dependencies and optional model weights
+retain their own licenses.
