@@ -125,10 +125,12 @@ class Service:
                 if self.queue.closed or self._stop.is_set():
                     break
                 if result is not None:
-                    self.logger({"state": result.state, "evidence_source": result.evidence_source,
+                    self.logger({"state": result.state, "gesture": result.gesture,
+                                 "expectancy": result.expectancy, "delivery_kind": result.delivery_kind,
+                                 "evidence_source": result.evidence_source,
                                  "classification_ms": round(elapsed, 3)})
                     if not self.queue.closed and not self._stop.is_set():
-                        self.player(result.state, len(event.text))
+                        self.player(result.gesture, len(event.text))
             except Exception as error:
                 # Don't log exception strings: third-party errors may quote input.
                 if not self.queue.closed and not self._stop.is_set():
@@ -197,7 +199,7 @@ class Service:
                                     event = event_from_wire(payload)
                                     if event is not None:
                                         hint = hints.classify(event)
-                                        attention = bool(hint and hint.state in ("needs-you", "rejected"))
+                                        attention = bool(hint and hint.attention)
                                         self.queue.put(event, attention, state=hint.state if hint else None)
                                 except (ValueError, TypeError, UnicodeError, RecursionError):
                                     pass

@@ -9,7 +9,7 @@ import json
 from pathlib import Path
 import tomllib
 
-from .classify import explicit_result, result
+from .classify import RulesClassifier, explicit_result, result
 from .text import assistant_prose, select_chunks
 from .types import Event, STATES, controls_for, map_controls
 
@@ -42,6 +42,7 @@ class SemanticClassifier:
                  config_path: str | Path | None = None):
         map_controls(controls_for("done"), threshold)
         self.threshold = threshold
+        self.routing_rules = RulesClassifier(threshold)
         path = Path(model_path).expanduser().resolve()
         if not path.is_dir() or not (path / "modules.json").is_file():
             raise RuntimeError(f"No local sentence model at {path}. Run awaitonal model-setup --model-dir PATH explicitly.")
@@ -90,6 +91,16 @@ class SemanticClassifier:
         prose = assistant_prose(event.text)
         if not prose:
             return None
+        # The encoder only has four outcome anchors. Explicit delivery and
+        # handoff language uses the same routing in both backends, so sign-in
+        # and review requests are not lost to an embedding similarity cutoff.
+        routed = self.routing_rules.classify(event)
+        if routed and (routed.delivery_kind != "unknown" or routed.expectancy != "none"
+                       or routed.state == "rejected"):
+            return result(routed.state, event, routed.reason, self.threshold,
+                          {"backend": "rules-routing", "requested_backend": "sentence-transformers"},
+                          delivery_kind=routed.delivery_kind, expectancy=routed.expectancy,
+                          handoff_kind=routed.handoff_kind)
         import numpy as np
         chunks, diagnostics = select_chunks(prose, self.model.tokenizer, self.token_budget,
                                              self.config["max_chunks"])

@@ -1,0 +1,74 @@
+{
+  "cases": 30,
+  "correct": 24,
+  "accuracy": 0.8,
+  "confusion_matrix": {
+    "done": {
+      "done": 7,
+      "caveats": 5,
+      "needs-you": 0,
+      "rejected": 0,
+      "ignored": 0
+    },
+    "caveats": {
+      "done": 1,
+      "caveats": 4,
+      "needs-you": 0,
+      "rejected": 0,
+      "ignored": 0
+    },
+    "needs-you": {
+      "done": 0,
+      "caveats": 0,
+      "needs-you": 8,
+      "rejected": 0,
+      "ignored": 0
+    },
+    "rejected": {
+      "done": 0,
+      "caveats": 0,
+      "needs-you": 0,
+      "rejected": 5,
+      "ignored": 0
+    }
+  },
+  "failures": [
+    {
+      "id": "missing-browser",
+      "expected": "caveats",
+      "actual": "done"
+    },
+    {
+      "id": "initial-error",
+      "expected": "done",
+      "actual": "caveats"
+    },
+    {
+      "id": "delivered",
+      "expected": "done",
+      "actual": "caveats"
+    },
+    {
+      "id": "all-set",
+      "expected": "done",
+      "actual": "caveats"
+    },
+    {
+      "id": "no-longer-waiting",
+      "expected": "done",
+      "actual": "caveats"
+    },
+    {
+      "id": "long-late-recovery",
+      "expected": "done",
+      "actual": "caveats"
+    }
+  ],
+  "false_attention": [],
+  "false_rejection": [],
+  "classification_ms": {
+    "first": 2.3096250370144844,
+    "warm_median": 5.28570800088346,
+    "max": 117.34979192260653
+  }
+}

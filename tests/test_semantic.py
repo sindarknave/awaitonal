@@ -60,6 +60,7 @@ def test_missing_weights_never_import_or_download(tmp_path, monkeypatch):
 
 def test_model_loaded_once_offline_and_structured_override(tmp_path, monkeypatch):
     calls = []
+    encodings = []
     class FakeModel:
         tokenizer = Tokenizer()
         max_seq_length = 256
@@ -68,12 +69,25 @@ def test_model_loaded_once_offline_and_structured_override(tmp_path, monkeypatch
         def eval(self):
             return self
         def encode(self, texts, **kwargs):
+            encodings.append(texts)
             return np.tile([1.0, 0.0], (len(texts), 1))
     (tmp_path / "modules.json").write_text("[]")
     monkeypatch.setitem(sys.modules, "sentence_transformers", types.SimpleNamespace(SentenceTransformer=FakeModel))
     classifier = SemanticClassifier(tmp_path)
     assert calls == [{"device": "cpu", "local_files_only": True, "trust_remote_code": False}]
     assert classifier.classify(Event("s", "1", "I refuse.", "needs-you")).state == "needs-you"
+    # Known delivery/handoff routes share the rules palette and skip encoding.
+    for text, gesture in (
+        ("Please review the draft and tell me what you think.", "review"),
+        ("Please sign in through SSO so I can continue.", "needs-you"),
+        ("Which option should I implement? I need your choice before continuing.", "decision"),
+        ("I rendered the video and saved the output file.", "artifact"),
+        ("I pushed the commits to the requested branch.", "published"),
+    ):
+        outcome = classifier.classify(Event("s", gesture, text))
+        assert outcome.gesture == gesture
+        assert outcome.diagnostics["backend"] == "rules-routing"
+    assert len(encodings) == 1  # Anchors only; prose went through shared routing.
     # Equal similarities must abstain to the non-attention fallback.
     for number in range(3):
         outcome = classifier.classify(Event("s", str(number), "The work is described."))

@@ -1,0 +1,350 @@
+{
+  "schema_version": 1,
+  "benchmark": "Awaitonal 0.2.0 resident classification and idle hook-to-render performance",
+  "package_version": "0.2.0",
+  "measured_at_utc": "2026-09-26T16:45:30.744563+00:00",
+  "finished_at_utc": "2026-09-26T16:45:44.636261+00:00",
+  "hardware": {
+    "chip": "Apple M2 Pro",
+    "ram_gib": 16.0,
+    "macos": "26.6",
+    "python": "3.13.1",
+    "architecture": "arm64"
+  },
+  "source": {
+    "base_commit": "d031245577834e2b639e03cc8d7989d40daa49c4",
+    "base_commit_note": "The measured working tree includes version 0.2 changes beyond this base commit.",
+    "runtime_palette_sha256": "9676ff0cc786c36b8df05fce16131db6e493706deca074667c34ccee4754a1ea",
+    "fingerprint_method": "SHA256 over sorted src/awaitonal/*.py, then *.toml, then *.json; each basename and file content separated by NUL bytes.",
+    "unchanged_across_both_measurements": true
+  },
+  "sample": {
+    "available": 5728,
+    "hook_encodable_with_prose": 5710,
+    "selected": 150,
+    "selection": "lowest SHA256(awaitonal-performance-v1: + candidate ID)",
+    "utf8_bytes": {
+      "n": 150,
+      "p50": 761.5,
+      "p95": 2741,
+      "max": 10404,
+      "min": 7
+    },
+    "characters": {
+      "n": 150,
+      "p50": 759.5,
+      "p95": 2685,
+      "max": 10326,
+      "min": 7
+    }
+  },
+  "method": {
+    "timing_unit": "milliseconds",
+    "p95": "nearest rank",
+    "resident": "One pass per backend over the same 150 actual mixed assistant final responses, after two synthetic warmups. Responses selected deterministically without using classifier predictions.",
+    "handoff": "First 40 selected responses, each sent by an actual hook subprocess through the Unix listener, classifier, queue, gesture renderer and WAV write. Sequential events into an idle service; the current result.gesture determines the audio.",
+    "synthesis": "30 render and WAV-write repetitions for each of the 10 current palette gestures.",
+    "initialization": "Classifier construction after its Python module import; semantic includes local model load and anchor embeddings. Not a fresh-process or storage-cold startup measurement.",
+    "semantic_model": "sentence-transformers/all-MiniLM-L6-v2 from a previously downloaded local model directory; offline during measurement.",
+    "semantic_routes": "rules-routing means the optional semantic frontend returned the shared deterministic delivery/handoff classifier; sentence-transformers means the local encoder fallback ran. Model initialization occurs even when many subsequent events use shared rules."
+  },
+  "limitations": [
+    "Performance only; these timings do not establish classifier accuracy.",
+    "One local run on one machine. No concurrent-load or sustained-throughput measurement.",
+    "WAV-ready latency excludes audio-player launch and audible operating-system output latency; no audio was played.",
+    "No fresh-process model startup, storage-cold startup or memory benchmark was performed.",
+    "Raw corpus, response identifiers, text, labels and individual predictions are not included."
+  ],
+  "backends": {
+    "rules": {
+      "resident_initialization_ms": 0.0105,
+      "warm_real_classification_ms": {
+        "n": 150,
+        "p50": 1.3696,
+        "p95": 4.5031,
+        "max": 16.0357,
+        "min": 0.0397
+      },
+      "warm_classification_by_route_ms": {
+        "rules": {
+          "n": 150,
+          "p50": 1.3696,
+          "p95": 4.5031,
+          "max": 16.0357,
+          "min": 0.0397
+        }
+      },
+      "idle_handoff": {
+        "notifications": 40,
+        "hook_process_return_ms": {
+          "n": 40,
+          "p50": 55.6325,
+          "p95": 63.4247,
+          "max": 69.243,
+          "min": 53.0097
+        },
+        "process_launch_to_player_callback_ms": {
+          "n": 40,
+          "p50": 52.9001,
+          "p95": 62.6885,
+          "max": 68.4606,
+          "min": 48.606
+        },
+        "process_launch_to_wav_ready_ms": {
+          "n": 40,
+          "p50": 58.6075,
+          "p95": 69.3395,
+          "max": 73.9169,
+          "min": 54.3204
+        },
+        "callback_render_and_write_ms": {
+          "n": 40,
+          "p50": 5.2344,
+          "p95": 7.8512,
+          "max": 8.349,
+          "min": 4.7134
+        },
+        "note": "Actual normal hook subprocess, actual Unix listener/classifier/queue, one at a time into idle service. Callback renders/writes WAV exactly before afplay would be invoked; afplay and audible OS startup are intentionally not measured.",
+        "classification_route_counts": {
+          "rules": 40
+        },
+        "render_dispatch": "Current Service passes result.gesture to the callback; callback renders that gesture with current palette."
+      }
+    },
+    "semantic": {
+      "resident_initialization_ms": 4162.615,
+      "warm_real_classification_ms": {
+        "n": 150,
+        "p50": 5.1557,
+        "p95": 46.3622,
+        "max": 59.161,
+        "min": 0.051
+      },
+      "warm_classification_by_route_ms": {
+        "rules-routing": {
+          "n": 77,
+          "p50": 1.8668,
+          "p95": 6.1294,
+          "max": 17.7733,
+          "min": 0.051
+        },
+        "sentence-transformers": {
+          "n": 73,
+          "p50": 9.2378,
+          "p95": 51.0749,
+          "max": 59.161,
+          "min": 5.0633
+        }
+      },
+      "idle_handoff": {
+        "notifications": 40,
+        "hook_process_return_ms": {
+          "n": 40,
+          "p50": 62.2187,
+          "p95": 67.6608,
+          "max": 87.4062,
+          "min": 59.9862
+        },
+        "process_launch_to_player_callback_ms": {
+          "n": 40,
+          "p50": 64.176,
+          "p95": 105.1213,
+          "max": 120.6493,
+          "min": 56.2502
+        },
+        "process_launch_to_wav_ready_ms": {
+          "n": 40,
+          "p50": 69.0056,
+          "p95": 110.16,
+          "max": 125.4276,
+          "min": 62.662
+        },
+        "callback_render_and_write_ms": {
+          "n": 40,
+          "p50": 5.0077,
+          "p95": 7.0723,
+          "max": 8.4791,
+          "min": 4.4832
+        },
+        "note": "Actual normal hook subprocess, actual Unix listener/classifier/queue, one at a time into idle service. Callback renders/writes WAV exactly before afplay would be invoked; afplay and audible OS startup are intentionally not measured.",
+        "classification_route_counts": {
+          "rules-routing": 19,
+          "sentence-transformers": 21
+        },
+        "render_dispatch": "Current Service passes result.gesture to the callback; callback renders that gesture with current palette."
+      }
+    }
+  },
+  "synthesis": {
+    "done": {
+      "render_ms": {
+        "n": 30,
+        "p50": 5.12,
+        "p95": 5.4701,
+        "max": 5.6324,
+        "min": 4.9203
+      },
+      "write_wav_ms": {
+        "n": 30,
+        "p50": 0.1744,
+        "p95": 0.3961,
+        "max": 0.472,
+        "min": 0.1293
+      },
+      "gesture_seconds": 1.08
+    },
+    "answer": {
+      "render_ms": {
+        "n": 30,
+        "p50": 3.8953,
+        "p95": 4.2133,
+        "max": 4.2607,
+        "min": 3.7897
+      },
+      "write_wav_ms": {
+        "n": 30,
+        "p50": 0.146,
+        "p95": 0.372,
+        "max": 0.3835,
+        "min": 0.1173
+      },
+      "gesture_seconds": 0.95
+    },
+    "plan": {
+      "render_ms": {
+        "n": 30,
+        "p50": 3.1919,
+        "p95": 3.3656,
+        "max": 3.4304,
+        "min": 3.0068
+      },
+      "write_wav_ms": {
+        "n": 30,
+        "p50": 0.1888,
+        "p95": 0.378,
+        "max": 0.3912,
+        "min": 0.1276
+      },
+      "gesture_seconds": 1.1
+    },
+    "artifact": {
+      "render_ms": {
+        "n": 30,
+        "p50": 7.432,
+        "p95": 7.694,
+        "max": 7.7635,
+        "min": 7.2267
+      },
+      "write_wav_ms": {
+        "n": 30,
+        "p50": 0.1621,
+        "p95": 0.3908,
+        "max": 0.4127,
+        "min": 0.1262
+      },
+      "gesture_seconds": 1.12
+    },
+    "published": {
+      "render_ms": {
+        "n": 30,
+        "p50": 7.0084,
+        "p95": 7.2073,
+        "max": 7.2228,
+        "min": 6.7134
+      },
+      "write_wav_ms": {
+        "n": 30,
+        "p50": 0.1763,
+        "p95": 0.3528,
+        "max": 0.3682,
+        "min": 0.137
+      },
+      "gesture_seconds": 1.12
+    },
+    "review": {
+      "render_ms": {
+        "n": 30,
+        "p50": 6.0498,
+        "p95": 6.254,
+        "max": 6.2958,
+        "min": 5.8509
+      },
+      "write_wav_ms": {
+        "n": 30,
+        "p50": 0.1957,
+        "p95": 0.4519,
+        "max": 0.4622,
+        "min": 0.155
+      },
+      "gesture_seconds": 1.52
+    },
+    "decision": {
+      "render_ms": {
+        "n": 30,
+        "p50": 2.1238,
+        "p95": 2.2952,
+        "max": 2.332,
+        "min": 2.036
+      },
+      "write_wav_ms": {
+        "n": 30,
+        "p50": 0.154,
+        "p95": 0.4013,
+        "max": 0.8793,
+        "min": 0.1249
+      },
+      "gesture_seconds": 1.13
+    },
+    "needs-you": {
+      "render_ms": {
+        "n": 30,
+        "p50": 5.8303,
+        "p95": 6.1373,
+        "max": 6.2617,
+        "min": 5.6423
+      },
+      "write_wav_ms": {
+        "n": 30,
+        "p50": 0.2405,
+        "p95": 0.4267,
+        "max": 0.472,
+        "min": 0.1744
+      },
+      "gesture_seconds": 1.82
+    },
+    "caveats": {
+      "render_ms": {
+        "n": 30,
+        "p50": 4.0382,
+        "p95": 4.294,
+        "max": 4.323,
+        "min": 3.8535
+      },
+      "write_wav_ms": {
+        "n": 30,
+        "p50": 0.1556,
+        "p95": 0.3897,
+        "max": 0.4146,
+        "min": 0.1247
+      },
+      "gesture_seconds": 1.1
+    },
+    "rejected": {
+      "render_ms": {
+        "n": 30,
+        "p50": 1.5711,
+        "p95": 1.7042,
+        "max": 1.7295,
+        "min": 1.4854
+      },
+      "write_wav_ms": {
+        "n": 30,
+        "p50": 0.1549,
+        "p95": 0.3219,
+        "max": 0.3327,
+        "min": 0.1035
+      },
+      "gesture_seconds": 0.66
+    }
+  }
+}

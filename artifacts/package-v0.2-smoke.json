@@ -1,0 +1,16 @@
+{
+  "version": "0.2.0",
+  "fresh_environment": true,
+  "unrelated_working_directory": true,
+  "core_dependencies_only": true,
+  "checks": [
+    "installed package import",
+    "10 packaged gesture IDs",
+    "full demo WAV",
+    "review and authentication WAVs",
+    "review/auth/decision/artifact JSON",
+    "structured question dry-run",
+    "35 development evaluation outcomes and gestures"
+  ],
+  "result": "passed"
+}

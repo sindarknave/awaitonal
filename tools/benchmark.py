@@ -74,6 +74,13 @@ def main():
         report["semantic_import_load_anchors_ms"] = round((time.perf_counter() - start) * 1000, 3)
         report["semantic_first_classification_ms"] = round(ms(lambda: semantic.classify(event)), 3)
         report["semantic_warm_resident"] = summary([ms(lambda: semantic.classify(event)) for _ in range(20)])
+        report["semantic_measured_backend"] = semantic.classify(event).diagnostics["backend"]
+        # Explicit deliveries use shared rules. Measure unrecognized prose
+        # separately so the fast route does not masquerade as encoder latency.
+        fallback = Event("benchmark", "fallback", "The work is described.")
+        report["semantic_fallback_measured_backend"] = semantic.classify(fallback).diagnostics["backend"]
+        report["semantic_fallback_warm_resident"] = summary([
+            ms(lambda: semantic.classify(fallback)) for _ in range(20)])
     print(json.dumps(report, indent=2))
 
 

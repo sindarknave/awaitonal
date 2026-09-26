@@ -1,0 +1,283 @@
+{
+  "cases": 35,
+  "correct": 34,
+  "accuracy": 0.9714285714285714,
+  "confusion_matrix": {
+    "done": {
+      "done": 18,
+      "caveats": 1,
+      "needs-you": 0,
+      "rejected": 0,
+      "ignored": 0
+    },
+    "caveats": {
+      "done": 0,
+      "caveats": 6,
+      "needs-you": 0,
+      "rejected": 0,
+      "ignored": 0
+    },
+    "needs-you": {
+      "done": 0,
+      "caveats": 0,
+      "needs-you": 8,
+      "rejected": 0,
+      "ignored": 0
+    },
+    "rejected": {
+      "done": 0,
+      "caveats": 0,
+      "needs-you": 0,
+      "rejected": 2,
+      "ignored": 0
+    }
+  },
+  "failures": [
+    {
+      "id": "plain-completion-fallback",
+      "expected": "done",
+      "actual": "caveats"
+    }
+  ],
+  "false_attention": [],
+  "false_rejection": [],
+  "classification_ms": {
+    "first": 2.434625057503581,
+    "warm_median": 0.1976040075533092,
+    "max": 6.318625062704086
+  },
+  "dimensions": {
+    "gesture": {
+      "cases": 35,
+      "correct": 34,
+      "accuracy": 0.9714285714285714,
+      "confusion_matrix": {
+        "done": {
+          "done": 5,
+          "answer": 0,
+          "plan": 0,
+          "artifact": 0,
+          "published": 0,
+          "review": 0,
+          "decision": 0,
+          "needs-you": 0,
+          "caveats": 1,
+          "rejected": 0,
+          "ignored": 0
+        },
+        "answer": {
+          "done": 0,
+          "answer": 2,
+          "plan": 0,
+          "artifact": 0,
+          "published": 0,
+          "review": 0,
+          "decision": 0,
+          "needs-you": 0,
+          "caveats": 0,
+          "rejected": 0,
+          "ignored": 0
+        },
+        "plan": {
+          "done": 0,
+          "answer": 0,
+          "plan": 2,
+          "artifact": 0,
+          "published": 0,
+          "review": 0,
+          "decision": 0,
+          "needs-you": 0,
+          "caveats": 0,
+          "rejected": 0,
+          "ignored": 0
+        },
+        "artifact": {
+          "done": 0,
+          "answer": 0,
+          "plan": 0,
+          "artifact": 6,
+          "published": 0,
+          "review": 0,
+          "decision": 0,
+          "needs-you": 0,
+          "caveats": 0,
+          "rejected": 0,
+          "ignored": 0
+        },
+        "published": {
+          "done": 0,
+          "answer": 0,
+          "plan": 0,
+          "artifact": 0,
+          "published": 1,
+          "review": 0,
+          "decision": 0,
+          "needs-you": 0,
+          "caveats": 0,
+          "rejected": 0,
+          "ignored": 0
+        },
+        "review": {
+          "done": 0,
+          "answer": 0,
+          "plan": 0,
+          "artifact": 0,
+          "published": 0,
+          "review": 3,
+          "decision": 0,
+          "needs-you": 0,
+          "caveats": 0,
+          "rejected": 0,
+          "ignored": 0
+        },
+        "decision": {
+          "done": 0,
+          "answer": 0,
+          "plan": 0,
+          "artifact": 0,
+          "published": 0,
+          "review": 0,
+          "decision": 2,
+          "needs-you": 0,
+          "caveats": 0,
+          "rejected": 0,
+          "ignored": 0
+        },
+        "needs-you": {
+          "done": 0,
+          "answer": 0,
+          "plan": 0,
+          "artifact": 0,
+          "published": 0,
+          "review": 0,
+          "decision": 0,
+          "needs-you": 6,
+          "caveats": 0,
+          "rejected": 0,
+          "ignored": 0
+        },
+        "caveats": {
+          "done": 0,
+          "answer": 0,
+          "plan": 0,
+          "artifact": 0,
+          "published": 0,
+          "review": 0,
+          "decision": 0,
+          "needs-you": 0,
+          "caveats": 5,
+          "rejected": 0,
+          "ignored": 0
+        },
+        "rejected": {
+          "done": 0,
+          "answer": 0,
+          "plan": 0,
+          "artifact": 0,
+          "published": 0,
+          "review": 0,
+          "decision": 0,
+          "needs-you": 0,
+          "caveats": 0,
+          "rejected": 2,
+          "ignored": 0
+        }
+      },
+      "failures": [
+        {
+          "id": "plain-completion-fallback",
+          "expected": "done",
+          "actual": "caveats"
+        }
+      ]
+    },
+    "expectancy": {
+      "cases": 35,
+      "correct": 35,
+      "accuracy": 1.0,
+      "confusion_matrix": {
+        "none": {
+          "none": 24,
+          "review-requested": 0,
+          "required-handoff": 0,
+          "ignored": 0
+        },
+        "review-requested": {
+          "none": 0,
+          "review-requested": 3,
+          "required-handoff": 0,
+          "ignored": 0
+        },
+        "required-handoff": {
+          "none": 0,
+          "review-requested": 0,
+          "required-handoff": 8,
+          "ignored": 0
+        }
+      },
+      "failures": []
+    },
+    "delivery_kind": {
+      "cases": 34,
+      "correct": 34,
+      "accuracy": 1.0,
+      "confusion_matrix": {
+        "change": {
+          "change": 7,
+          "answer": 0,
+          "plan": 0,
+          "artifact": 0,
+          "published": 0,
+          "unknown": 0,
+          "ignored": 0
+        },
+        "answer": {
+          "change": 0,
+          "answer": 3,
+          "plan": 0,
+          "artifact": 0,
+          "published": 0,
+          "unknown": 0,
+          "ignored": 0
+        },
+        "plan": {
+          "change": 0,
+          "answer": 0,
+          "plan": 3,
+          "artifact": 0,
+          "published": 0,
+          "unknown": 0,
+          "ignored": 0
+        },
+        "artifact": {
+          "change": 0,
+          "answer": 0,
+          "plan": 0,
+          "artifact": 9,
+          "published": 0,
+          "unknown": 0,
+          "ignored": 0
+        },
+        "published": {
+          "change": 0,
+          "answer": 0,
+          "plan": 0,
+          "artifact": 0,
+          "published": 2,
+          "unknown": 0,
+          "ignored": 0
+        },
+        "unknown": {
+          "change": 0,
+          "answer": 0,
+          "plan": 0,
+          "artifact": 0,
+          "published": 0,
+          "unknown": 10,
+          "ignored": 0
+        }
+      },
+      "failures": []
+    }
+  }
+}

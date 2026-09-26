@@ -1,0 +1,70 @@
+{
+  "sample_rate": 48000,
+  "format": "mono PCM16 WAV",
+  "gesture_order": [
+    "done",
+    "answer",
+    "plan",
+    "artifact",
+    "published",
+    "review",
+    "decision",
+    "needs-you",
+    "caveats",
+    "rejected"
+  ],
+  "gestures": {
+    "done": {
+      "duration_seconds": 1.08,
+      "peak": 0.354049,
+      "rms": 0.065001
+    },
+    "answer": {
+      "duration_seconds": 0.95,
+      "peak": 0.303652,
+      "rms": 0.065001
+    },
+    "plan": {
+      "duration_seconds": 1.1,
+      "peak": 0.199796,
+      "rms": 0.065
+    },
+    "artifact": {
+      "duration_seconds": 1.12,
+      "peak": 0.338214,
+      "rms": 0.065
+    },
+    "published": {
+      "duration_seconds": 1.12,
+      "peak": 0.408346,
+      "rms": 0.065
+    },
+    "review": {
+      "duration_seconds": 1.52,
+      "peak": 0.336597,
+      "rms": 0.065
+    },
+    "decision": {
+      "duration_seconds": 1.13,
+      "peak": 0.1933,
+      "rms": 0.065002
+    },
+    "needs-you": {
+      "duration_seconds": 1.82,
+      "peak": 0.344781,
+      "rms": 0.065001
+    },
+    "caveats": {
+      "duration_seconds": 1.1,
+      "peak": 0.294137,
+      "rms": 0.065001
+    },
+    "rejected": {
+      "duration_seconds": 0.66,
+      "peak": 0.273734,
+      "rms": 0.048169
+    }
+  },
+  "demo_frames": 708000,
+  "demo_duration_seconds": 14.75
+}

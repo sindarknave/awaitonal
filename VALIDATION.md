@@ -1,5 +1,87 @@
 # Observed validation
 
+## Full palette, v0.2.0
+
+Checked on 2026-09-26, Apple M2 Pro, 16 GiB RAM, macOS 26.6 arm64,
+Python 3.13.1. The tests and measurements below describe the expanded palette;
+sections further down are historical records.
+
+### Tests and package
+
+| Check | Observed result |
+| --- | --- |
+| Offline core suite | **540 passed, 2 skipped**, 9.88 s |
+| Same suite with the existing local MiniLM model | **542 passed**, 16.86 s |
+| v0.2.0 wheel in a fresh NumPy-only runtime, from another directory | Demo, review/auth WAVs, classification JSON, structured question dry-run, and gesture evaluation passed |
+
+Recorded outputs: [core tests](artifacts/tests-palette-core.txt),
+[optional model tests](artifacts/tests-palette-semantic.txt),
+[installed-package smoke checks](artifacts/package-v0.2-smoke.json).
+The optional tests include network-blocked real model loading and a foreground
+semantic service. New tests cover all gestures, review queue priority, required
+actions versus decisions, compound/resolved dependencies, unfinished assessments,
+temporary inability versus refusal, and retained validation caveats. Adversarial
+long-input tests remain in the suite.
+
+### Development evaluations
+
+| Fixture set and dimension | Rules | Optional semantic frontend |
+| --- | ---: | ---: |
+| Original 30 outcome fixtures | 30/30 | 24/30 |
+| New 35 development outcomes | 35/35 | 34/35 |
+| New gesture labels | 35/35 | 34/35 |
+| New expectancy labels | 35/35 | 35/35 |
+| New delivery labels | 34/34 | 34/34 |
+
+These are regression/development fixtures, **not a fresh held-out accuracy estimate**.
+The rules remain the default. The semantic frontend now shares explicit routes,
+but its older encoder fallback still calls bare “Done.” a caveat, and misses six
+legacy outcomes, including one false completion. Both fixture sets had zero false
+attention or refusal selections. Passing them does not establish broad accuracy.
+
+Reports: [rules, legacy](artifacts/evaluation-v0.2-rules-legacy.json),
+[rules, gestures](artifacts/evaluation-v0.2-rules-gestures.json),
+[semantic, legacy](artifacts/evaluation-v0.2-semantic-legacy.json), and
+[semantic, gestures](artifacts/evaluation-v0.2-semantic-gestures.json).
+
+### Latency on this Mac
+
+Measured on the same 150 deterministically selected real assistant responses,
+with 40 sequential hook subprocesses per backend against an idle service.
+Only aggregate timings are included; raw conversation data is not packaged.
+
+| Measurement | Rules median / p95 | Semantic median / p95 |
+| --- | ---: | ---: |
+| Resident classification | 1.37 / 4.50 ms | 5.16 / 46.36 ms |
+| Hook launch through WAV ready | 58.61 / 69.34 ms | 69.01 / 110.16 ms |
+
+The semantic sample used shared rules for 77 responses and the encoder for 73.
+Encoder-only classification p95 was 51.07 ms. Local model construction and anchor
+embedding took 4.16 s, excluding module import; this occurs once per service and
+is not a cold process-start measurement. Rules require no model setup.
+
+A useful target is under one second to have an idle-service notification ready,
+comfortably inside the requested few seconds. These measurements meet that target.
+They exclude audio-player launch and audible device latency. No v0.2 audio playback
+or burst-load timing was performed. Serialized playback and the eight-second
+queue expiry still permit delays/drops in a burst; the longest cue now lasts 1.82 s.
+The [full benchmark](artifacts/benchmarks-palette-v0.2.json) records sample sizes,
+method, limitations, and an identical runtime/palette fingerprint for both runs.
+
+### Audio
+
+The updated [demo WAV](artifacts/awaitonal-palette.wav) is mono PCM16 at 48 kHz,
+708,000 frames, **14.75 seconds**, with ten cues and 350 ms gaps. Cue durations
+range from 0.66 to 1.82 seconds. The nine auditioned/revised cues have RMS near
+0.065; the retained refusal cue is 0.0482. The largest floating render peak is
+0.4084. [Signal measurements](artifacts/palette-v0.2.json) include every cue.
+
+The user auditioned the category sketches and requested the expectant review/auth
+revision. This is not a blinded recognition test or a perceptual loudness study.
+The integration uses the selected sketches' pitch/timing design. Live hooks have
+still not been tested inside an actual Claude conversation, and this work did not
+edit Claude settings or install a background service.
+
 ## Reliability fix validation
 
 The long-input parsing fix was checked on 2026-09-25, on the same macOS/Python
@@ -69,7 +151,7 @@ these tests.
 
 ## Audio
 
-[Audition](artifacts/awaitonal-palette.wav): mono, 48,000 Hz, signed PCM16,
+[Original audition](https://github.com/sindarknave/awaitonal/blob/d031245577834e2b639e03cc8d7989d40daa49c4/artifacts/awaitonal-palette.wav): mono, 48,000 Hz, signed PCM16,
 250,080 frames, **5.21 seconds**. Order: done, caveats, needs-you, rejected.
 
 | State | Duration, seconds | Floating render peak | Whole-gesture RMS |

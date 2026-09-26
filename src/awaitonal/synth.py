@@ -10,8 +10,11 @@ import wave
 import numpy as np
 
 from .config import load_config
+from .types import GESTURES
 
-STATE_ORDER = ("done", "caveats", "needs-you", "rejected")
+GESTURE_ORDER = GESTURES
+# Kept as an import alias for callers of the original renderer.
+STATE_ORDER = GESTURE_ORDER
 _SEMITONES = {"C": 0, "D": 2, "E": 4, "F": 5, "G": 7, "A": 9, "B": 11}
 
 
@@ -121,8 +124,8 @@ def render(state: str, config: dict | None = None, response_length: int = 0) -> 
     Character count never changes duration or the intended volume.
     """
     config = load_config() if config is None else config
-    if state not in STATE_ORDER:
-        raise ValueError(f"Unknown state {state!r}; expected one of {', '.join(STATE_ORDER)}")
+    if state not in GESTURE_ORDER:
+        raise ValueError(f"Unknown gesture {state!r}; expected one of {', '.join(GESTURE_ORDER)}")
     settings = config["synth"]
     master_gain = _number(settings["master_gain"], "master_gain", 0.0, 1.0)
     peak_limit = _number(settings["peak_limit"], "peak_limit", 0.01, 0.98)
@@ -150,12 +153,12 @@ def render(state: str, config: dict | None = None, response_length: int = 0) -> 
 
 
 def render_demo(config: dict | None = None) -> np.ndarray:
-    """Audition all four states in the approved order with configurable gaps."""
+    """Audition the full gesture palette with configurable gaps."""
     config = load_config() if config is None else config
     gap = _number(config["synth"]["demo_gap"], "demo_gap", 0.0, 10.0)
     silence = np.zeros(round(gap * _sample_rate(config)), dtype=np.float64)
     parts = []
-    for index, state in enumerate(STATE_ORDER):
+    for index, state in enumerate(GESTURE_ORDER):
         if index:
             parts.append(silence)
         parts.append(render(state, config))

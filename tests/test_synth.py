@@ -2,6 +2,7 @@
 
 import subprocess
 import wave
+from copy import deepcopy
 
 import numpy as np
 import pytest
@@ -18,7 +19,7 @@ def test_render_is_deterministic_safe_and_smooth(state, tmp_path):
     audio = render(state, config)
     assert audio.ndim == 1 and np.isfinite(audio).all()
     assert len(audio) == round(config["states"][state]["duration"] * rate)
-    assert 0.6 <= len(audio) / rate <= 1.5
+    assert 0.6 <= len(audio) / rate <= 2.0
     assert 0.01 < np.max(np.abs(audio)) < 0.5
     assert np.array_equal(audio, render(state, config))
     assert np.count_nonzero(audio[:int(0.01 * rate)]) == 0
@@ -26,10 +27,13 @@ def test_render_is_deterministic_safe_and_smooth(state, tmp_path):
     # A click would produce an abrupt boundary jump. Every isolated event has
     # sub-milliscale neighboring samples, including the deliberately dry taps.
     for event in config["states"][state]["events"]:
+        isolated = deepcopy(config)
+        isolated["states"][state]["events"] = [event]
+        voice = render(state, isolated)
         start = round(event["time"] * rate)
         end = start + round(event["duration"] * rate)
-        assert np.max(np.abs(audio[start - 1:start + 2])) < 0.001
-        assert np.max(np.abs(audio[end - 2:end + 1])) < 0.001
+        assert np.max(np.abs(voice[start - 1:start + 2])) < 0.001
+        assert np.max(np.abs(voice[end - 2:end + 1])) < 0.001
     destination = tmp_path / f"{state}.wav"
     write_wav(destination, audio, rate)
     with wave.open(str(destination), "rb") as stream:
@@ -55,15 +59,18 @@ def _dominant_frequency(samples, rate):
     return np.fft.rfftfreq(131072, 1 / rate)[np.argmax(spectrum)]
 
 
-def test_question_tail_is_two_late_rising_notes():
-    audio = render("needs-you")
+@pytest.mark.parametrize("gesture,first,last,end", [
+    ("needs-you", 1.03, 1.34, 1.76), ("review", .74, 1.04, 1.46),
+])
+def test_expectant_tail_leaves_space_before_unresolved_rising_notes(gesture, first, last, end):
+    audio = render(gesture)
     rate = 48000
-    early_tail = audio[round(0.89 * rate):round(1.11 * rate)]
-    late_tail = audio[round(1.16 * rate):round(1.43 * rate)]
-    assert _dominant_frequency(early_tail, rate) == pytest.approx(note_frequency("B4"), abs=1)
-    assert _dominant_frequency(late_tail, rate) == pytest.approx(note_frequency("D5"), abs=1)
-    assert not np.any(audio[round(1.11 * rate):round(1.16 * rate)])
-    assert not np.any(audio[round(1.43 * rate):])
+    early_tail = audio[round(first * rate):round((first + .21) * rate)]
+    late_tail = audio[round(last * rate):round(end * rate)]
+    assert _dominant_frequency(early_tail, rate) == pytest.approx(note_frequency("A4"), abs=1)
+    assert _dominant_frequency(late_tail, rate) == pytest.approx(note_frequency("B4"), abs=1)
+    assert not np.any(audio[round((first + .21) * rate):round(last * rate)])
+    assert not np.any(audio[round(end * rate):])
 
 
 def test_rejection_contains_two_identical_short_taps_with_silent_gap():
@@ -117,6 +124,7 @@ def test_brightness_is_opt_in_bounded_and_volume_neutral():
 def test_partials_above_nyquist_are_omitted():
     config = load_config()
     config["synth"]["sample_rate"] = 8000
+    config["states"]["done"]["events"] = config["states"]["done"]["events"][:1]
     config["states"]["done"]["events"][0]["notes"] = ["A7"]
     config["synth"]["harmonics"] = [1, 2, 3]
     config["synth"]["harmonic_weights"] = [1, 1, 1]
@@ -144,7 +152,7 @@ def test_config_overrides_merge_without_mutating_defaults(tmp_path):
     assert config["synth"]["sample_rate"] == 48000
     assert np.allclose(render("done", config), 0.5 * render("done"))
     config["states"]["done"]["events"][0]["notes"] = ["A4"]
-    assert load_config()["states"]["done"]["events"][0]["notes"] == ["C4", "E4", "G4"]
+    assert load_config()["states"]["done"]["events"][0]["notes"] == ["G4"]
 
 
 @pytest.mark.parametrize("samples", [[], [float("nan")], [float("inf")], [1.1], [[0.0]]])

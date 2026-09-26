@@ -1,4 +1,4 @@
-# Awaitonal's complete first-pass instrument. Times are seconds, notes use
+# Awaitonal's gesture instrument. Times are seconds, notes use
 # scientific pitch notation, and amplitudes are linear (not decibels).
 [synth]
 sample_rate = 48000
@@ -19,55 +19,282 @@ max_boost = 0.65
 [classification]
 caveats_threshold = 0.5
 
+# State names below are audio gesture IDs; task outcomes remain four values.
+
 [states.done]
-duration = 0.92
+duration = 1.08
 [[states.done.events]]
 time = 0.02
+notes = ["G4"]
+duration = 0.25
+attack = 0.012
+decay = 0.17
+release = 0.065
+gain = 0.8445754641
+[[states.done.events]]
+time = 0.2
+notes = ["E4"]
+duration = 0.26
+attack = 0.012
+decay = 0.17
+release = 0.065
+gain = 0.8445754641
+[[states.done.events]]
+time = 0.4
 notes = ["C4", "E4", "G4"]
-duration = 0.84
-attack = 0.014
-decay = 0.25
-release = 0.15
-gain = 1.0
+duration = 0.63
+attack = 0.012
+decay = 0.17
+release = 0.065
+gain = 0.8445754641
 
-[states.caveats]
-duration = 1.10
-[[states.caveats.events]]
+[states.answer]
+duration = 0.95
+[[states.answer.events]]
 time = 0.02
-notes = ["C4", "E4", "G4", "B4", "D5"]
-duration = 1.02
+notes = ["C4"]
+duration = 0.25
+attack = 0.012
+decay = 0.17
+release = 0.065
+gain = 0.8041315631
+[[states.answer.events]]
+time = 0.12
+notes = ["E4"]
+duration = 0.26
+attack = 0.012
+decay = 0.17
+release = 0.065
+gain = 0.8041315631
+[[states.answer.events]]
+time = 0.26
+notes = ["G4", "D5"]
+duration = 0.62
+attack = 0.012
+decay = 0.17
+release = 0.065
+gain = 0.8041315631
+
+[states.plan]
+duration = 1.1
+[[states.plan.events]]
+time = 0.02
+notes = ["C4"]
+duration = 0.29
+attack = 0.012
+decay = 0.17
+release = 0.065
+gain = 0.7400179844
+[[states.plan.events]]
+time = 0.24
+notes = ["D4"]
+duration = 0.29
+attack = 0.012
+decay = 0.17
+release = 0.065
+gain = 0.7400179844
+[[states.plan.events]]
+time = 0.46
+notes = ["E4"]
+duration = 0.29
+attack = 0.012
+decay = 0.17
+release = 0.065
+gain = 0.7400179844
+[[states.plan.events]]
+time = 0.68
+notes = ["G4"]
+duration = 0.36
+attack = 0.012
+decay = 0.17
+release = 0.065
+gain = 0.7400179844
+
+[states.artifact]
+duration = 1.12
+[[states.artifact.events]]
+time = 0.02
+notes = ["C4"]
+duration = 0.4
+attack = 0.012
+decay = 0.17
+release = 0.065
+gain = 0.7719289353
+[[states.artifact.events]]
+time = 0.1
+notes = ["E4"]
+duration = 0.4
+attack = 0.012
+decay = 0.17
+release = 0.065
+gain = 0.7719289353
+[[states.artifact.events]]
+time = 0.18
+notes = ["G4"]
+duration = 0.4
+attack = 0.012
+decay = 0.17
+release = 0.065
+gain = 0.7719289353
+[[states.artifact.events]]
+time = 0.3
+notes = ["C5", "E5", "G5"]
+duration = 0.74
+attack = 0.012
+decay = 0.17
+release = 0.065
+gain = 0.5902985976
+
+[states.published]
+duration = 1.12
+[[states.published.events]]
+time = 0.02
+notes = ["G3", "B3", "D4"]
+duration = 0.31
+attack = 0.012
+decay = 0.17
+release = 0.065
+gain = 1.0188612076
+[[states.published.events]]
+time = 0.4
+notes = ["C3", "C4", "E4", "G4"]
+duration = 0.65
+attack = 0.012
+decay = 0.17
+release = 0.065
+gain = 1.0188612076
+
+[states.review]
+duration = 1.52
+[[states.review.events]]
+time = 0.02
+notes = ["G3", "D4", "F4", "A4"]
+duration = 0.57
 attack = 0.014
-decay = 0.29
-release = 0.17
-gain = 1.0
+decay = 0.24
+release = 0.075
+gain = 0.8557127569
+[[states.review.events]]
+time = 0.74
+notes = ["A4"]
+duration = 0.21
+attack = 0.014
+decay = 0.14
+release = 0.075
+gain = 0.9478664384
+[[states.review.events]]
+time = 1.04
+notes = ["B4"]
+duration = 0.42
+attack = 0.014
+decay = 0.24
+release = 0.075
+gain = 0.9478664384
+
+[states.decision]
+duration = 1.13
+[[states.decision.events]]
+time = 0.02
+notes = ["G4"]
+duration = 0.14
+attack = 0.012
+decay = 0.17
+release = 0.065
+gain = 0.7608052129
+[[states.decision.events]]
+time = 0.2
+notes = ["G4"]
+duration = 0.14
+attack = 0.012
+decay = 0.17
+release = 0.065
+gain = 0.7608052129
+[[states.decision.events]]
+time = 0.49
+notes = ["B4"]
+duration = 0.21
+attack = 0.012
+decay = 0.17
+release = 0.065
+gain = 0.8778521687
+[[states.decision.events]]
+time = 0.75
+notes = ["D5"]
+duration = 0.32
+attack = 0.012
+decay = 0.17
+release = 0.065
+gain = 0.8778521687
 
 [states.needs-you]
-duration = 1.48
+duration = 1.82
 [[states.needs-you.events]]
 time = 0.02
-notes = ["G3", "B3", "D4", "F4", "A4"]
-duration = 0.84
+notes = ["G4"]
+duration = 0.14
 attack = 0.014
-decay = 0.26
-release = 0.15
-gain = 1.0
-# The two late upper notes deliberately leave the dominant unresolved.
+decay = 0.08
+release = 0.075
+gain = 0.7783509454
 [[states.needs-you.events]]
-time = 0.89
+time = 0.23
+notes = ["G4"]
+duration = 0.14
+attack = 0.014
+decay = 0.08
+release = 0.075
+gain = 0.7783509454
+[[states.needs-you.events]]
+time = 0.49
+notes = ["G3", "B3", "D4", "F4"]
+duration = 0.44
+attack = 0.014
+decay = 0.2
+release = 0.075
+gain = 0.8208064515
+[[states.needs-you.events]]
+time = 1.03
+notes = ["A4"]
+duration = 0.21
+attack = 0.014
+decay = 0.14
+release = 0.075
+gain = 0.9906284759
+[[states.needs-you.events]]
+time = 1.34
 notes = ["B4"]
+duration = 0.42
+attack = 0.014
+decay = 0.24
+release = 0.075
+gain = 1.0755394881
+
+[states.caveats]
+duration = 1.1
+[[states.caveats.events]]
+time = 0.02
+notes = ["E4"]
+duration = 0.26
+attack = 0.012
+decay = 0.17
+release = 0.065
+gain = 0.873393235
+[[states.caveats.events]]
+time = 0.31
+notes = ["D4"]
 duration = 0.22
 attack = 0.012
-decay = 0.085
-release = 0.055
-gain = 0.72
-[[states.needs-you.events]]
-time = 1.16
-notes = ["D5"]
-duration = 0.27
-attack = 0.012
-decay = 0.10
+decay = 0.17
 release = 0.065
-gain = 0.72
+gain = 0.873393235
+[[states.caveats.events]]
+time = 0.57
+notes = ["G3", "C4", "D4"]
+duration = 0.46
+attack = 0.012
+decay = 0.17
+release = 0.065
+gain = 0.873393235
 
 [states.rejected]
 duration = 0.66
@@ -76,14 +303,14 @@ time = 0.025
 notes = ["C4", "F#4"]
 duration = 0.17
 attack = 0.008
-decay = 0.070
+decay = 0.07
 release = 0.045
 gain = 0.95
 [[states.rejected.events]]
-time = 0.30
+time = 0.3
 notes = ["C4", "F#4"]
 duration = 0.17
 attack = 0.008
-decay = 0.070
+decay = 0.07
 release = 0.045
 gain = 0.95

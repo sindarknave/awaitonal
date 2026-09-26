@@ -2,8 +2,9 @@
 
 **Hear how your agent left things.**
 
-A small local musical notification engine for coding agents. Four composed gestures
-describe the agent's reported state. This does not verify its work, generate music
+A small local musical notification engine for coding agents. Composed gestures
+distinguish changes, answers, plans, artifacts, publication, and human handoffs.
+This does not verify the agent's work, generate music
 from text, or send response text to a cloud service.
 
 ## Hear it
@@ -19,6 +20,12 @@ uv sync --dev
 uv run awaitonal demo
 uv run awaitonal demo --out palette.wav
 uv run awaitonal play done
+uv run awaitonal play answer
+uv run awaitonal play plan
+uv run awaitonal play artifact
+uv run awaitonal play published
+uv run awaitonal play review
+uv run awaitonal play decision
 uv run awaitonal play caveats
 uv run awaitonal play needs-you
 uv run awaitonal play rejected
@@ -26,14 +33,23 @@ uv run awaitonal play rejected
 
 `--out` renders without playback; `play` accepts it too. Neither audition command
 requires a service or classifier. A ready-made [audition WAV](artifacts/awaitonal-palette.wav)
-plays the states in this order with 350 ms gaps:
+plays the gestures in this order with 350 ms gaps:
 
-| State | Gesture | Duration |
+| Gesture ID | Meaning and sound | Duration |
 | --- | --- | --- |
-| `done` | C4–E4–G4, one soft chord | 0.92 s |
-| `caveats` | C4–E4–G4–B4–D5, one richer chord | 1.10 s |
-| `needs-you` | G3–B3–D4–F4–A4, then late B4 → D5 | 1.48 s |
+| `done` | Change/completion: descending notes settle into a chord | 1.08 s |
+| `answer` | Answer, finding, or assessment: a quick upward figure | 0.95 s |
+| `plan` | Plan/proposal: four measured steps | 1.10 s |
+| `artifact` | Output ready to inspect: an arpeggio blooms | 1.12 s |
+| `published` | Result delivered externally: two broad chord strikes | 1.12 s |
+| `review` | Please review/react: a suspended opening and hanging A4 → B4 | 1.52 s |
+| `decision` | Required choice/clarification: taps and a rising question | 1.13 s |
+| `needs-you` | Sign-in, approval, or needed action: knocks, a pause, then A4 → B4 | 1.82 s |
+| `caveats` | Partial result/limitation: an uneven unresolved descent | 1.10 s |
 | `rejected` | C4–F♯4, two dry taps | 0.66 s |
+
+These cover eight main result/handoff families, the softer review invitation,
+and the retained refusal cue. Each notification plays one gesture once.
 
 All sound settings live in [palette.toml](src/awaitonal/palette.toml): pitches,
 timings, envelopes, partials, headroom, gain, and routing threshold. Use
@@ -56,13 +72,16 @@ may reduce level. Rich chords use voice-energy normalization. All oscillators ar
 deterministic, partials above Nyquist are omitted, and cosine ramps prevent hard
 onsets and releases. WAV output is mono PCM16 at 48 kHz by default.
 
-No `reference/agent_chord_palette.wav` was supplied, so this instrument follows the
-written specification and has **not** been compared against the approved recording.
+The palette follows the auditioned gesture sketches, including the expectant review
+and authentication revision. Distinguishability has not been measured in a blinded
+listening study.
 
 ## Classify and run
 
 ```sh
 uv run awaitonal classify --text "Done. Integration tests were unavailable." --json
+uv run awaitonal classify --text "Please review the draft and tell me what you think." --json
+uv run awaitonal classify --text "Please complete SSO sign-in so I can continue." --json
 uv run awaitonal serve --classifier rules
 ```
 
@@ -81,15 +100,26 @@ The core values are `loose_ends` in [0,1], `needs_you`, and `rejected`. Routing 
 deterministic: rejection first, then waiting, then caveats at or above the configured
 threshold (default 0.5), otherwise done. Text classifiers initially use coarse
 loose-end values 0 or 1; neither similarities nor controls claim calibrated
-probability. Classification returns state, controls, evidence source, reason, and
-separate diagnostics.
+probability. The original outcome states remain `done`, `caveats`, `needs-you`, and
+`rejected`; wire events and semantic controls remain compatible. Classification
+also returns `delivery_kind`, `expectancy`, `handoff_kind`, and the selected `gesture`.
+Playback uses `gesture`; queue attention uses the outcome. A direct review request
+gets `review-requested` and the softer cue without claiming a blocking dependency.
+Required sign-in, approval, choices, and needed evidence get `required-handoff`.
 
 Structured question/permission evidence bypasses textual inference. Rules examine
 only the assistant's current prose, filtering Markdown code and quotes where
-practical. Optional offers do not imply waiting, and recovered failures do not imply
-refusal. Unclear prose becomes caveats; empty/code-only input and malformed events
+practical. Passive review availability and completed guides describing login steps
+do not imply a current handoff. An explicit request to review and respond does,
+even when work is not blocked. A pending approval still matters after tests pass.
+Completed assessments can report defects without becoming unfinished repairs.
+Optional offers do not imply waiting, and recovered failures do not imply refusal.
+Unclear prose still uses the legacy caveats fallback; empty/code-only input and malformed events
 are ignored. Rules are intentionally small English-language heuristics; Markdown
-extraction and semantic interpretation are imperfect.
+extraction and semantic interpretation are imperfect. The classifier sees the final
+response, not the preceding user request, so task scope and implicit dependencies
+can remain ambiguous. This update adds a deterministic baseline, not a trained
+classifier or a claim of general accuracy. See [routing details](docs/gesture-routing.md).
 
 The listener uses a private Unix socket at `/tmp/awaitonal-<uid>/service.sock`, a
 0700 directory, a 0600 socket, and a single-instance lock. Override with
@@ -105,7 +135,9 @@ routine completion. Duplicate suppression lasts two seconds and includes session
 and available turn identifiers. On older Claude versions without prompt IDs, very
 rapid identical turns cannot always be distinguished; this limitation never becomes
 permanent suppression. No queue or response text is persisted. Default service
-stderr contains states, evidence sources, timings, and error class names only.
+stderr contains outcome/gesture metadata, evidence sources, timings, and error class
+names only. Soft review invitations have routine queue priority; required handoffs
+and refusals have attention priority. Longer cues can increase delay during bursts.
 
 ## Connect Claude Code
 
@@ -113,8 +145,8 @@ Installed Claude **2.1.158** and the current [official hook reference](https://c
 were checked on 2026-09-25. The adapter handles:
 
 - `Stop`: classify `last_assistant_message` if supplied; never infer success from stopping.
-- `PreToolUse` matched to `AskUserQuestion`: explicit `needs-you`.
-- `PermissionRequest`: explicit `needs-you`.
+- `PreToolUse` matched to `AskUserQuestion`: explicit `needs-you`, `decision` gesture.
+- `PermissionRequest`: explicit `needs-you`, stronger waiting gesture.
 
 It suppresses `agent_id` subagent events and installs no `SubagentStop` hook. Missing
 final text is ignored; transcripts are never opened. `prompt_id` is used when
@@ -143,12 +175,17 @@ does the work separately.
 
 ## Optional local embeddings
 
-**Experimental:** the actual encoder ran successfully offline, but scored only
-13/30 on the included held-out fixtures. Rules scored 30/30 on those same fixtures.
-Use rules for the initial installation. The sample is small and does not establish
-general accuracy. [Full evaluation results](artifacts/evaluation-semantic.json)
-include the confusion matrix and every failure ID; thresholds and anchors were
-not tuned to these cases.
+**Experimental:** use rules for the initial installation. The original v0.1 encoder
+scored 13/30 on the included fixtures, and a later exploratory real-conversation
+sample exposed substantial classification errors in both backends. Those historical
+scores do not describe the updated router. The fixtures are now regression material,
+not a fresh held-out accuracy estimate. Historical [encoder results](artifacts/evaluation-semantic.json)
+are retained for reference.
+
+Both backends now share explicit delivery and handoff rules. The semantic backend
+uses these recognized routes first (`diagnostics.backend = "rules-routing"`), then
+falls back to its original four-outcome embedding comparison for unrecognized prose.
+It still requires local model weights and loads them once at startup.
 
 Install optional dependencies, then explicitly download weights once:
 
@@ -212,6 +249,7 @@ standalone installed wheel; evaluation fixtures are distributed with the source.
 uv sync --dev
 HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 .venv/bin/python -m pytest -q
 .venv/bin/awaitonal evaluate --classifier rules
+.venv/bin/awaitonal evaluate --fixtures examples/gesture-evaluation.jsonl
 .venv/bin/python tools/benchmark.py
 ```
 
@@ -236,9 +274,16 @@ offline encoder loading when weights exist, and audio properties. The real-model
 test blocks network connections. Without its dependencies/weights it is explicitly
 skipped; stubbed encoder tests alone do not validate model quality.
 
+Gesture fixtures are authored development contrasts, including direct versus passive
+review, active versus documented authentication, delivery types, and explicit-state overrides.
+Optional `expected_gesture`, `expected_expectancy`, and `expected_delivery_kind` fields
+get separate evaluation denominators and confusion matrices. A correct outcome alone
+does not count as a correct gesture. Evaluation output contains IDs and labels only.
+
 [VALIDATION.md](VALIDATION.md) records observed runs, audio properties, confusion
 matrices, timing reports, and unverified behavior. Benchmarks distinguish fresh
-process launches, warm resident classification, and socket connect/send. Cache state
+process launches, warm resident classification, and socket connect/send. Semantic
+timings identify shared-rule routing separately from encoder fallback. Cache state
 and OS scheduling are uncontrolled; measurements are not latency promises.
 
 ## Disable and remove
@@ -253,7 +298,8 @@ to startup settings or installed globally.
 ## Small code map
 
 - `adapter.py` and `client.py`: bounded event adaptation and quiet hook handoff.
-- `text.py`, `classify.py`, `semantic.py`: prose extraction and classification.
+- `text.py`, `classify.py`, `semantic.py`: prose extraction and outcome classification.
+- `delivery.py`, `handoff.py`: reported delivery and conversational expectancy.
 - `types.py`: semantic controls and deterministic state mapping.
 - `palette.toml`, `config.py`, `synth.py`, `playback.py`: instrument and local audio.
 - `service.py`, `cli.py`: serial worker, private socket, and commands.

@@ -221,6 +221,33 @@ def test_live_duplicate_suppression():
         assert len(played) == 2
 
 
+def test_service_plays_selected_gesture_and_logs_only_routing_metadata():
+    with running_service() as (_, path, played, logs):
+        send_event(Event("review-session", "1", "PRIVATE-MARKER. Please review the preview and tell me what you think."), path)
+        eventually(lambda: played == ["review"])
+        send_event(Event("auth-session", "1", "Please complete SSO sign-in in the browser so I can continue."), path)
+        eventually(lambda: played == ["review", "needs-you"])
+        send_event(Event("artifact-session", "1", "I rendered the video and saved the output file."), path)
+        eventually(lambda: played == ["review", "needs-you", "artifact"])
+        assert logs[0]["expectancy"] == "review-requested"
+        assert logs[1]["state"] == "needs-you"
+        assert logs[2]["delivery_kind"] == "artifact"
+        assert "PRIVATE-MARKER" not in json.dumps(logs)
+
+
+def test_required_auth_has_priority_over_soft_review_invitation():
+    classifier = RulesClassifier()
+    queue = EventQueue()
+    review = Event("review", "1", "Please review the draft and tell me what you think.")
+    auth = Event("auth", "1", "Please sign in to SSO so I can continue.")
+    for event in (review, auth):
+        result = classifier.classify(event)
+        queue.put(event, attention=result.attention, state=result.state)
+    assert queue.get() == auth
+    assert queue.get() == review
+    queue.close()
+
+
 def test_second_server_does_not_unlink_running_socket():
     with running_service() as (_, path, played, _):
         with pytest.raises(RuntimeError, match="already serving"):

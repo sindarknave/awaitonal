@@ -10,7 +10,7 @@ import tempfile
 import threading
 import uuid
 
-from .types import Event, STATES
+from .types import Event, GESTURES
 
 
 def model_directory():
@@ -29,9 +29,9 @@ def parser():
     cli = argparse.ArgumentParser(prog="awaitonal", description="Hear how your agent left things.")
     sub = cli.add_subparsers(dest="command", required=True)
     for name in ("demo", "play"):
-        command = sub.add_parser(name, help="audition or render the palette" if name == "demo" else "play or render one state")
+        command = sub.add_parser(name, help="audition or render the palette" if name == "demo" else "play or render one gesture")
         if name == "play":
-            command.add_argument("state", choices=STATES)
+            command.add_argument("state", choices=GESTURES, metavar="GESTURE")
         command.add_argument("--out", type=Path, help="write WAV without playback")
         command.add_argument("--config", type=Path, help="editable palette TOML")
     classify = sub.add_parser("classify", help="inspect a response's reported state")
@@ -128,7 +128,8 @@ def execute(args):
         result = classifier.classify(Event("cli", "classification", args.text))
         if result is None:
             raise ValueError("no assistant prose to classify")
-        print(json.dumps(result.to_dict(), indent=2) if args.json else f"{result.state}: {result.reason}")
+        print(json.dumps(result.to_dict(), indent=2) if args.json else
+              f"{result.gesture} ({result.state}): {result.reason}")
         return 0
     if args.command == "evaluate":
         from .evaluation import evaluate
