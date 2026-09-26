@@ -1,0 +1,16 @@
+{
+  "version": "0.4.3",
+  "passed": true,
+  "audio_played": false,
+  "environment": "Fresh wheel and NumPy, isolated silent service and settings",
+  "checks": [
+    "real plugin mute/unmute wrappers",
+    "same PID and instance throughout",
+    "idempotent controls",
+    "quiet muted hook",
+    "doctor reports intentional mute",
+    "fresh post-unmute notification",
+    "no replay of muted notification",
+    "stopped-service error does not start service"
+  ]
+}

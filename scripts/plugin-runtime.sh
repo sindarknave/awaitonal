@@ -54,6 +54,14 @@ case "$action" in
         fi
         exec "$executable" doctor "$@"
         ;;
+    mute|unmute)
+        [ "$#" -eq 0 ] || { printf '%s\n' "$action takes no arguments." >&2; exit 1; }
+        if [ ! -x "$executable" ]; then
+            printf '%s\n' 'Awaitonal runtime is not installed. Run /awaitonal:setup.' >&2
+            exit 1
+        fi
+        exec "$executable" service "$action" --expected-executable "$executable"
+        ;;
     uninstall)
         [ "$#" -eq 0 ] || { printf '%s\n' 'uninstall takes no arguments.' >&2; exit 1; }
         if [ -x "$executable" ]; then
@@ -74,7 +82,7 @@ case "$action" in
         exec "$executable" service "$@"
         ;;
     *)
-        printf '%s\n' 'Usage: plugin-runtime.sh setup [init options] | status [doctor options] | service <action> | uninstall' >&2
+        printf '%s\n' 'Usage: plugin-runtime.sh setup [init options] | status [doctor options] | mute | unmute | service <action> | uninstall' >&2
         exit 1
         ;;
 esac

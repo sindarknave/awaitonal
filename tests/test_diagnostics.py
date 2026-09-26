@@ -1,5 +1,7 @@
 import json
 
+import pytest
+
 from awaitonal import __version__
 from awaitonal.cli import main
 from awaitonal.diagnostics import diagnose
@@ -38,3 +40,20 @@ def test_doctor_cli_json_and_explicit_audio_only(tmp_path, capsys, monkeypatch):
     assert main(args + ["--test-sound"]) == 1
     assert len(calls) == 1
     assert json.loads(capsys.readouterr().out)["audio_tested"] is True
+
+
+@pytest.mark.parametrize("muted", [False, True])
+def test_doctor_explains_intentional_mute_without_calling_it_broken(tmp_path, monkeypatch, muted):
+    from awaitonal import lifecycle
+    monkeypatch.setattr(lifecycle, "service_status", lambda _: {
+        "status": "running", "version": __version__, "muted": muted,
+    })
+    result = diagnose(tmp_path / "settings.json")
+    checks = {item["name"]: item for item in result["checks"]}
+    assert checks["notifications"]["status"] == "ok"
+    if muted:
+        assert "muted" in checks["notifications"]["message"]
+        assert "awaitonal service unmute" in checks["notifications"]["message"]
+        assert "warm" in checks["notifications"]["message"]
+    else:
+        assert checks["notifications"]["message"] == "notifications unmuted"

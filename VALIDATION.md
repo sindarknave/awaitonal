@@ -1,5 +1,30 @@
 # Observed validation
 
+## Mute controls and skills, v0.4.3
+
+The [full core suite](artifacts/tests-v0.4.3-core.txt) reports **988 passed,
+2 optional-model skips**. Deterministic checks cover queued and in-progress
+classification, muting between logging and playback, controls during a blocked
+player, and notification/unmute ordering in the same socket-read batch. Lifecycle
+tests cover instance and executable guards, idempotence, older services, and
+malformed or unconfirmed state replies.
+
+An isolated Claude plugin install discovers all five skills, including `mute`
+and `unmute`; both new skill files pass frontmatter validation. The plugin
+wrappers target only their stable runtime, require no uv/dependency setup, reject
+unsupported arguments, and propagate failures.
+
+A [fresh-wheel smoke check](artifacts/mute-v0.4.3-smoke.json) uses a private silent
+service from an unrelated directory. Mute, repeated mute, unmute, and repeated
+unmute preserve the same PID and authenticated instance. A muted hook is dropped;
+a fresh notification after unmute is processed without replaying the old one.
+Doctor reports intentional mute as informational. Unmuting a stopped service
+fails without starting anything. No real user settings or audio output are used.
+
+Mute is in memory for the current service and permits one cue already admitted
+to synthesis/playback to finish. It does not cancel playback or claim to measure
+device-level silence.
+
 ## Intake deadline race, v0.4.2
 
 The v0.4.1 Linux/Python3.13 CI run exposed a scheduling-dependent notification

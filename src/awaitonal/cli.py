@@ -71,7 +71,7 @@ def parser():
     doctor.add_argument("--test-sound", action="store_true", help="explicitly play one cue after diagnosis")
     management = sub.add_parser("service", help="manage the resident local service")
     operations = management.add_subparsers(dest="operation", required=True)
-    for name in ("start", "stop", "status", "install", "uninstall"):
+    for name in ("start", "stop", "status", "mute", "unmute", "install", "uninstall"):
         command = operations.add_parser(name)
         command.add_argument("--socket", type=Path)
         if name in ("start", "install"):
@@ -83,7 +83,7 @@ def parser():
             command.add_argument("--queue-size", type=int, default=8)
             command.add_argument("--min-turn-seconds", type=float)
             command.add_argument("--silent", action="store_true")
-        if name in ("stop", "uninstall"):
+        if name in ("stop", "mute", "unmute", "uninstall"):
             command.add_argument("--expected-executable", type=Path)
     setup = sub.add_parser("model-setup", help="explicitly download the optional sentence encoder")
     setup.add_argument("--model-dir", type=Path, default=model_directory())
@@ -141,7 +141,7 @@ def execute(args):
         print("Applied." if args.apply else "Preview only. Use --apply to write these changes.")
         return 0
     if args.command == "service":
-        from .lifecycle import (start_service, stop_service, service_status,
+        from .lifecycle import (start_service, stop_service, service_status, set_service_muted,
                                 install_launch_agent, uninstall_launch_agent)
         if args.operation in ("start", "install"):
             options = {name: getattr(args, name) for name in (
@@ -153,6 +153,9 @@ def execute(args):
             result = stop_service(args.socket, expected_executable=args.expected_executable)
         elif args.operation == "status":
             result = service_status(args.socket)
+        elif args.operation in ("mute", "unmute"):
+            result = set_service_muted(args.operation == "mute", args.socket,
+                                       expected_executable=args.expected_executable)
         else:
             result = uninstall_launch_agent(expected_executable=args.expected_executable)
         print(json.dumps(result, indent=2))

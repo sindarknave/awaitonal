@@ -27,7 +27,7 @@ def short_directory():
 def identity(**changes):
     return {"service": "awaitonal", "protocol": 1, "version": __version__,
             "pid": os.getpid(), "instance_id": "a" * 32, "status": "running",
-            "executable": str(Path(sys.executable).resolve()), **changes}
+            "executable": str(Path(sys.executable).resolve()), "muted": False, **changes}
 
 
 @contextmanager
@@ -96,6 +96,7 @@ def test_other_version_is_identified_without_claiming_compatibility():
     identity(version=[]), identity(pid=True), identity(pid=0),
     identity(instance_id="invalid"), identity(status="stopping"),
     identity(executable="relative/path"),
+    identity(muted=0), identity(muted=None),
 ])
 def test_malformed_or_foreign_replies_are_not_stopped_services(reply):
     with responding_socket(reply) as (path, _):
@@ -125,6 +126,56 @@ def test_stop_installation_mismatch_sends_no_stop(monkeypatch):
         with pytest.raises(life.LifecycleError, match="another.*installation"):
             life.stop_service(path, expected_executable=sys.executable)
     assert [request["awaitonal_control"] for request in requests] == ["status"]
+
+
+@pytest.mark.parametrize("muted", [True, False])
+def test_mute_absent_service_fails_without_starting(muted, monkeypatch):
+    monkeypatch.setattr(life.subprocess, "Popen", lambda *args, **kwargs: pytest.fail("must not start a service"))
+    with short_directory() as directory:
+        with pytest.raises(life.LifecycleError, match="not running"):
+            life.set_service_muted(muted, directory / "missing.sock")
+
+
+@pytest.mark.parametrize("muted", [True, False])
+def test_mute_installation_mismatch_sends_no_mutation(muted):
+    with responding_socket(identity(executable="/some/other/awaitonal")) as (path, requests):
+        with pytest.raises(life.LifecycleError, match="another.*installation"):
+            life.set_service_muted(muted, path, expected_executable=sys.executable)
+    assert [request["awaitonal_control"] for request in requests] == ["status"]
+
+
+@pytest.mark.parametrize("version,capability", [("0.0.1", True), ("0.0.1", False), (__version__, False)])
+def test_mute_older_service_requires_update_and_restart(version, capability):
+    reply = identity(version=version)
+    if not capability:
+        reply.pop("muted")
+    with responding_socket(reply) as (path, requests):
+        with pytest.raises(life.LifecycleError, match="upgrade/restart"):
+            life.set_service_muted(True, path)
+    assert [request["awaitonal_control"] for request in requests] == ["status"]
+
+
+@pytest.mark.parametrize("change", [
+    {"instance_id": "b" * 32}, {"muted": False}, {"muted": 1}, {"changed": 1},
+])
+def test_mute_requires_same_instance_and_valid_state_reply(change, monkeypatch):
+    original = identity(version_matches=True)
+    monkeypatch.setattr(life, "service_status", lambda *args: original)
+    with responding_socket({**identity(muted=True, changed=True), **change}) as (path, requests):
+        with pytest.raises(life.LifecycleError, match="could not confirm mute"):
+            life.set_service_muted(True, path)
+    assert requests == [{"awaitonal_control": "mute", "protocol": 1, "instance_id": original["instance_id"]}]
+
+
+def test_mute_and_unmute_verified_service_keep_classifier_instance():
+    from test_service import running_service
+    with running_service() as (service, path, played, logs):
+        for muted in (True, False):
+            first = life.set_service_muted(muted, path, expected_executable=sys.argv[0])
+            repeated = life.set_service_muted(muted, path, expected_executable=sys.argv[0])
+            assert first["changed"] is True and repeated["changed"] is False
+            assert first["muted"] is muted and first["instance_id"] == service.instance_id
+        assert played == logs == []
 
 
 def test_start_failure_reports_exit_and_does_not_leave_a_service(tmp_path):

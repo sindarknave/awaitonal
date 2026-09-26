@@ -52,7 +52,10 @@ def _validate_reply(reply, action):
             or not re.fullmatch(r"[0-9a-f]{32}", reply["instance_id"])
             or reply.get("status") != ("stopping" if action == "stop" else "running")
             or not isinstance(reply.get("executable"), str)
-            or not Path(reply["executable"]).is_absolute()):
+            or not Path(reply["executable"]).is_absolute()
+            or ("muted" in reply and type(reply["muted"]) is not bool)
+            or (action in ("mute", "unmute") and (
+                reply.get("muted") is not (action == "mute") or type(reply.get("changed")) is not bool))):
         raise LifecycleError("socket did not return a valid Awaitonal service identity")
     return reply
 
@@ -218,6 +221,28 @@ def stop_service(socket_path=None, *, timeout=5.0, expected_executable=None):
     except (OSError, ValueError, TypeError) as error:
         raise LifecycleError(f"could not stop verified service: {type(error).__name__}") from error
     raise LifecycleError("service did not stop before the shutdown timeout")
+
+
+def set_service_muted(muted, socket_path=None, *, timeout=0.5, expected_executable=None):
+    """Change notification admission without unloading the running classifier."""
+    if type(muted) is not bool:
+        raise ValueError("muted must be a boolean")
+    path = _socket_path(socket_path)
+    current = service_status(path)
+    if current["status"] != "running":
+        raise LifecycleError("service is not running; no mute state changed. Use awaitonal service start when ready")
+    if expected_executable is not None and not _same_executable(current["executable"], expected_executable):
+        raise LifecycleError("service belongs to another Awaitonal installation")
+    if "muted" not in current or not current["version_matches"]:
+        raise LifecycleError("running service needs an upgrade/restart before mute controls are available; use awaitonal service stop, then awaitonal service start")
+    action = "mute" if muted else "unmute"
+    try:
+        reply = _control(path, action, timeout, current["instance_id"])
+        if reply["instance_id"] != current["instance_id"]:
+            raise LifecycleError(f"service instance changed during {action}; check awaitonal service status")
+        return {**reply, "socket": str(path), "version_matches": reply["version"] == __version__}
+    except (LifecycleError, OSError, ValueError, TypeError) as error:
+        raise LifecycleError(f"could not confirm {action}; check awaitonal service status before retrying: {error}") from error
 
 
 def _agent_path(directory, label, *, create=True):

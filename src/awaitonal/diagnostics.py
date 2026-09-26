@@ -26,6 +26,12 @@ def diagnose(settings_path=None, socket_path=None):
         running = status.get("status") == "running"
         check("service", running, "authenticated listener running" if running else "not running; use awaitonal service start")
         if running:
+            if type(status.get("muted")) is bool:
+                check("notifications", True,
+                      "muted; model stays warm. Use awaitonal service unmute to resume" if status["muted"] else
+                      "notifications unmuted")
+            else:
+                check("notifications", False, "mute state unavailable; upgrade and restart the service")
             check("version", status.get("version") == __version__,
                   "runtime versions match" if status.get("version") == __version__ else "restart the service after upgrading")
             matches = Path(status.get("executable", "/unavailable")).resolve() == executable.resolve()

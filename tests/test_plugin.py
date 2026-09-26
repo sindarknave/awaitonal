@@ -191,6 +191,39 @@ def test_status_is_read_only_and_does_not_require_uv(plugin_env):
     assert log.read_text() == "awaitonal doctor --json\n"
 
 
+@pytest.mark.parametrize("action", ["mute", "unmute"])
+def test_mute_controls_use_only_owned_runtime_without_uv(plugin_env, action):
+    _, runtime, _, log, _ = plugin_env
+    missing = script(plugin_env, action)
+    assert missing.returncode == 1
+    assert "/awaitonal:setup" in missing.stderr
+    assert not log.exists()
+    install_fake_runtime(plugin_env)
+    result = script(plugin_env, action)
+    assert result.returncode == 0, result.stderr
+    assert log.read_text() == f"awaitonal service {action} --expected-executable {runtime}/bin/awaitonal\n"
+
+
+@pytest.mark.parametrize("action", ["mute", "unmute"])
+def test_mute_control_failure_is_not_reported_as_success(plugin_env, action):
+    executable = install_fake_runtime(plugin_env)
+    executable.write_text('#!/bin/sh\nprintf "service unavailable\\n" >&2\nexit 17\n')
+    result = script(plugin_env, action)
+    assert result.returncode == 17
+    assert "service unavailable" in result.stderr
+    assert result.stdout == ""
+
+
+@pytest.mark.parametrize("action", ["mute", "unmute"])
+def test_mute_controls_reject_arguments_before_touching_runtime(plugin_env, action):
+    _, _, _, log, _ = plugin_env
+    install_fake_runtime(plugin_env)
+    result = script(plugin_env, action, "30m")
+    assert result.returncode == 1
+    assert "takes no arguments" in result.stderr
+    assert not log.exists()
+
+
 def test_uninstall_removes_only_managed_runtime_after_stopping_service(plugin_env):
     _, runtime, _, log, _ = plugin_env
     install_fake_runtime(plugin_env)

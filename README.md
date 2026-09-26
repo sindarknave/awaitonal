@@ -98,6 +98,8 @@ For a managed background process, use:
 ```sh
 uv run awaitonal service start
 uv run awaitonal service status
+uv run awaitonal service mute
+uv run awaitonal service unmute
 uv run awaitonal doctor
 uv run awaitonal service stop
 ```
@@ -115,6 +117,12 @@ uv run awaitonal notify --text "Which database should I use before proceeding?"
 success instead. `serve --silent` exercises classification and diagnostics without
 playing audio. Setup is explicit; notification hooks never install dependencies
 or start the service. The listener remains local to your account.
+
+`service mute` silences all notifications on that service while keeping its model
+loaded. Queued notifications are discarded, and a cue already starting or playing
+may finish.
+`service unmute` resumes future notifications without replaying muted ones. Mute
+lasts until unmuted or the service restarts; `service status` and `doctor` show it.
 
 The core controls are `loose_ends` in [0,1], `needs_you`, `rejected`, and `failed`.
 Known outcomes route deterministically: rejection first, then waiting, failure,
@@ -213,6 +221,10 @@ service. `/awaitonal:status` diagnoses setup; `/awaitonal:uninstall` removes the
 plugin-owned runtime. See [plugin setup and migration](docs/plugin.md), including
 how to remove old manual hooks without duplicate sounds. Updating the plugin
 requires rerunning setup to update its stable Python runtime.
+
+Use `/awaitonal:mute` and `/awaitonal:unmute` to silence or resume notification
+sounds across sessions without stopping the service. `/awaitonal:status` reports
+whether the service is muted.
 
 For standalone hooks, `awaitonal init` previews the settings diff;
 `awaitonal init --apply` backs up and installs owned handlers. `awaitonal uninstall

@@ -48,6 +48,27 @@ def test_explicit_cli_reports_service_missing(tmp_path):
     assert "awaitonal:" in result.stderr
 
 
+@pytest.mark.parametrize("operation", ["mute", "unmute"])
+def test_mute_cli_reports_absent_service_without_starting(tmp_path, operation):
+    path = tmp_path / "absent"
+    result = cli("service", operation, "--socket", path)
+    assert result.returncode == 1 and "not running" in result.stderr
+    assert not path.exists()
+
+
+def test_mute_cli_changes_and_reports_running_service_state():
+    from test_service import running_service
+    with running_service() as (service, path, played, logs):
+        for operation, muted in (("mute", True), ("unmute", False)):
+            result = cli("service", operation, "--socket", path,
+                         "--expected-executable", Path(sys.argv[0]).resolve())
+            assert result.returncode == 0, result.stderr
+            state = json.loads(result.stdout)
+            assert state["muted"] is muted and state["changed"] is True
+            assert state["instance_id"] == service.instance_id
+        assert played == logs == []
+
+
 def test_explicit_cli_reports_empty_prose_and_missing_model(tmp_path):
     result = cli("classify", "--text", "```\nprint('done')\n```", "--json")
     assert result.returncode == 1

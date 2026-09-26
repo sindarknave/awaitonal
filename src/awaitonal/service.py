@@ -27,6 +27,7 @@ class Pending:
     attention: bool
     received: float
     turn_seconds: float | None = None
+    mute_generation: int = 0
 
 
 @dataclass
@@ -100,7 +101,7 @@ class EventQueue:
             self.seen = {k: v for k, v in self.seen.items() if not (k[0] == event.session_id and v[3])}
 
     def put(self, event: Event, attention=False, now=None, state=None, turn_seconds=None,
-            classification=None, supersede=True) -> bool:
+            classification=None, supersede=True, mute_generation=0) -> bool:
         now = time.monotonic() if now is None else now
         with self.condition:
             if self.closed:
@@ -155,7 +156,7 @@ class EventQueue:
                 self.seen[alias] = seen
             while len(self.seen) > 512:
                 self.seen.pop(next(iter(self.seen)))
-            self.items.append(Pending(event, attention, now, turn_seconds))
+            self.items.append(Pending(event, attention, now, turn_seconds, mute_generation))
             self.condition.notify()
             return True
 
@@ -180,6 +181,11 @@ class EventQueue:
             self.closed = True
             self.items.clear()
             self.condition.notify_all()
+
+    def discard(self):
+        with self.condition:
+            self.items.clear()
+            self.seen.clear()
 
 
 def private_directory(directory: Path):
@@ -211,6 +217,9 @@ class Service:
         self.long_turn_player = long_turn_player
         self.timings = TurnTimings()
         self.instance_id = uuid.uuid4().hex
+        self.muted = False
+        self._mute_generation = 0
+        self._mute_lock = threading.Lock()
 
     def _suppress(self, result, turn_seconds):
         return (self.min_turn_seconds > 0 and turn_seconds is not None
@@ -232,17 +241,30 @@ class Service:
         if not isinstance(payload, dict) or "awaitonal_control" not in payload:
             return False
         verb = payload.get("awaitonal_control")
-        allowed = {"awaitonal_control", "protocol"} | ({"instance_id"} if verb == "stop" else set())
-        if (verb not in ("status", "stop") or type(payload.get("protocol")) is not int
+        guarded = verb in ("stop", "mute", "unmute")
+        allowed = {"awaitonal_control", "protocol"} | ({"instance_id"} if guarded else set())
+        if (verb not in ("status", "stop", "mute", "unmute") or type(payload.get("protocol")) is not int
                 or payload["protocol"] != 1 or set(payload) != allowed
-                or (verb == "stop" and payload.get("instance_id") != self.instance_id)):
+                or (guarded and payload.get("instance_id") != self.instance_id)):
             return True
         try:
             if _peer_uid(connection) != os.getuid():
                 return True
+            changed = False
+            if verb in ("mute", "unmute"):
+                with self._mute_lock:
+                    muted = verb == "mute"
+                    changed = self.muted != muted
+                    self.muted = muted
+                    if muted and changed:
+                        self._mute_generation += 1
+                        self.queue.discard()
+                        self.timings.sessions.clear()
             response = {"service": "awaitonal", "protocol": 1, "version": __version__, "pid": os.getpid(),
                         "instance_id": self.instance_id, "status": "stopping" if verb == "stop" else "running",
-                        "executable": str(Path(sys.argv[0]).resolve())}
+                        "executable": str(Path(sys.argv[0]).resolve()), "muted": self.muted}
+            if verb in ("mute", "unmute"):
+                response["changed"] = changed
             connection.settimeout(0.05)
             connection.sendall(json.dumps(response).encode("utf-8") + b"\n")
             if verb == "stop":
@@ -251,7 +273,12 @@ class Service:
             pass
         return True
 
-    def _intake(self, event, hints, now):
+    def _intake(self, event, hints, now, mute_generation=None):
+        with self._mute_lock:
+            if mute_generation is None:
+                mute_generation = self._mute_generation
+            if self.muted or mute_generation != self._mute_generation:
+                return
         if event.kind == "turn-start":
             self.queue.begin_turn(event)
             if self.min_turn_seconds > 0 or self.long_turn_seconds > 0:
@@ -265,11 +292,17 @@ class Service:
         # A default-silent activity update must not erase an unplayed delivery
         # or question. Queue it only when there is room so suppression still logs.
         silent_activity = hint and hint.gesture == "in-flight" and not self.notify_in_flight
-        self.queue.put(event, bool(hint and hint.attention), state=hint.state if hint else None,
-                       now=now, turn_seconds=turn_seconds, classification=hint, supersede=not silent_activity)
+        with self._mute_lock:
+            if not self.muted and mute_generation == self._mute_generation:
+                self.queue.put(event, bool(hint and hint.attention), state=hint.state if hint else None,
+                               now=now, turn_seconds=turn_seconds, classification=hint,
+                               supersede=not silent_activity, mute_generation=mute_generation)
 
     def _worker(self):
         while (pending := self.queue.get_pending()) is not None:
+            with self._mute_lock:
+                if self.muted or pending.mute_generation != self._mute_generation:
+                    continue
             event = pending.event
             started = time.perf_counter()
             try:
@@ -279,6 +312,9 @@ class Service:
                     break
                 if result is not None:
                     suppressed = self._suppression_reason(result, pending.turn_seconds)
+                    with self._mute_lock:
+                        if self.muted or pending.mute_generation != self._mute_generation:
+                            suppressed = "muted"
                     long_turn = not suppressed and self._long_turn(result, pending.turn_seconds)
                     self.logger({"state": result.state, "gesture": result.gesture,
                                  "expectancy": result.expectancy, "delivery_kind": result.delivery_kind,
@@ -290,7 +326,13 @@ class Service:
                                  "long_turn": long_turn, "suppressed": suppressed})
                     if not suppressed and not self.queue.closed and not self._stop.is_set():
                         player = self.long_turn_player if long_turn and self.long_turn_player else self.player
-                        player(result.gesture, len(event.text))
+                        # Admission is atomic with mute. At most this one
+                        # already-admitted cue may finish after mute replies;
+                        # synthesis/playback never holds the listener's lock.
+                        with self._mute_lock:
+                            admitted = not self.muted and pending.mute_generation == self._mute_generation
+                        if admitted:
+                            player(result.gesture, len(event.text))
             except Exception as error:
                 # Don't log exception strings: third-party errors may quote input.
                 if not self.queue.closed and not self._stop.is_set():
@@ -370,8 +412,8 @@ class Service:
                                     payload = json.loads(bytes(buffer).split(b"\n", 1)[0])
                                     if not self._control(payload, connection, stop):
                                         event = event_from_wire(payload)
-                                        if event is not None:
-                                            completed.append((event, time.monotonic()))
+                                        if event is not None and not self.muted:
+                                            completed.append((event, time.monotonic(), self._mute_generation))
                             except (ValueError, TypeError, UnicodeError, RecursionError):
                                 pass
                             finally:
@@ -384,11 +426,11 @@ class Service:
                     # Classification can exceed a client's intake deadline.
                     # Always give ready peers another I/O pass before expiring
                     # them after time spent on our own classification work.
-                    for event, received in completed:
+                    for event, received, mute_generation in completed:
                         if stop.is_set():
                             break
                         try:
-                            self._intake(event, hints, received)
+                            self._intake(event, hints, received, mute_generation)
                         except (ValueError, TypeError, UnicodeError, RecursionError):
                             pass
         finally:

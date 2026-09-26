@@ -95,6 +95,22 @@ choose an existing private socket location.
 
 ## Disable or remove
 
+To temporarily silence notifications, use `/awaitonal:mute`. Resume them with
+`/awaitonal:unmute`; `/awaitonal:status` shows the current mute state.
+
+These controls apply to all sessions sharing the service. The process and model
+stay loaded, queued notifications are discarded, and sounds received while muted
+are not replayed later. A cue already starting or playing may finish. Mute lasts until an
+explicit unmute or service restart. The commands require a running, up-to-date
+runtime; they do not install dependencies, start services, or change system volume.
+Unmuting does not override diagnostic `--silent` mode.
+
+The corresponding terminal commands are `awaitonal service mute` and
+`awaitonal service unmute`. The plugin calls its own stable runtime through
+`scripts/plugin-runtime.sh mute` or `scripts/plugin-runtime.sh unmute`.
+
+To disable the plugin's hooks and skills:
+
 ```sh
 claude plugin disable awaitonal@awaitonal
 ```
