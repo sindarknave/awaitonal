@@ -1,0 +1,30 @@
+{
+  "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+  "machine": "arm64",
+  "python": "3.13.1",
+  "units": "milliseconds",
+  "notes": "First process launch is measured before repeated launches; OS caches uncontrolled. Handoff is connect/send, not a processing acknowledgement. No audio.",
+  "rules_first_process_ms": 72.264,
+  "rules_repeated_new_process": {
+    "n": 10,
+    "median_ms": 69.089,
+    "p95_ms": 162.622
+  },
+  "rules_first_resident_classification_ms": 2.146,
+  "rules_warm_resident": {
+    "n": 200,
+    "median_ms": 0.085,
+    "p95_ms": 0.093
+  },
+  "hook_first_process_ms": 51.905,
+  "hook_repeated_new_process": {
+    "n": 20,
+    "median_ms": 53.546,
+    "p95_ms": 58.769
+  },
+  "socket_warm_connect_send": {
+    "n": 100,
+    "median_ms": 0.339,
+    "p95_ms": 0.569
+  }
+}

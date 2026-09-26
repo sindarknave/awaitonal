@@ -1,5 +1,29 @@
 # Observed validation
 
+## Publication hardening, v0.2.0
+
+On 2026-09-26 the client was hardened against an impostor local Unix socket.
+Before sending text it validates the direct parent and socket type, owner, and
+private permissions, authenticates the connected peer UID, and rechecks endpoint
+identity. Rejection tests prove that permissive, foreign, symlinked, replaced, and
+unauthenticated endpoints receive no notification payload. The original send
+deadline remains shared across validation, connection, and transmission. Processes
+running as the same OS user remain inside the trust boundary.
+
+The final local suite reports **560 passed, 2 optional-model skips** in 10.56 s;
+the environment with local MiniLM weights reports **562 passed** in 19.73 s.
+See [core](artifacts/tests-publication-core.txt) and
+[semantic](artifacts/tests-publication-semantic.txt) output. The macOS kernel peer
+credential path was exercised against real listeners; the cross-platform CI runs
+exercise the matching Linux path as well.
+
+After hardening, 20 fresh hook processes had median 53.55 ms and p95 58.77 ms
+through handoff, with no audio playback. The resident socket connect/send p95 was
+0.569 ms. These are send-completion timings, not playback acknowledgments; see
+[the benchmark](artifacts/benchmarks-publication-core.json). The broader 150-response
+palette timings below were recorded before endpoint hardening and retain their
+original runtime fingerprint. Classification and synthesis were unchanged.
+
 ## Full palette, v0.2.0
 
 Checked on 2026-09-26, Apple M2 Pro, 16 GiB RAM, macOS 26.6 arm64,

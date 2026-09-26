@@ -65,6 +65,22 @@ def test_closed_socket_service_failure_is_silent(tmp_path):
     assert (result.returncode, result.stdout, result.stderr) == (0, b"", b"")
 
 
+def test_untrusted_socket_is_silent_and_receives_no_connection():
+    with tempfile.TemporaryDirectory(prefix="aw-hook-", dir="/tmp") as directory:
+        path = Path(directory) / "service.sock"
+        with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as listener:
+            listener.bind(str(path))
+            path.chmod(0o600)
+            path.parent.chmod(0o755)
+            listener.listen(1)
+            listener.settimeout(0.05)
+            result = hook(["hook", "claude", "--socket", str(path)],
+                          (EXAMPLES / "claude-stop.json").read_bytes())
+            assert (result.returncode, result.stdout, result.stderr) == (0, b"", b"")
+            with pytest.raises(socket.timeout):
+                listener.accept()
+
+
 @pytest.mark.skipif(os.name != "posix", reason="The local service uses Unix sockets")
 @pytest.mark.parametrize("size,should_send", [(MAX_INPUT, True), (MAX_INPUT + 1, False)])
 def test_hook_input_byte_limit_and_handoff_without_service_response(size, should_send):
@@ -76,6 +92,7 @@ def test_hook_input_byte_limit_and_handoff_without_service_response(size, should
         path = Path(directory) / "service.sock"
         with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as listener:
             listener.bind(str(path))
+            path.chmod(0o600)
             listener.listen(1)
             listener.settimeout(0.15)
             # Do not accept or reply until after the hook exits. Classification

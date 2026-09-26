@@ -125,7 +125,11 @@ The listener uses a private Unix socket at `/tmp/awaitonal-<uid>/service.sock`, 
 0700 directory, a 0600 socket, and a single-instance lock. Override with
 `--socket PATH` on service/client/hook or `AWAITONAL_SOCKET`; a custom parent
 directory must also be owned by you and mode 0700. Hook input is capped at 64 KiB
-and 150 ms; socket connect/send has an 80 ms total deadline. The hook never waits
+and 150 ms. Before sending response text, the client verifies the private directory,
+socket ownership and permissions, and connected peer's user ID. Symlinked endpoints
+and untrusted listeners are rejected; normal hooks discard those notifications
+silently. This boundary separates OS users, not processes under your own account.
+Socket connect/send has an 80 ms total deadline. The hook never waits
 for classification or playback. These are I/O bounds, not guarantees about OS
 process-start latency.
 
