@@ -20,6 +20,7 @@ from .adapter import MAX_WIRE, event_from_wire
 from .client import _peer_uid, default_socket
 from .hook_events import STOP_SOURCES, TURN_END_SOURCES
 from .types import Event
+from .variations import SessionVariations
 from .voices import SessionVoices
 
 
@@ -233,7 +234,9 @@ def private_directory(directory: Path):
 class Service:
     def __init__(self, classifier, player, socket_path=None, queue_size=8, logger=None, min_turn_seconds=0,
                  long_turn_seconds=0, notify_in_flight=False, long_turn_player=None,
-                 session_voices=False, voice_player=None, voice_cycle=None):
+                 session_voices=False, voice_player=None, voice_cycle=None,
+                 gesture_variations=False, variation_player=None, variation_counts=None,
+                 variation_groups=None, variation_full_after_seconds=120):
         for name, value in (("min_turn_seconds", min_turn_seconds), ("long_turn_seconds", long_turn_seconds)):
             if type(value) not in (int, float) or not math.isfinite(value) or value < 0:
                 raise ValueError(f"{name} must be finite and nonnegative")
@@ -247,6 +250,14 @@ class Service:
             raise ValueError("voice_player must be callable")
         if session_voices and voice_player is None:
             raise ValueError("session_voices requires a voice_player")
+        if type(gesture_variations) is not bool:
+            raise ValueError("gesture_variations must be a boolean")
+        if variation_player is not None and not callable(variation_player):
+            raise ValueError("variation_player must be callable")
+        if gesture_variations and variation_player is None:
+            raise ValueError("gesture_variations requires a variation_player")
+        variations = SessionVariations(variation_counts, groups=variation_groups,
+                                       full_after_seconds=variation_full_after_seconds)
         self.classifier, self.player = classifier, player
         self.socket_path = Path(socket_path or default_socket())
         self.queue = EventQueue(queue_size)
@@ -260,6 +271,9 @@ class Service:
         self.session_voices = session_voices
         self.voice_player = voice_player
         self.voices = SessionVoices(voice_cycle=voice_cycle) if session_voices else None
+        self.gesture_variations = gesture_variations
+        self.variation_player = variation_player
+        self.variations = variations if gesture_variations else None
         self.timings = TurnTimings()
         self.instance_id = uuid.uuid4().hex
         self.muted = False
@@ -336,11 +350,11 @@ class Service:
         voice = self.voices.assign(event.session_id, now) if self.voices is not None else "default"
         if event.kind == "turn-start":
             self.queue.begin_turn(event)
-            if self.min_turn_seconds > 0 or self.long_turn_seconds > 0:
+            if self.min_turn_seconds > 0 or self.long_turn_seconds > 0 or self.gesture_variations:
                 self.timings.start(event, now)
             return
         turn_seconds = None
-        if ((self.min_turn_seconds > 0 or self.long_turn_seconds > 0)
+        if ((self.min_turn_seconds > 0 or self.long_turn_seconds > 0 or self.gesture_variations)
                 and event.evidence_source in TURN_END_SOURCES):
             turn_seconds = self.timings.finish(event, now)
         hint = hints.classify(event)
@@ -397,7 +411,23 @@ class Service:
                             admitted = (not self.muted and pending.mute_generation == self._mute_generation
                                         and not pending.cancelled)
                         if admitted:
-                            if self.session_voices:
+                            if self.variation_player is not None:
+                                variation = (self.variations.choose(event.session_id, result.gesture,
+                                                                    turn_seconds=pending.turn_seconds)
+                                             if self.variations is not None else 0)
+                                self.variation_player(result.gesture, len(event.text), pending.voice,
+                                                      long_turn, variation)
+                                if self.variations is not None and self.variations.supported(result.gesture):
+                                    self.logger({"event": "playback", "gesture": result.gesture,
+                                                 "variation": variation, "voice": pending.voice,
+                                                 "long_turn": long_turn,
+                                                 "variation_group": self.variations.group_for(
+                                                     result.gesture, pending.turn_seconds),
+                                                 "turn_seconds": (round(pending.turn_seconds, 3)
+                                                                  if type(pending.turn_seconds) in (int, float)
+                                                                  and math.isfinite(pending.turn_seconds)
+                                                                  and pending.turn_seconds >= 0 else None)})
+                            elif self.session_voices:
                                 self.voice_player(result.gesture, len(event.text), pending.voice, long_turn)
                             else:
                                 player(result.gesture, len(event.text))

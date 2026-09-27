@@ -134,6 +134,8 @@ def test_adversarial_prose_finishes_promptly(text, expected):
 
 _CONTRASTS = [json.loads(line) for line in
               (Path(__file__).parents[1] / "examples/classification-vNext.jsonl").read_text().splitlines()]
+_CONTRASTS += [json.loads(line) for line in
+               (Path(__file__).parents[1] / "examples/classification-v061.jsonl").read_text().splitlines()]
 
 
 @pytest.mark.parametrize("case", _CONTRASTS, ids=lambda case: case["id"])
@@ -154,6 +156,22 @@ def test_unknown_does_not_claim_completion_or_loose_ends():
     assert answer.gesture == "answer"
     assert answer.controls.loose_ends == 0
     assert not answer.attention
+
+
+@pytest.mark.parametrize("text,state,gesture", [
+    ("Pushed the fix. CI is still running; I'll report back once it completes.", "unknown", "in-flight"),
+    ("Pushed the fix. CI is still running; I'll report back once it completes. The tests passed. All done.", "done", "published"),
+    ("The report is ready. I'm monitoring the background job; no action is needed.", "done", "artifact"),
+    ("The deploy is still running. I'll report back once it completes. Please sign in to SSO.", "needs-you", "needs-you"),
+    ("The deploy is still running. Integration tests could not run. I'll report back once it completes.", "caveats", "caveats"),
+    ("Permissions blocked me from attaching the images.", "caveats", "caveats"),
+    ("Nothing blocked me from testing. All checks passed.", "done", "done"),
+    ("Permissions previously blocked me from attaching the images. The upload is complete.", "done", "done"),
+    ("The analysis explains why permissions blocked users from attaching images.", "done", "answer"),
+])
+def test_tuned_routing_preserves_priority_and_current_work(text, state, gesture):
+    answer = RulesClassifier().classify(Event("s", "e", text))
+    assert (answer.state, answer.gesture) == (state, gesture)
 
 
 def test_link_queries_do_not_leak_into_diagnostics():

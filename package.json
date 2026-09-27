@@ -1,6 +1,6 @@
 {
   "name": "awaitonal",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Local musical notifications for how your coding agent leaves things.",
   "type": "module",
   "license": "MIT",

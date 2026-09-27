@@ -7,6 +7,53 @@ from awaitonal.handoff import Handoff, analyze_handoff, detect_handoff, handoff_
 from awaitonal.text import assistant_prose
 
 
+@pytest.mark.parametrize("text", [
+    "The branch is ready. Say the word and I'll push it and open the PR.",
+    "The review is written. I haven't posted it; want me to submit it as an approval?",
+    "The draft reply is above. Want me to post it to the thread?",
+    "The email is prepared. Would you like me to send it?",
+    "The email draft is ready, would you like me to send it?",
+    "The branch is ready. Want me to push it? The tests pass.",
+])
+def test_prepared_outward_confirmations_are_authorization(text):
+    assert analyze_handoff(text) == Handoff("required-handoff", "authorization")
+
+
+@pytest.mark.parametrize("text", [
+    "Want me to post a reply?",
+    "If the branch is ready, say the word and I'll push it.",
+    "The branch is not ready. Want me to push it?",
+    "The branch will be ready tomorrow. Want me to push it?",
+    "The patch is ready. Happy to open a follow-up ticket if you want.",
+    "The draft reply is above. If you want, I can also post an example.",
+    "Previously the branch was ready. Say the word and I'll push it.",
+    "The documentation says: the branch is ready. Say the word and I'll push it.",
+    "The branch is ready. Want me to push it? You approved. I pushed it.",
+    "The draft reply is above. Want me to post it? I posted it.",
+    "The branch is ready. Say the word and I'll push it, and I just pushed it.",
+    "The review is written. Want me to submit it? No approval is needed.",
+    "The email draft is ready. Want me to send it? I have already sent it.",
+    "The email draft is ready. Want me to send it? I've sent it.",
+    "The email draft is ready. Want me to send it? No need to send it.",
+    "The email draft is ready. Want me to send it? No response is needed.",
+    "The draft is ready. Someone might want me to send it later.",
+    "The draft is ready. The template asks whether you want me to send it.",
+])
+def test_optional_and_resolved_outward_confirmations_stay_neutral(text):
+    assert analyze_handoff(text).expectancy == "none"
+
+
+def test_outward_confirmation_does_not_hide_an_unresolved_user_action():
+    text = "The branch is ready. Want me to push it? Please sign in to SSO."
+    assert analyze_handoff(text) == Handoff("required-handoff", "action")
+    assert analyze_handoff(text + " Authentication succeeded.") == Handoff("required-handoff", "authorization")
+
+
+def test_up_to_date_does_not_resolve_outward_confirmation():
+    text = "The draft is ready. Want me to post it? The PR is up to date."
+    assert analyze_handoff(text) == Handoff("required-handoff", "authorization")
+
+
 @pytest.mark.parametrize("text,expected", [
     ("The patch is ready. Please review and approve it so I can merge.", "required-handoff"),
     ("The patch is merged and the checks pass. You can review the diff whenever convenient.", "none"),

@@ -108,6 +108,13 @@ def unresolved(text: str) -> bool:
 
 
 def unfinished_work(text: str) -> bool:
+    blocked_own_action = any(
+        _has(r"\bblocked (?:me|us) from (?:attaching|uploading|finishing|completing|verifying|testing|publishing|deploying)\b", part)
+        and not _has(r"\b(?:earlier|previously|initially|at first|no longer|nothing|nobody|never|not)\b", part)
+        for part in sentences(text)
+    )
+    if blocked_own_action:
+        return True
     return _has(
         r"\b(?:i|we) (?:wasn't|weren't|was not|were not|haven't been|have not been) able to "
         r"(?:finish|complete|verify|validate|test|run|execute|check|fix|implement|build|inspect)\b|"
@@ -165,7 +172,7 @@ class RulesClassifier:
         activity, activity_source = detect_activity(prose, event.background_tasks, event.session_crons)
         # Background registries are session-wide. A completed artifact or
         # assessment must not turn into an activity pulse due to a monitor.
-        if delivery != "unknown":
+        if delivery != "unknown" and activity_source != "pending-followup":
             activity = "final"
 
         def classified(state, reason):
@@ -222,7 +229,7 @@ class RulesClassifier:
         # explanation or plan is distinct from a failed attempt to produce it.
         incomplete_delivery = unfinished_work(joined) or (
             _has(NEGATED_COMPLETION, joined) and delivery not in ("answer", "plan"))
-        if delivery in ("answer", "plan") and not incomplete_delivery:
+        if delivery in ("answer", "plan") and not incomplete_delivery and activity != "in-flight":
             return classified("done", "A requested answer, assessment, or proposal is reported delivered.")
         if incomplete_delivery:
             return classified("caveats", "Prose explicitly reports unfinished work or a validation gap.")

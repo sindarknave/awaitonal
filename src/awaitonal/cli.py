@@ -36,6 +36,8 @@ def parser():
         if name == "play":
             command.add_argument("state", choices=GESTURES, metavar="GESTURE")
             command.add_argument("--long-turn", action="store_true", help="audition the elapsed-time variant of a routine cue")
+            command.add_argument("--variation", type=int, choices=range(4), default=0,
+                                 help="answer/done arrangement: 0 is the original, 1–3 are variations")
         if name == "ensemble-demo":
             command.add_argument("--mode", choices=("voices", "serial", "overlap", "rotation"), default="voices",
                                  help="voice comparison, new/returning sessions, or a composed burst")
@@ -218,7 +220,8 @@ def execute(args):
         elif args.command == "demo":
             samples = render_demo(config, voice=args.voice)
         else:
-            samples = render(args.state, config, long_turn=args.long_turn, voice=args.voice)
+            samples = render(args.state, config, long_turn=args.long_turn, voice=args.voice,
+                             variation=args.variation)
         if args.out:
             write_wav(args.out, samples, config["synth"]["sample_rate"])
             print(args.out.absolute())
@@ -247,7 +250,7 @@ def execute(args):
     from .service import Service
     from .client import default_socket
     from .playback import play_file
-    from .synth import render, write_wav
+    from .synth import render, variation_count, variation_groups as phrase_groups, write_wav
     stop = threading.Event()
     for signum in (signal.SIGINT, signal.SIGTERM):
         signal.signal(signum, lambda *_: stop.set())
@@ -270,6 +273,13 @@ def execute(args):
                                             long_turn=long_turn), config["synth"]["sample_rate"])
                 play_file(audio_path, stop_event=stop)
 
+        def variation_player(state, response_length, voice, long_turn, variation):
+            if not args.silent:
+                write_wav(audio_path, render(state, config, response_length, voice=voice,
+                                            long_turn=long_turn, variation=variation),
+                          config["synth"]["sample_rate"])
+                play_file(audio_path, stop_event=stop)
+
         def logger(record):
             print(json.dumps(record), file=sys.stderr, flush=True)
 
@@ -277,13 +287,24 @@ def execute(args):
         if minimum is None:
             minimum = config.get("notifications", {}).get("min_turn_seconds", 0)
         notifications = config.get("notifications", {})
+        variations = notifications.get("gesture_variations", False)
+        if type(variations) is not bool:
+            raise ValueError("gesture_variations must be a boolean")
+        variations = variations and not args.silent
+        counts = {gesture: variation_count(gesture, config) for gesture in ("answer", "done")} if variations else None
+        groups = {gesture: group for gesture in ("answer", "done")
+                  if (group := phrase_groups(gesture, config)) is not None} if variations else None
         service = Service(classifier, player, args.socket, args.queue_size, logger, min_turn_seconds=minimum,
                           long_turn_seconds=notifications.get("long_turn_seconds", 0),
                           notify_in_flight=notifications.get("notify_in_flight", False),
                           long_turn_player=long_turn_player,
                           session_voices=notifications.get("session_voices", False),
                           voice_cycle=notifications.get("voice_cycle"),
-                          voice_player=voice_player)
+                          voice_player=voice_player,
+                          gesture_variations=variations, variation_counts=counts,
+                          variation_groups=groups,
+                          variation_full_after_seconds=notifications.get("variation_full_after_seconds", 120),
+                          variation_player=variation_player)
         print(f"Awaitonal starting on {args.socket or default_socket()} ({args.classifier}); Ctrl-C to stop.", file=sys.stderr, flush=True)
         service.run(stop)
     return 0

@@ -57,6 +57,14 @@ with 350 ms gaps. Durations below use the default voice.
 In-flight notifications are silent by default; `play` and `demo` let you hear
 them. Each audible notification plays one gesture once.
 
+Live `answer` and `done` cues use lighter arrangements for turns under two minutes
+and fuller arrangements for longer turns. Repeated outcomes alternate between
+two arrangements within that timing group; missing timing uses the original cue.
+Each session's instrument stays stable. The table and existing demos describe
+the original arrangement.
+Try `awaitonal play answer --voice marimba --variation 2`, or see the
+[variation listening comparison and settings](docs/gesture-variations.md).
+
 ### Parallel sessions
 
 Six voices rotate across new sessions: **marimba, powersaw brass, harp, clarinet,
@@ -210,9 +218,13 @@ notify_in_flight = false
 ```
 
 Pass the file with `serve --config PATH` or `service start --config PATH`.
-Both timing thresholds default to zero (disabled); the background pulse defaults
-to false. Short-turn suppression affects routine results only. Handoffs, feedback
+Suppression and extended endings default to zero (disabled); the background pulse
+defaults to false. Short-turn suppression affects routine results only. Handoffs, feedback
 requests, caveats, refusals, and failures remain audible.
+
+The [lighter/full arrangements for answer and done](docs/gesture-variations.md)
+are enabled separately, with a default cutoff of 120 seconds. They do not require
+suppression or extended endings to be enabled.
 
 Long-turn variants give `done`, `answer`, `verdict`, `plan`, `artifact`, and
 `published` a longer, slightly more triumphant finish. The default and original
@@ -351,7 +363,7 @@ The repository is also a [Pi package](https://github.com/earendil-works/pi).
 Use Pi 0.87.1 or newer and install the release:
 
 ```sh
-pi install git:github.com/sindarknave/awaitonal@v0.6.0
+pi install git:github.com/sindarknave/awaitonal@v0.7.0
 ```
 
 For local development, use `pi install /absolute/path/to/awaitonal` instead.
@@ -447,6 +459,7 @@ HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 .venv/bin/python -m pytest -q
 .venv/bin/awaitonal evaluate --classifier rules
 .venv/bin/awaitonal evaluate --fixtures examples/gesture-evaluation.jsonl
 .venv/bin/awaitonal evaluate --fixtures examples/classification-vNext.jsonl
+.venv/bin/awaitonal evaluate --fixtures examples/classification-v061.jsonl
 .venv/bin/python tools/benchmark.py
 node --experimental-strip-types --test tests/pi-extension.test.mjs
 ```
@@ -482,6 +495,11 @@ evaluation totals and confusion matrices. Reports also identify false caveats,
 missed handoffs, and unknown outcomes. A correct outcome alone does not count as a
 correct gesture. Evaluation output contains IDs and labels, without response text.
 
+The [latest rules comparison](docs/classification-v061-evaluation.md) includes 16
+targeted regressions and 92 eligible public replies labeled before predictions.
+The targeted cases improve; public-sample scores remain unchanged. The report
+includes label ambiguity, remaining gaps, and classifier-only latency on a MacBook.
+
 [VALIDATION.md](VALIDATION.md) records observed test runs, audio properties,
 classification results, timings, and remaining gaps. Benchmarks separate fresh
 process launches, warm classification, and socket handoff; semantic measurements
@@ -503,7 +521,7 @@ scheduling are uncontrolled, so these measurements are not latency guarantees.
 - **Remove standalone hooks:** run `awaitonal uninstall --apply` for Claude or
   `awaitonal uninstall --adapter codex --apply` for Codex. Remove any
   untracked, hand-pasted Awaitonal handlers manually, preserving unrelated hooks.
-- **Remove the Pi extension:** run `pi remove git:github.com/sindarknave/awaitonal@v0.6.0`,
+- **Remove the Pi extension:** run `pi remove git:github.com/sindarknave/awaitonal@v0.7.0`,
   or `pi remove /absolute/path/to/awaitonal` for a local installation, then `/reload`
   or restart Pi. Use the same source you installed; the shared service stays available.
 - **Remove automatic startup:** if you enabled it, run `awaitonal service uninstall`.
@@ -521,7 +539,7 @@ the private socket directory; remove it only after the service has stopped.
 - `delivery.py`, `handoff.py`: reported delivery and requested human participation.
 - `types.py`: classification controls and deterministic state mapping.
 - `palette.toml`, `config.py`, `synth.py`, `playback.py`: configuration, synthesis, and local audio.
-- `voices.py`, `audition.py`: session instruments and listening comparisons.
+- `voices.py`, `variations.py`, `audition.py`: session instruments, duration-based arrangements, and listening comparisons.
 - `service.py`, `cli.py`: serial worker, private socket, and commands.
 - `evaluation.py`, `tools/benchmark.py`: evaluation and timing measurements.
 

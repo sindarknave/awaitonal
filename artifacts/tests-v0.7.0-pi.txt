@@ -1,0 +1,35 @@
+(node:50375) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:50400) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ loading registers only handlers/explicit commands and does no setup (4.24625ms)
+✔ only the current final assistant text leaves after agent_settled (1.270583ms)
+✔ retry and queued continuation retain timing but discard interim errors/prose (0.228ms)
+✔ a retry with no final reply cannot replay previous success or failure (0.199041ms)
+✔ authoritative final error or abort sends only structured outcome, never error details (0.141667ms)
+✔ missing final boundary after retry or compaction cancellation always settles quietly (0.226292ms)
+✔ a new assistant request invalidates the prior boundary even without agent_start (0.111541ms)
+✔ the latest assistant message cannot veto an authoritative abort (0.080459ms)
+✔ final lifecycle outcome overrides earlier prose and captures compaction failure (0.289334ms)
+✔ partial new assistant streams never replay a preceding assistant message (0.321167ms)
+✔ thinking-only, malformed, and oversize replies quietly close turn timing (1.197333ms)
+✔ only active-run user dialogs request attention, with no titles or content (0.123584ms)
+✔ session replacement cancels old activity and does not leak old text (0.083875ms)
+✔ shutdown cancels an open turn and awaits bounded transport disposal (0.069792ms)
+✔ invalid session identities never send notifications (0.151583ms)
+✔ resolver respects exact override, plugin runtime, and PATH fallback (5.174875ms)
+✔ real notification child receives serialized stdin in order without shell expansion (580.005ms)
+✔ missing executable and oversized payloads are silent and bounded (1.312083ms)
+✔ hung child is terminated within the bounded hook/shutdown deadlines (1505.769041ms)
+✔ slash controls use an argv array and explain shared mute (0.894875ms)
+✔ setup runs only its explicit slash command with bounded timeout (0.285584ms)
+✔ unavailable controls report locally without leaking process output (0.208833ms)
+✔ command runner bounds captured output and missing executables (57.571209ms)
+ℹ tests 23
+ℹ suites 0
+ℹ pass 23
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2280.193416

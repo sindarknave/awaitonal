@@ -1,0 +1,4593 @@
+{
+  "schema_version": 1,
+  "created_at_utc": "2026-09-27T18:30:19.334541+00:00",
+  "manifest": {
+    "schema_version": 1,
+    "frozen_at_utc": "2026-09-27T18:29:33.976887+00:00",
+    "inputs": {
+      "sources": {
+        "baseline": {
+          "tree_sha256": "143add0eef1c3b6ce3be93c2f8acfdd6930326caba6da9d65176947cd219170e",
+          "files": {
+            "awaitonal/__init__.py": "c3fc5ce1ffbb49614f1c0ce27e5658ef54489675fbb668b657d85c91dd9b81b7",
+            "awaitonal/__main__.py": "935a1c1166b0c1ea35a82256345000bf2c73ded718d77773bc27a71ecce28f7d",
+            "awaitonal/activity.py": "b9b4eb08adfef8babd6334b2f6a4b64110b6403b708084584a2ed0083f5213e8",
+            "awaitonal/adapter.py": "c81bd6d202798108d4543f6c42debf7b91c5123c07c854936f8bde0babf1b3c9",
+            "awaitonal/anchors.json": "fff47245be6692d5389f4776f7ff285790330e9cf7b77ab2203c114cd2ce3f97",
+            "awaitonal/audition.py": "f5bde70248957597e345bfd091541ff6dd2c404c54251d87f72a466a6ea3eccc",
+            "awaitonal/classify.py": "cef501cb3af322132810a8113044c3edf3574326678931dba6dd526534bad8c5",
+            "awaitonal/cli.py": "19bd8d62dea5a21b3c8473cbdaf3ddb164fa60aba4c781358d112a92dee28265",
+            "awaitonal/client.py": "44cd5e6f4b44c95fd4ffafff4d921bb2608bfc162a17dcc65b842b6039d11df2",
+            "awaitonal/config.py": "bc006d9c2a745d6c392c52f77c381c501b88f51e970a7bbd124e2b82490efdba",
+            "awaitonal/delivery.py": "2be0d5be701a9902534fb2edf2d64e78553e391e1e57416cf9f2638eea1ba86e",
+            "awaitonal/diagnostics.py": "36f13b03f0fbbf94ae6d252f8fc4cf28a64b23c768a32449aa25420d7b8a8f40",
+            "awaitonal/evaluation.py": "cf582b2e184e9f186dae948b4df3f1c2ae54c70f117ee55f48f17d5b6f8ad862",
+            "awaitonal/handoff.py": "4224ccaec305ebd669518a539cc698d50f8a77b405bbce3361147a11a3a8b492",
+            "awaitonal/hook_events.py": "924e5ed14c9a8309f8623eaf5ed3e7184c7612e295b32be5b8f75c5f9bde279c",
+            "awaitonal/lifecycle.py": "23cc58734d86af956c717c3fe95ba917da57089031a66451ccce2d8690301515",
+            "awaitonal/palette.toml": "b4b51b09c864ac616199ee710e016220b83d446932319dc6c93a23a3012458cf",
+            "awaitonal/playback.py": "b8ad13ebc8b047d1f12d1835d8f4bad03f7c300d10662b45c3f9beaca0668f4d",
+            "awaitonal/semantic.py": "4c899d557a9e87c099c3aa7ff86bed75064d79b58d0ce11484f9e699bcf5deee",
+            "awaitonal/semantic.toml": "af4bcd4fa982379324de5057573e2debd5d8f076816cc15c176e9dd73b7e2b8c",
+            "awaitonal/service.py": "4444491db92bf4272f83e86e57d5d94f42a2a613193875ffbd6785caa7dc49d6",
+            "awaitonal/setup.py": "cf5b47ab07bd9370998122186143580c796f0b62a2f651032b8cba49fa3d0dc5",
+            "awaitonal/synth.py": "92b540da094ee713486ded216e459658d6ea1fe2674618434f458a8762cf47fa",
+            "awaitonal/text.py": "d7c285ec8c4161cdd443a600d81735a0851b3b17940890641acfe0629da86d7f",
+            "awaitonal/types.py": "27e3fc2bd5c57a3ade72c4008dd6d27f360f217ad1bcbdb09a2195526b666a76",
+            "awaitonal/voices.py": "b15d9f89760ca93ef3e58e244fefd8c5e175784c5c6ff457fd916a629ed02ccd"
+          }
+        },
+        "current": {
+          "tree_sha256": "a6d7e4f64679d41a554a0067eee4d0c724baa61ae1f76e607e3a96bcc48dfdeb",
+          "files": {
+            "awaitonal/__init__.py": "c3fc5ce1ffbb49614f1c0ce27e5658ef54489675fbb668b657d85c91dd9b81b7",
+            "awaitonal/__main__.py": "935a1c1166b0c1ea35a82256345000bf2c73ded718d77773bc27a71ecce28f7d",
+            "awaitonal/activity.py": "fa0eefa50ac54fc7b0d819e96648ae356990ba946f691c9ed833bba935b7dd67",
+            "awaitonal/adapter.py": "c81bd6d202798108d4543f6c42debf7b91c5123c07c854936f8bde0babf1b3c9",
+            "awaitonal/anchors.json": "fff47245be6692d5389f4776f7ff285790330e9cf7b77ab2203c114cd2ce3f97",
+            "awaitonal/audition.py": "f5bde70248957597e345bfd091541ff6dd2c404c54251d87f72a466a6ea3eccc",
+            "awaitonal/classify.py": "d2bd375fdd446469b823229e017f8649c6019d05cc126aa913f2031927ce3989",
+            "awaitonal/cli.py": "19bd8d62dea5a21b3c8473cbdaf3ddb164fa60aba4c781358d112a92dee28265",
+            "awaitonal/client.py": "44cd5e6f4b44c95fd4ffafff4d921bb2608bfc162a17dcc65b842b6039d11df2",
+            "awaitonal/config.py": "bc006d9c2a745d6c392c52f77c381c501b88f51e970a7bbd124e2b82490efdba",
+            "awaitonal/delivery.py": "5a7a4bafc069c2128d846c1f3261f1f95383f046fd105d988d63134aa7dd01a1",
+            "awaitonal/diagnostics.py": "36f13b03f0fbbf94ae6d252f8fc4cf28a64b23c768a32449aa25420d7b8a8f40",
+            "awaitonal/evaluation.py": "cf582b2e184e9f186dae948b4df3f1c2ae54c70f117ee55f48f17d5b6f8ad862",
+            "awaitonal/handoff.py": "8c9f53c7f4ae4bc9b27b7c9f8e604dde1f0a0dbd7825540fea0ed6e478dbfc7f",
+            "awaitonal/hook_events.py": "924e5ed14c9a8309f8623eaf5ed3e7184c7612e295b32be5b8f75c5f9bde279c",
+            "awaitonal/lifecycle.py": "23cc58734d86af956c717c3fe95ba917da57089031a66451ccce2d8690301515",
+            "awaitonal/palette.toml": "b4b51b09c864ac616199ee710e016220b83d446932319dc6c93a23a3012458cf",
+            "awaitonal/playback.py": "b8ad13ebc8b047d1f12d1835d8f4bad03f7c300d10662b45c3f9beaca0668f4d",
+            "awaitonal/semantic.py": "4c899d557a9e87c099c3aa7ff86bed75064d79b58d0ce11484f9e699bcf5deee",
+            "awaitonal/semantic.toml": "af4bcd4fa982379324de5057573e2debd5d8f076816cc15c176e9dd73b7e2b8c",
+            "awaitonal/service.py": "4444491db92bf4272f83e86e57d5d94f42a2a613193875ffbd6785caa7dc49d6",
+            "awaitonal/setup.py": "cf5b47ab07bd9370998122186143580c796f0b62a2f651032b8cba49fa3d0dc5",
+            "awaitonal/synth.py": "92b540da094ee713486ded216e459658d6ea1fe2674618434f458a8762cf47fa",
+            "awaitonal/text.py": "d7c285ec8c4161cdd443a600d81735a0851b3b17940890641acfe0629da86d7f",
+            "awaitonal/types.py": "27e3fc2bd5c57a3ade72c4008dd6d27f360f217ad1bcbdb09a2195526b666a76",
+            "awaitonal/voices.py": "b15d9f89760ca93ef3e58e244fefd8c5e175784c5c6ff457fd916a629ed02ccd"
+          }
+        }
+      },
+      "inputs": {
+        "supplied_regressions": {
+          "sha256": "a5a1529e3253375777edc4f7299b07174dfdeb1237461bb837cd24d7d982cdd4",
+          "bytes": 5139
+        },
+        "existing_outcomes": {
+          "sha256": "27f39d8be68bd3f4d662e80c5ac3b68ae10fd1ab79b8341d37721baf31f68f6e",
+          "bytes": 91398
+        },
+        "existing_gestures": {
+          "sha256": "6596ed912560d09153c7b19cecba4ab38eaff52e2fe7743bd749739d216e8410",
+          "bytes": 9486
+        },
+        "existing_vnext": {
+          "sha256": "5d6d37296f09294cc4cfb2dd90b79d9c5c83daba2efe9418e1d5dce593cf2033",
+          "bytes": 28312
+        },
+        "fresh_holdout": {
+          "sha256": "f60fddf32c7e61330ccdfb835fa3bf2b578c6ec9e7b0407db8572c9cd55bfabb",
+          "bytes": 302975
+        },
+        "labels_first50": {
+          "sha256": "b1cb470624617f983daa7385d4074e71e54fd1cb1a59084dad3015fef9580040",
+          "bytes": 31175
+        },
+        "labels_second50": {
+          "sha256": "2779eaf26e2ebc8f14b3496747cb64e641a06f0fcc2c2c25f7bf232363342159",
+          "bytes": 28092
+        },
+        "all_candidates": {
+          "sha256": "6b5ad535dcf217b092927ae7a23212199d9bcfe612a70dcba473bd50da5f2119",
+          "bytes": 12220272
+        },
+        "sampling_protocol": {
+          "sha256": "3da4ef994a797120ac3ea06c2ac4bdf5b672049401ca72f11ed345e0c8d0ad90",
+          "bytes": 2477
+        },
+        "routing_taxonomy": {
+          "sha256": "6bb80a489cb348945d916950093ebd2f3115fae56eb036b9846aa9919416cfaf",
+          "bytes": 9401
+        }
+      },
+      "evaluator_sha256": "74a31c937a6b8e8c46b2f88685581dafa788d69004f365f8a43e1924fef466e2"
+    },
+    "case_counts": {
+      "supplied_regressions": 16,
+      "existing_outcomes": 30,
+      "existing_gestures": 35,
+      "existing_vnext": 115,
+      "fresh_holdout": 100,
+      "all_candidates": 5728
+    },
+    "label_policy": "Frozen before predictions. Explicit false/null eligibility excluded. Alternative labels are secondary diagnostics, not post-hoc replacement truth.",
+    "intentional_policy_change": "The classification-vNext auth-optional-draft fixture has an intentional policy change: a prepared draft plus direct confirmation to send or publish, including Would you like me to send it?, now counts as authorization; unprepared/general optional offers remain neutral. Version 0.6.0 labeled that fixture done; current labels are needs-you/authorization. Both versions are scored against the same frozen current fixture labels, so a baseline failure of this case is a changed policy, not evidence its previous fixture suite failed."
+  },
+  "environment": {
+    "python": "3.13.1",
+    "system": "Darwin",
+    "release": "25.6.0",
+    "architecture": "arm64"
+  },
+  "dataset_provenance": {
+    "dataset": "misterkerns/my-personal-claude-code-data",
+    "revision": "e6aff5fa4941ef1cbfcbca7bf09ac04506d22691",
+    "source_sha256": "dae70421f20da2f1f68fd307a89aedca8c3f5136c21d8604037db124d854093d",
+    "sampling_counts": {
+      "all_candidates": 5728,
+      "all_eligible_sessions": 489,
+      "prior_sample_cases": 80,
+      "prior_sample_sessions": 80,
+      "unseen_eligible_sessions": 409,
+      "unseen_eligible_replies": 4585,
+      "selected_sessions": 100,
+      "prior_session_overlap": 0,
+      "prior_text_overlap": 0
+    }
+  },
+  "method": {
+    "backend": "rules",
+    "process_isolation": "Two subprocesses, same Python executable, explicit distinct PYTHONPATH; actual imported source path verified.",
+    "benchmark": "128 warmup classifications before measurement; one pass per source, baseline then current. perf_counter_ns around classify only; event creation, startup, imports, parsing, transport and audio excluded. Percentiles use linear interpolation.",
+    "warmup_calls": 128,
+    "labels": "Two independent 50-case annotations frozen before predictions. False/null eligibility excluded from all accuracy denominators; strict, unambiguous and alternatives-acceptable metrics remain separate.",
+    "synthetic_fixtures": "Development regression tests, not an independent accuracy estimate.",
+    "intentional_policy_change": "The classification-vNext auth-optional-draft fixture has an intentional policy change: a prepared draft plus direct confirmation to send or publish, including Would you like me to send it?, now counts as authorization; unprepared/general optional offers remain neutral. Version 0.6.0 labeled that fixture done; current labels are needs-you/authorization. Both versions are scored against the same frozen current fixture labels, so a baseline failure of this case is a changed policy, not evidence its previous fixture suite failed.",
+    "privacy": "Public report contains only aggregate metrics, source/label hashes and opaque evaluation IDs. No transcript text, contexts, reasons, original session IDs or local paths."
+  },
+  "limits": [
+    "Single public dataset contributor; terminal-text proxies rather than recorded Stop events.",
+    "Session-uniform holdout; inherited extraction includes some automatic task-notification boundaries.",
+    "AI-agent labels may use immediate user context unavailable to the final-text classifier; marked ambiguity is reported separately.",
+    "Cached-corpus distributions are unlabeled descriptive results, not accuracy.",
+    "Measured latency is warm classifier-only on this machine, not end-to-end notification latency.",
+    "Changing rules after inspecting these results turns this sample into development data; use a new holdout for subsequent accuracy claims."
+  ],
+  "datasets": {
+    "supplied_regressions": {
+      "cases": 16,
+      "versions": {
+        "baseline": {
+          "distribution_all_cases": {
+            "state": {
+              "done": 6,
+              "needs-you": 1,
+              "unknown": 9
+            },
+            "gesture": {
+              "answer": 9,
+              "artifact": 1,
+              "done": 4,
+              "needs-you": 1,
+              "published": 1
+            }
+          },
+          "classifier_only_latency": {
+            "samples": 16,
+            "median_ms": 0.43408349999999996,
+            "p95_ms": 0.576781,
+            "p99_ms": 0.5811562,
+            "max_ms": 0.58225
+          },
+          "strict": {
+            "state": {
+              "cases": 16,
+              "correct": 6,
+              "accuracy": 0.375,
+              "confusion_matrix": {
+                "caveats": {
+                  "unknown": 1
+                },
+                "done": {
+                  "done": 4,
+                  "needs-you": 1,
+                  "unknown": 4
+                },
+                "needs-you": {
+                  "done": 1,
+                  "unknown": 2
+                },
+                "unknown": {
+                  "done": 1,
+                  "unknown": 2
+                }
+              },
+              "wrong_ids": [
+                "case-ea18faebccab1e1004dfa676",
+                "case-8af17a766bae561d5a1b6b90",
+                "case-d447147ac30c3c1062d58a8c",
+                "case-d34a9a37c0cacc807f82efd2",
+                "case-7c1404b3234789f2987e5bd9",
+                "case-e11eb143c2ca534b74968466",
+                "case-4ce52844f17b72cb5af625ef",
+                "case-b41f2ed2fb2819a8773c6fc5",
+                "case-77dc75d30fe5fe0009085cbd",
+                "case-5f690fabe7c5871587a84d89"
+              ]
+            },
+            "gesture": {
+              "cases": 16,
+              "correct": 2,
+              "accuracy": 0.125,
+              "confusion_matrix": {
+                "artifact": {
+                  "answer": 1,
+                  "artifact": 1,
+                  "done": 2
+                },
+                "authorization": {
+                  "answer": 2,
+                  "done": 1
+                },
+                "caveats": {
+                  "answer": 1
+                },
+                "done": {
+                  "done": 1
+                },
+                "in-flight": {
+                  "answer": 2,
+                  "published": 1
+                },
+                "published": {
+                  "answer": 1
+                },
+                "verdict": {
+                  "answer": 2,
+                  "needs-you": 1
+                }
+              },
+              "wrong_ids": [
+                "case-ea18faebccab1e1004dfa676",
+                "case-8af17a766bae561d5a1b6b90",
+                "case-d447147ac30c3c1062d58a8c",
+                "case-d34a9a37c0cacc807f82efd2",
+                "case-48b90efdc4d59834cbb2dda5",
+                "case-6afddd5878e5bbfa8daefbdd",
+                "case-7c1404b3234789f2987e5bd9",
+                "case-e11eb143c2ca534b74968466",
+                "case-80daef973ec90ba95756c5dc",
+                "case-81ce444fd632b07af4f3c955",
+                "case-4ce52844f17b72cb5af625ef",
+                "case-b41f2ed2fb2819a8773c6fc5",
+                "case-77dc75d30fe5fe0009085cbd",
+                "case-5f690fabe7c5871587a84d89"
+              ]
+            }
+          },
+          "unambiguous_subset": {
+            "state": {
+              "cases": 16,
+              "correct": 6,
+              "accuracy": 0.375,
+              "confusion_matrix": {
+                "caveats": {
+                  "unknown": 1
+                },
+                "done": {
+                  "done": 4,
+                  "needs-you": 1,
+                  "unknown": 4
+                },
+                "needs-you": {
+                  "done": 1,
+                  "unknown": 2
+                },
+                "unknown": {
+                  "done": 1,
+                  "unknown": 2
+                }
+              },
+              "wrong_ids": [
+                "case-ea18faebccab1e1004dfa676",
+                "case-8af17a766bae561d5a1b6b90",
+                "case-d447147ac30c3c1062d58a8c",
+                "case-d34a9a37c0cacc807f82efd2",
+                "case-7c1404b3234789f2987e5bd9",
+                "case-e11eb143c2ca534b74968466",
+                "case-4ce52844f17b72cb5af625ef",
+                "case-b41f2ed2fb2819a8773c6fc5",
+                "case-77dc75d30fe5fe0009085cbd",
+                "case-5f690fabe7c5871587a84d89"
+              ]
+            },
+            "gesture": {
+              "cases": 16,
+              "correct": 2,
+              "accuracy": 0.125,
+              "confusion_matrix": {
+                "artifact": {
+                  "answer": 1,
+                  "artifact": 1,
+                  "done": 2
+                },
+                "authorization": {
+                  "answer": 2,
+                  "done": 1
+                },
+                "caveats": {
+                  "answer": 1
+                },
+                "done": {
+                  "done": 1
+                },
+                "in-flight": {
+                  "answer": 2,
+                  "published": 1
+                },
+                "published": {
+                  "answer": 1
+                },
+                "verdict": {
+                  "answer": 2,
+                  "needs-you": 1
+                }
+              },
+              "wrong_ids": [
+                "case-ea18faebccab1e1004dfa676",
+                "case-8af17a766bae561d5a1b6b90",
+                "case-d447147ac30c3c1062d58a8c",
+                "case-d34a9a37c0cacc807f82efd2",
+                "case-48b90efdc4d59834cbb2dda5",
+                "case-6afddd5878e5bbfa8daefbdd",
+                "case-7c1404b3234789f2987e5bd9",
+                "case-e11eb143c2ca534b74968466",
+                "case-80daef973ec90ba95756c5dc",
+                "case-81ce444fd632b07af4f3c955",
+                "case-4ce52844f17b72cb5af625ef",
+                "case-b41f2ed2fb2819a8773c6fc5",
+                "case-77dc75d30fe5fe0009085cbd",
+                "case-5f690fabe7c5871587a84d89"
+              ]
+            }
+          },
+          "alternative_acceptable": {
+            "state": {
+              "cases": 16,
+              "correct": 6,
+              "accuracy": 0.375,
+              "confusion_matrix": {
+                "caveats": {
+                  "unknown": 1
+                },
+                "done": {
+                  "done": 4,
+                  "needs-you": 1,
+                  "unknown": 4
+                },
+                "needs-you": {
+                  "done": 1,
+                  "unknown": 2
+                },
+                "unknown": {
+                  "done": 1,
+                  "unknown": 2
+                }
+              },
+              "wrong_ids": [
+                "case-ea18faebccab1e1004dfa676",
+                "case-8af17a766bae561d5a1b6b90",
+                "case-d447147ac30c3c1062d58a8c",
+                "case-d34a9a37c0cacc807f82efd2",
+                "case-7c1404b3234789f2987e5bd9",
+                "case-e11eb143c2ca534b74968466",
+                "case-4ce52844f17b72cb5af625ef",
+                "case-b41f2ed2fb2819a8773c6fc5",
+                "case-77dc75d30fe5fe0009085cbd",
+                "case-5f690fabe7c5871587a84d89"
+              ]
+            },
+            "gesture": {
+              "cases": 16,
+              "correct": 2,
+              "accuracy": 0.125,
+              "confusion_matrix": {
+                "artifact": {
+                  "answer": 1,
+                  "artifact": 1,
+                  "done": 2
+                },
+                "authorization": {
+                  "answer": 2,
+                  "done": 1
+                },
+                "caveats": {
+                  "answer": 1
+                },
+                "done": {
+                  "done": 1
+                },
+                "in-flight": {
+                  "answer": 2,
+                  "published": 1
+                },
+                "published": {
+                  "answer": 1
+                },
+                "verdict": {
+                  "answer": 2,
+                  "needs-you": 1
+                }
+              },
+              "wrong_ids": [
+                "case-ea18faebccab1e1004dfa676",
+                "case-8af17a766bae561d5a1b6b90",
+                "case-d447147ac30c3c1062d58a8c",
+                "case-d34a9a37c0cacc807f82efd2",
+                "case-48b90efdc4d59834cbb2dda5",
+                "case-6afddd5878e5bbfa8daefbdd",
+                "case-7c1404b3234789f2987e5bd9",
+                "case-e11eb143c2ca534b74968466",
+                "case-80daef973ec90ba95756c5dc",
+                "case-81ce444fd632b07af4f3c955",
+                "case-4ce52844f17b72cb5af625ef",
+                "case-b41f2ed2fb2819a8773c6fc5",
+                "case-77dc75d30fe5fe0009085cbd",
+                "case-5f690fabe7c5871587a84d89"
+              ]
+            },
+            "joint_state_and_gesture": {
+              "cases": 16,
+              "correct": 2,
+              "accuracy": 0.125
+            }
+          },
+          "quality": {
+            "missed_handoffs": {
+              "count": 3,
+              "denominator": 3,
+              "rate": 1.0,
+              "ids": [
+                "case-4ce52844f17b72cb5af625ef",
+                "case-b41f2ed2fb2819a8773c6fc5",
+                "case-77dc75d30fe5fe0009085cbd"
+              ]
+            },
+            "false_attention": {
+              "count": 1,
+              "denominator": 13,
+              "rate": 0.07692307692307693,
+              "ids": [
+                "case-ea18faebccab1e1004dfa676"
+              ]
+            },
+            "false_caveats": {
+              "count": 0,
+              "denominator": 15,
+              "rate": 0.0,
+              "ids": []
+            },
+            "unknown": {
+              "count": 9,
+              "denominator": 16,
+              "rate": 0.5625,
+              "ids": [
+                "case-8af17a766bae561d5a1b6b90",
+                "case-d447147ac30c3c1062d58a8c",
+                "case-d34a9a37c0cacc807f82efd2",
+                "case-7c1404b3234789f2987e5bd9",
+                "case-80daef973ec90ba95756c5dc",
+                "case-81ce444fd632b07af4f3c955",
+                "case-b41f2ed2fb2819a8773c6fc5",
+                "case-77dc75d30fe5fe0009085cbd",
+                "case-5f690fabe7c5871587a84d89"
+              ]
+            },
+            "definition": "Attention means needs-you, consistent with the existing prose evaluation. Rates use relevant expected-positive/negative denominators, not all cases."
+          },
+          "unambiguous_quality": {
+            "missed_handoffs": {
+              "count": 3,
+              "denominator": 3,
+              "rate": 1.0,
+              "ids": [
+                "case-4ce52844f17b72cb5af625ef",
+                "case-b41f2ed2fb2819a8773c6fc5",
+                "case-77dc75d30fe5fe0009085cbd"
+              ]
+            },
+            "false_attention": {
+              "count": 1,
+              "denominator": 13,
+              "rate": 0.07692307692307693,
+              "ids": [
+                "case-ea18faebccab1e1004dfa676"
+              ]
+            },
+            "false_caveats": {
+              "count": 0,
+              "denominator": 15,
+              "rate": 0.0,
+              "ids": []
+            },
+            "unknown": {
+              "count": 9,
+              "denominator": 16,
+              "rate": 0.5625,
+              "ids": [
+                "case-8af17a766bae561d5a1b6b90",
+                "case-d447147ac30c3c1062d58a8c",
+                "case-d34a9a37c0cacc807f82efd2",
+                "case-7c1404b3234789f2987e5bd9",
+                "case-80daef973ec90ba95756c5dc",
+                "case-81ce444fd632b07af4f3c955",
+                "case-b41f2ed2fb2819a8773c6fc5",
+                "case-77dc75d30fe5fe0009085cbd",
+                "case-5f690fabe7c5871587a84d89"
+              ]
+            },
+            "definition": "Attention means needs-you, consistent with the existing prose evaluation. Rates use relevant expected-positive/negative denominators, not all cases."
+          },
+          "optional_dimensions": {
+            "expectancy": {
+              "cases": 7,
+              "correct": 3,
+              "accuracy": 0.42857142857142855,
+              "confusion_matrix": {
+                "none": {
+                  "none": 3,
+                  "required-handoff": 1
+                },
+                "required-handoff": {
+                  "none": 3
+                }
+              },
+              "wrong_ids": [
+                "case-ea18faebccab1e1004dfa676",
+                "case-4ce52844f17b72cb5af625ef",
+                "case-b41f2ed2fb2819a8773c6fc5",
+                "case-77dc75d30fe5fe0009085cbd"
+              ]
+            },
+            "delivery_kind": {
+              "cases": 5,
+              "correct": 1,
+              "accuracy": 0.2,
+              "confusion_matrix": {
+                "artifact": {
+                  "artifact": 1,
+                  "change": 1,
+                  "unknown": 2
+                },
+                "published": {
+                  "unknown": 1
+                }
+              },
+              "wrong_ids": [
+                "case-d34a9a37c0cacc807f82efd2",
+                "case-48b90efdc4d59834cbb2dda5",
+                "case-6afddd5878e5bbfa8daefbdd",
+                "case-7c1404b3234789f2987e5bd9"
+              ]
+            },
+            "activity": {
+              "cases": 3,
+              "correct": 0,
+              "accuracy": 0.0,
+              "confusion_matrix": {
+                "in-flight": {
+                  "final": 1,
+                  "unknown": 2
+                }
+              },
+              "wrong_ids": [
+                "case-e11eb143c2ca534b74968466",
+                "case-80daef973ec90ba95756c5dc",
+                "case-81ce444fd632b07af4f3c955"
+              ]
+            },
+            "assessment_kind": {
+              "cases": 3,
+              "correct": 0,
+              "accuracy": 0.0,
+              "confusion_matrix": {
+                "verdict": {
+                  "none": 3
+                }
+              },
+              "wrong_ids": [
+                "case-ea18faebccab1e1004dfa676",
+                "case-8af17a766bae561d5a1b6b90",
+                "case-d447147ac30c3c1062d58a8c"
+              ]
+            },
+            "handoff_kind": {
+              "cases": 3,
+              "correct": 0,
+              "accuracy": 0.0,
+              "confusion_matrix": {
+                "authorization": {
+                  "action": 3
+                }
+              },
+              "wrong_ids": [
+                "case-4ce52844f17b72cb5af625ef",
+                "case-b41f2ed2fb2819a8773c6fc5",
+                "case-77dc75d30fe5fe0009085cbd"
+              ]
+            }
+          }
+        },
+        "current": {
+          "distribution_all_cases": {
+            "state": {
+              "caveats": 1,
+              "done": 9,
+              "needs-you": 3,
+              "unknown": 3
+            },
+            "gesture": {
+              "artifact": 4,
+              "authorization": 3,
+              "caveats": 1,
+              "done": 1,
+              "in-flight": 3,
+              "published": 1,
+              "verdict": 3
+            }
+          },
+          "classifier_only_latency": {
+            "samples": 16,
+            "median_ms": 0.319542,
+            "p95_ms": 0.60299975,
+            "p99_ms": 0.63609995,
+            "max_ms": 0.644375
+          },
+          "strict": {
+            "state": {
+              "cases": 16,
+              "correct": 16,
+              "accuracy": 1.0,
+              "confusion_matrix": {
+                "caveats": {
+                  "caveats": 1
+                },
+                "done": {
+                  "done": 9
+                },
+                "needs-you": {
+                  "needs-you": 3
+                },
+                "unknown": {
+                  "unknown": 3
+                }
+              },
+              "wrong_ids": []
+            },
+            "gesture": {
+              "cases": 16,
+              "correct": 16,
+              "accuracy": 1.0,
+              "confusion_matrix": {
+                "artifact": {
+                  "artifact": 4
+                },
+                "authorization": {
+                  "authorization": 3
+                },
+                "caveats": {
+                  "caveats": 1
+                },
+                "done": {
+                  "done": 1
+                },
+                "in-flight": {
+                  "in-flight": 3
+                },
+                "published": {
+                  "published": 1
+                },
+                "verdict": {
+                  "verdict": 3
+                }
+              },
+              "wrong_ids": []
+            }
+          },
+          "unambiguous_subset": {
+            "state": {
+              "cases": 16,
+              "correct": 16,
+              "accuracy": 1.0,
+              "confusion_matrix": {
+                "caveats": {
+                  "caveats": 1
+                },
+                "done": {
+                  "done": 9
+                },
+                "needs-you": {
+                  "needs-you": 3
+                },
+                "unknown": {
+                  "unknown": 3
+                }
+              },
+              "wrong_ids": []
+            },
+            "gesture": {
+              "cases": 16,
+              "correct": 16,
+              "accuracy": 1.0,
+              "confusion_matrix": {
+                "artifact": {
+                  "artifact": 4
+                },
+                "authorization": {
+                  "authorization": 3
+                },
+                "caveats": {
+                  "caveats": 1
+                },
+                "done": {
+                  "done": 1
+                },
+                "in-flight": {
+                  "in-flight": 3
+                },
+                "published": {
+                  "published": 1
+                },
+                "verdict": {
+                  "verdict": 3
+                }
+              },
+              "wrong_ids": []
+            }
+          },
+          "alternative_acceptable": {
+            "state": {
+              "cases": 16,
+              "correct": 16,
+              "accuracy": 1.0,
+              "confusion_matrix": {
+                "caveats": {
+                  "caveats": 1
+                },
+                "done": {
+                  "done": 9
+                },
+                "needs-you": {
+                  "needs-you": 3
+                },
+                "unknown": {
+                  "unknown": 3
+                }
+              },
+              "wrong_ids": []
+            },
+            "gesture": {
+              "cases": 16,
+              "correct": 16,
+              "accuracy": 1.0,
+              "confusion_matrix": {
+                "artifact": {
+                  "artifact": 4
+                },
+                "authorization": {
+                  "authorization": 3
+                },
+                "caveats": {
+                  "caveats": 1
+                },
+                "done": {
+                  "done": 1
+                },
+                "in-flight": {
+                  "in-flight": 3
+                },
+                "published": {
+                  "published": 1
+                },
+                "verdict": {
+                  "verdict": 3
+                }
+              },
+              "wrong_ids": []
+            },
+            "joint_state_and_gesture": {
+              "cases": 16,
+              "correct": 16,
+              "accuracy": 1.0
+            }
+          },
+          "quality": {
+            "missed_handoffs": {
+              "count": 0,
+              "denominator": 3,
+              "rate": 0.0,
+              "ids": []
+            },
+            "false_attention": {
+              "count": 0,
+              "denominator": 13,
+              "rate": 0.0,
+              "ids": []
+            },
+            "false_caveats": {
+              "count": 0,
+              "denominator": 15,
+              "rate": 0.0,
+              "ids": []
+            },
+            "unknown": {
+              "count": 3,
+              "denominator": 16,
+              "rate": 0.1875,
+              "ids": [
+                "case-e11eb143c2ca534b74968466",
+                "case-80daef973ec90ba95756c5dc",
+                "case-81ce444fd632b07af4f3c955"
+              ]
+            },
+            "definition": "Attention means needs-you, consistent with the existing prose evaluation. Rates use relevant expected-positive/negative denominators, not all cases."
+          },
+          "unambiguous_quality": {
+            "missed_handoffs": {
+              "count": 0,
+              "denominator": 3,
+              "rate": 0.0,
+              "ids": []
+            },
+            "false_attention": {
+              "count": 0,
+              "denominator": 13,
+              "rate": 0.0,
+              "ids": []
+            },
+            "false_caveats": {
+              "count": 0,
+              "denominator": 15,
+              "rate": 0.0,
+              "ids": []
+            },
+            "unknown": {
+              "count": 3,
+              "denominator": 16,
+              "rate": 0.1875,
+              "ids": [
+                "case-e11eb143c2ca534b74968466",
+                "case-80daef973ec90ba95756c5dc",
+                "case-81ce444fd632b07af4f3c955"
+              ]
+            },
+            "definition": "Attention means needs-you, consistent with the existing prose evaluation. Rates use relevant expected-positive/negative denominators, not all cases."
+          },
+          "optional_dimensions": {
+            "expectancy": {
+              "cases": 7,
+              "correct": 7,
+              "accuracy": 1.0,
+              "confusion_matrix": {
+                "none": {
+                  "none": 4
+                },
+                "required-handoff": {
+                  "required-handoff": 3
+                }
+              },
+              "wrong_ids": []
+            },
+            "delivery_kind": {
+              "cases": 5,
+              "correct": 5,
+              "accuracy": 1.0,
+              "confusion_matrix": {
+                "artifact": {
+                  "artifact": 4
+                },
+                "published": {
+                  "published": 1
+                }
+              },
+              "wrong_ids": []
+            },
+            "activity": {
+              "cases": 3,
+              "correct": 3,
+              "accuracy": 1.0,
+              "confusion_matrix": {
+                "in-flight": {
+                  "in-flight": 3
+                }
+              },
+              "wrong_ids": []
+            },
+            "assessment_kind": {
+              "cases": 3,
+              "correct": 3,
+              "accuracy": 1.0,
+              "confusion_matrix": {
+                "verdict": {
+                  "verdict": 3
+                }
+              },
+              "wrong_ids": []
+            },
+            "handoff_kind": {
+              "cases": 3,
+              "correct": 3,
+              "accuracy": 1.0,
+              "confusion_matrix": {
+                "authorization": {
+                  "authorization": 3
+                }
+              },
+              "wrong_ids": []
+            }
+          }
+        }
+      },
+      "primary_eligible": 16,
+      "primary_excluded": 0,
+      "ambiguous_eligible": 0,
+      "changed_count": 14,
+      "changed_cases": [
+        {
+          "id": "case-ea18faebccab1e1004dfa676",
+          "baseline": {
+            "state": "needs-you",
+            "gesture": "needs-you"
+          },
+          "current": {
+            "state": "done",
+            "gesture": "verdict"
+          },
+          "primary_scoring_eligible": true,
+          "ambiguous": false,
+          "strict_label_change": {
+            "state": "improved",
+            "gesture": "improved"
+          }
+        },
+        {
+          "id": "case-8af17a766bae561d5a1b6b90",
+          "baseline": {
+            "state": "unknown",
+            "gesture": "answer"
+          },
+          "current": {
+            "state": "done",
+            "gesture": "verdict"
+          },
+          "primary_scoring_eligible": true,
+          "ambiguous": false,
+          "strict_label_change": {
+            "state": "improved",
+            "gesture": "improved"
+          }
+        },
+        {
+          "id": "case-d447147ac30c3c1062d58a8c",
+          "baseline": {
+            "state": "unknown",
+            "gesture": "answer"
+          },
+          "current": {
+            "state": "done",
+            "gesture": "verdict"
+          },
+          "primary_scoring_eligible": true,
+          "ambiguous": false,
+          "strict_label_change": {
+            "state": "improved",
+            "gesture": "improved"
+          }
+        },
+        {
+          "id": "case-d34a9a37c0cacc807f82efd2",
+          "baseline": {
+            "state": "unknown",
+            "gesture": "answer"
+          },
+          "current": {
+            "state": "done",
+            "gesture": "artifact"
+          },
+          "primary_scoring_eligible": true,
+          "ambiguous": false,
+          "strict_label_change": {
+            "state": "improved",
+            "gesture": "improved"
+          }
+        },
+        {
+          "id": "case-48b90efdc4d59834cbb2dda5",
+          "baseline": {
+            "state": "done",
+            "gesture": "done"
+          },
+          "current": {
+            "state": "done",
+            "gesture": "artifact"
+          },
+          "primary_scoring_eligible": true,
+          "ambiguous": false,
+          "strict_label_change": {
+            "state": "unchanged",
+            "gesture": "improved"
+          }
+        },
+        {
+          "id": "case-6afddd5878e5bbfa8daefbdd",
+          "baseline": {
+            "state": "done",
+            "gesture": "done"
+          },
+          "current": {
+            "state": "done",
+            "gesture": "artifact"
+          },
+          "primary_scoring_eligible": true,
+          "ambiguous": false,
+          "strict_label_change": {
+            "state": "unchanged",
+            "gesture": "improved"
+          }
+        },
+        {
+          "id": "case-7c1404b3234789f2987e5bd9",
+          "baseline": {
+            "state": "unknown",
+            "gesture": "answer"
+          },
+          "current": {
+            "state": "done",
+            "gesture": "published"
+          },
+          "primary_scoring_eligible": true,
+          "ambiguous": false,
+          "strict_label_change": {
+            "state": "improved",
+            "gesture": "improved"
+          }
+        },
+        {
+          "id": "case-e11eb143c2ca534b74968466",
+          "baseline": {
+            "state": "done",
+            "gesture": "published"
+          },
+          "current": {
+            "state": "unknown",
+            "gesture": "in-flight"
+          },
+          "primary_scoring_eligible": true,
+          "ambiguous": false,
+          "strict_label_change": {
+            "state": "improved",
+            "gesture": "improved"
+          }
+        },
+        {
+          "id": "case-80daef973ec90ba95756c5dc",
+          "baseline": {
+            "state": "unknown",
+            "gesture": "answer"
+          },
+          "current": {
+            "state": "unknown",
+            "gesture": "in-flight"
+          },
+          "primary_scoring_eligible": true,
+          "ambiguous": false,
+          "strict_label_change": {
+            "state": "unchanged",
+            "gesture": "improved"
+          }
+        },
+        {
+          "id": "case-81ce444fd632b07af4f3c955",
+          "baseline": {
+            "state": "unknown",
+            "gesture": "answer"
+          },
+          "current": {
+            "state": "unknown",
+            "gesture": "in-flight"
+          },
+          "primary_scoring_eligible": true,
+          "ambiguous": false,
+          "strict_label_change": {
+            "state": "unchanged",
+            "gesture": "improved"
+          }
+        },
+        {
+          "id": "case-4ce52844f17b72cb5af625ef",
+          "baseline": {
+            "state": "done",
+            "gesture": "done"
+          },
+          "current": {
+            "state": "needs-you",
+            "gesture": "authorization"
+          },
+          "primary_scoring_eligible": true,
+          "ambiguous": false,
+          "strict_label_change": {
+            "state": "improved",
+            "gesture": "improved"
+          }
+        },
+        {
+          "id": "case-b41f2ed2fb2819a8773c6fc5",
+          "baseline": {
+            "state": "unknown",
+            "gesture": "answer"
+          },
+          "current": {
+            "state": "needs-you",
+            "gesture": "authorization"
+          },
+          "primary_scoring_eligible": true,
+          "ambiguous": false,
+          "strict_label_change": {
+            "state": "improved",
+            "gesture": "improved"
+          }
+        },
+        {
+          "id": "case-77dc75d30fe5fe0009085cbd",
+          "baseline": {
+            "state": "unknown",
+            "gesture": "answer"
+          },
+          "current": {
+            "state": "needs-you",
+            "gesture": "authorization"
+          },
+          "primary_scoring_eligible": true,
+          "ambiguous": false,
+          "strict_label_change": {
+            "state": "improved",
+            "gesture": "improved"
+          }
+        },
+        {
+          "id": "case-5f690fabe7c5871587a84d89",
+          "baseline": {
+            "state": "unknown",
+            "gesture": "answer"
+          },
+          "current": {
+            "state": "caveats",
+            "gesture": "caveats"
+          },
+          "primary_scoring_eligible": true,
+          "ambiguous": false,
+          "strict_label_change": {
+            "state": "improved",
+            "gesture": "improved"
+          }
+        }
+      ],
+      "transition_counts": {
+        "state": {
+          "done": {
+            "done": 4,
+            "needs-you": 1,
+            "unknown": 1
+          },
+          "needs-you": {
+            "done": 1
+          },
+          "unknown": {
+            "caveats": 1,
+            "done": 4,
+            "needs-you": 2,
+            "unknown": 2
+          }
+        },
+        "gesture": {
+          "answer": {
+            "artifact": 1,
+            "authorization": 2,
+            "caveats": 1,
+            "in-flight": 2,
+            "published": 1,
+            "verdict": 2
+          },
+          "artifact": {
+            "artifact": 1
+          },
+          "done": {
+            "artifact": 2,
+            "authorization": 1,
+            "done": 1
+          },
+          "needs-you": {
+            "verdict": 1
+          },
+          "published": {
+            "in-flight": 1
+          }
+        }
+      }
+    },
+    "existing_outcomes": {
+      "cases": 30,
+      "versions": {
+        "baseline": {
+          "distribution_all_cases": {
+            "state": {
+              "caveats": 5,
+              "done": 12,
+              "needs-you": 8,
+              "rejected": 5
+            },
+            "gesture": {
+              "caveats": 5,
+              "decision": 4,
+              "done": 12,
+              "needs-you": 4,
+              "rejected": 5
+            }
+          },
+          "classifier_only_latency": {
+            "samples": 30,
+            "median_ms": 0.20027050000000002,
+            "p95_ms": 40.8079208,
+            "p99_ms": 67.04524514000002,
+            "max_ms": 77.475917
+          },
+          "strict": {
+            "state": {
+              "cases": 30,
+              "correct": 30,
+              "accuracy": 1.0,
+              "confusion_matrix": {
+                "caveats": {
+                  "caveats": 5
+                },
+                "done": {
+                  "done": 12
+                },
+                "needs-you": {
+                  "needs-you": 8
+                },
+                "rejected": {
+                  "rejected": 5
+                }
+              },
+              "wrong_ids": []
+            },
+            "gesture": {
+              "cases": 0,
+              "correct": 0,
+              "accuracy": null,
+              "confusion_matrix": {},
+              "wrong_ids": []
+            }
+          },
+          "unambiguous_subset": {
+            "state": {
+              "cases": 30,
+              "correct": 30,
+              "accuracy": 1.0,
+              "confusion_matrix": {
+                "caveats": {
+                  "caveats": 5
+                },
+                "done": {
+                  "done": 12
+                },
+                "needs-you": {
+                  "needs-you": 8
+                },
+                "rejected": {
+                  "rejected": 5
+                }
+              },
+              "wrong_ids": []
+            },
+            "gesture": {
+              "cases": 0,
+              "correct": 0,
+              "accuracy": null,
+              "confusion_matrix": {},
+              "wrong_ids": []
+            }
+          },
+          "alternative_acceptable": {
+            "state": {
+              "cases": 30,
+              "correct": 30,
+              "accuracy": 1.0,
+              "confusion_matrix": {
+                "caveats": {
+                  "caveats": 5
+                },
+                "done": {
+                  "done": 12
+                },
+                "needs-you": {
+                  "needs-you": 8
+                },
+                "rejected": {
+                  "rejected": 5
+                }
+              },
+              "wrong_ids": []
+            },
+            "gesture": {
+              "cases": 0,
+              "correct": 0,
+              "accuracy": null,
+              "confusion_matrix": {},
+              "wrong_ids": []
+            },
+            "joint_state_and_gesture": {
+              "cases": 0,
+              "correct": 0,
+              "accuracy": null
+            }
+          },
+          "quality": {
+            "missed_handoffs": {
+              "count": 0,
+              "denominator": 8,
+              "rate": 0.0,
+              "ids": []
+            },
+            "false_attention": {
+              "count": 0,
+              "denominator": 22,
+              "rate": 0.0,
+              "ids": []
+            },
+            "false_caveats": {
+              "count": 0,
+              "denominator": 25,
+              "rate": 0.0,
+              "ids": []
+            },
+            "unknown": {
+              "count": 0,
+              "denominator": 30,
+              "rate": 0.0,
+              "ids": []
+            },
+            "definition": "Attention means needs-you, consistent with the existing prose evaluation. Rates use relevant expected-positive/negative denominators, not all cases."
+          },
+          "unambiguous_quality": {
+            "missed_handoffs": {
+              "count": 0,
+              "denominator": 8,
+              "rate": 0.0,
+              "ids": []
+            },
+            "false_attention": {
+              "count": 0,
+              "denominator": 22,
+              "rate": 0.0,
+              "ids": []
+            },
+            "false_caveats": {
+              "count": 0,
+              "denominator": 25,
+              "rate": 0.0,
+              "ids": []
+            },
+            "unknown": {
+              "count": 0,
+              "denominator": 30,
+              "rate": 0.0,
+              "ids": []
+            },
+            "definition": "Attention means needs-you, consistent with the existing prose evaluation. Rates use relevant expected-positive/negative denominators, not all cases."
+          },
+          "optional_dimensions": {}
+        },
+        "current": {
+          "distribution_all_cases": {
+            "state": {
+              "caveats": 5,
+              "done": 12,
+              "needs-you": 8,
+              "rejected": 5
+            },
+            "gesture": {
+              "caveats": 5,
+              "decision": 4,
+              "done": 12,
+              "needs-you": 4,
+              "rejected": 5
+            }
+          },
+          "classifier_only_latency": {
+            "samples": 30,
+            "median_ms": 0.23381249999999998,
+            "p95_ms": 46.55090205,
+            "p99_ms": 75.58227407000004,
+            "max_ms": 87.1315
+          },
+          "strict": {
+            "state": {
+              "cases": 30,
+              "correct": 30,
+              "accuracy": 1.0,
+              "confusion_matrix": {
+                "caveats": {
+                  "caveats": 5
+                },
+                "done": {
+                  "done": 12
+                },
+                "needs-you": {
+                  "needs-you": 8
+                },
+                "rejected": {
+                  "rejected": 5
+                }
+              },
+              "wrong_ids": []
+            },
+            "gesture": {
+              "cases": 0,
+              "correct": 0,
+              "accuracy": null,
+              "confusion_matrix": {},
+              "wrong_ids": []
+            }
+          },
+          "unambiguous_subset": {
+            "state": {
+              "cases": 30,
+              "correct": 30,
+              "accuracy": 1.0,
+              "confusion_matrix": {
+                "caveats": {
+                  "caveats": 5
+                },
+                "done": {
+                  "done": 12
+                },
+                "needs-you": {
+                  "needs-you": 8
+                },
+                "rejected": {
+                  "rejected": 5
+                }
+              },
+              "wrong_ids": []
+            },
+            "gesture": {
+              "cases": 0,
+              "correct": 0,
+              "accuracy": null,
+              "confusion_matrix": {},
+              "wrong_ids": []
+            }
+          },
+          "alternative_acceptable": {
+            "state": {
+              "cases": 30,
+              "correct": 30,
+              "accuracy": 1.0,
+              "confusion_matrix": {
+                "caveats": {
+                  "caveats": 5
+                },
+                "done": {
+                  "done": 12
+                },
+                "needs-you": {
+                  "needs-you": 8
+                },
+                "rejected": {
+                  "rejected": 5
+                }
+              },
+              "wrong_ids": []
+            },
+            "gesture": {
+              "cases": 0,
+              "correct": 0,
+              "accuracy": null,
+              "confusion_matrix": {},
+              "wrong_ids": []
+            },
+            "joint_state_and_gesture": {
+              "cases": 0,
+              "correct": 0,
+              "accuracy": null
+            }
+          },
+          "quality": {
+            "missed_handoffs": {
+              "count": 0,
+              "denominator": 8,
+              "rate": 0.0,
+              "ids": []
+            },
+            "false_attention": {
+              "count": 0,
+              "denominator": 22,
+              "rate": 0.0,
+              "ids": []
+            },
+            "false_caveats": {
+              "count": 0,
+              "denominator": 25,
+              "rate": 0.0,
+              "ids": []
+            },
+            "unknown": {
+              "count": 0,
+              "denominator": 30,
+              "rate": 0.0,
+              "ids": []
+            },
+            "definition": "Attention means needs-you, consistent with the existing prose evaluation. Rates use relevant expected-positive/negative denominators, not all cases."
+          },
+          "unambiguous_quality": {
+            "missed_handoffs": {
+              "count": 0,
+              "denominator": 8,
+              "rate": 0.0,
+              "ids": []
+            },
+            "false_attention": {
+              "count": 0,
+              "denominator": 22,
+              "rate": 0.0,
+              "ids": []
+            },
+            "false_caveats": {
+              "count": 0,
+              "denominator": 25,
+              "rate": 0.0,
+              "ids": []
+            },
+            "unknown": {
+              "count": 0,
+              "denominator": 30,
+              "rate": 0.0,
+              "ids": []
+            },
+            "definition": "Attention means needs-you, consistent with the existing prose evaluation. Rates use relevant expected-positive/negative denominators, not all cases."
+          },
+          "optional_dimensions": {}
+        }
+      },
+      "primary_eligible": 30,
+      "primary_excluded": 0,
+      "ambiguous_eligible": 0,
+      "changed_count": 0,
+      "changed_cases": [],
+      "transition_counts": {
+        "state": {
+          "caveats": {
+            "caveats": 5
+          },
+          "done": {
+            "done": 12
+          },
+          "needs-you": {
+            "needs-you": 8
+          },
+          "rejected": {
+            "rejected": 5
+          }
+        },
+        "gesture": {
+          "caveats": {
+            "caveats": 5
+          },
+          "decision": {
+            "decision": 4
+          },
+          "done": {
+            "done": 12
+          },
+          "needs-you": {
+            "needs-you": 4
+          },
+          "rejected": {
+            "rejected": 5
+          }
+        }
+      }
+    },
+    "existing_gestures": {
+      "cases": 35,
+      "versions": {
+        "baseline": {
+          "distribution_all_cases": {
+            "state": {
+              "caveats": 6,
+              "done": 19,
+              "needs-you": 8,
+              "rejected": 2
+            },
+            "gesture": {
+              "answer": 2,
+              "artifact": 6,
+              "authorization": 1,
+              "caveats": 5,
+              "decision": 2,
+              "done": 6,
+              "needs-you": 5,
+              "plan": 2,
+              "published": 1,
+              "rejected": 2,
+              "review": 3
+            }
+          },
+          "classifier_only_latency": {
+            "samples": 35,
+            "median_ms": 0.231584,
+            "p95_ms": 0.38191239999999993,
+            "p99_ms": 0.4234432199999999,
+            "max_ms": 0.434125
+          },
+          "strict": {
+            "state": {
+              "cases": 35,
+              "correct": 35,
+              "accuracy": 1.0,
+              "confusion_matrix": {
+                "caveats": {
+                  "caveats": 6
+                },
+                "done": {
+                  "done": 19
+                },
+                "needs-you": {
+                  "needs-you": 8
+                },
+                "rejected": {
+                  "rejected": 2
+                }
+              },
+              "wrong_ids": []
+            },
+            "gesture": {
+              "cases": 35,
+              "correct": 35,
+              "accuracy": 1.0,
+              "confusion_matrix": {
+                "answer": {
+                  "answer": 2
+                },
+                "artifact": {
+                  "artifact": 6
+                },
+                "authorization": {
+                  "authorization": 1
+                },
+                "caveats": {
+                  "caveats": 5
+                },
+                "decision": {
+                  "decision": 2
+                },
+                "done": {
+                  "done": 6
+                },
+                "needs-you": {
+                  "needs-you": 5
+                },
+                "plan": {
+                  "plan": 2
+                },
+                "published": {
+                  "published": 1
+                },
+                "rejected": {
+                  "rejected": 2
+                },
+                "review": {
+                  "review": 3
+                }
+              },
+              "wrong_ids": []
+            }
+          },
+          "unambiguous_subset": {
+            "state": {
+              "cases": 35,
+              "correct": 35,
+              "accuracy": 1.0,
+              "confusion_matrix": {
+                "caveats": {
+                  "caveats": 6
+                },
+                "done": {
+                  "done": 19
+                },
+                "needs-you": {
+                  "needs-you": 8
+                },
+                "rejected": {
+                  "rejected": 2
+                }
+              },
+              "wrong_ids": []
+            },
+            "gesture": {
+              "cases": 35,
+              "correct": 35,
+              "accuracy": 1.0,
+              "confusion_matrix": {
+                "answer": {
+                  "answer": 2
+                },
+                "artifact": {
+                  "artifact": 6
+                },
+                "authorization": {
+                  "authorization": 1
+                },
+                "caveats": {
+                  "caveats": 5
+                },
+                "decision": {
+                  "decision": 2
+                },
+                "done": {
+                  "done": 6
+                },
+                "needs-you": {
+                  "needs-you": 5
+                },
+                "plan": {
+                  "plan": 2
+                },
+                "published": {
+                  "published": 1
+                },
+                "rejected": {
+                  "rejected": 2
+                },
+                "review": {
+                  "review": 3
+                }
+              },
+              "wrong_ids": []
+            }
+          },
+          "alternative_acceptable": {
+            "state": {
+              "cases": 35,
+              "correct": 35,
+              "accuracy": 1.0,
+              "confusion_matrix": {
+                "caveats": {
+                  "caveats": 6
+                },
+                "done": {
+                  "done": 19
+                },
+                "needs-you": {
+                  "needs-you": 8
+                },
+                "rejected": {
+                  "rejected": 2
+                }
+              },
+              "wrong_ids": []
+            },
+            "gesture": {
+              "cases": 35,
+              "correct": 35,
+              "accuracy": 1.0,
+              "confusion_matrix": {
+                "answer": {
+                  "answer": 2
+                },
+                "artifact": {
+                  "artifact": 6
+                },
+                "authorization": {
+                  "authorization": 1
+                },
+                "caveats": {
+                  "caveats": 5
+                },
+                "decision": {
+                  "decision": 2
+                },
+                "done": {
+                  "done": 6
+                },
+                "needs-you": {
+                  "needs-you": 5
+                },
+                "plan": {
+                  "plan": 2
+                },
+                "published": {
+                  "published": 1
+                },
+                "rejected": {
+                  "rejected": 2
+                },
+                "review": {
+                  "review": 3
+                }
+              },
+              "wrong_ids": []
+            },
+            "joint_state_and_gesture": {
+              "cases": 35,
+              "correct": 35,
+              "accuracy": 1.0
+            }
+          },
+          "quality": {
+            "missed_handoffs": {
+              "count": 0,
+              "denominator": 8,
+              "rate": 0.0,
+              "ids": []
+            },
+            "false_attention": {
+              "count": 0,
+              "denominator": 27,
+              "rate": 0.0,
+              "ids": []
+            },
+            "false_caveats": {
+              "count": 0,
+              "denominator": 29,
+              "rate": 0.0,
+              "ids": []
+            },
+            "unknown": {
+              "count": 0,
+              "denominator": 35,
+              "rate": 0.0,
+              "ids": []
+            },
+            "definition": "Attention means needs-you, consistent with the existing prose evaluation. Rates use relevant expected-positive/negative denominators, not all cases."
+          },
+          "unambiguous_quality": {
+            "missed_handoffs": {
+              "count": 0,
+              "denominator": 8,
+              "rate": 0.0,
+              "ids": []
+            },
+            "false_attention": {
+              "count": 0,
+              "denominator": 27,
+              "rate": 0.0,
+              "ids": []
+            },
+            "false_caveats": {
+              "count": 0,
+              "denominator": 29,
+              "rate": 0.0,
+              "ids": []
+            },
+            "unknown": {
+              "count": 0,
+              "denominator": 35,
+              "rate": 0.0,
+              "ids": []
+            },
+            "definition": "Attention means needs-you, consistent with the existing prose evaluation. Rates use relevant expected-positive/negative denominators, not all cases."
+          },
+          "optional_dimensions": {
+            "expectancy": {
+              "cases": 35,
+              "correct": 35,
+              "accuracy": 1.0,
+              "confusion_matrix": {
+                "none": {
+                  "none": 24
+                },
+                "required-handoff": {
+                  "required-handoff": 8
+                },
+                "review-requested": {
+                  "review-requested": 3
+                }
+              },
+              "wrong_ids": []
+            },
+            "delivery_kind": {
+              "cases": 34,
+              "correct": 34,
+              "accuracy": 1.0,
+              "confusion_matrix": {
+                "answer": {
+                  "answer": 3
+                },
+                "artifact": {
+                  "artifact": 9
+                },
+                "change": {
+                  "change": 7
+                },
+                "plan": {
+                  "plan": 3
+                },
+                "published": {
+                  "published": 2
+                },
+                "unknown": {
+                  "unknown": 10
+                }
+              },
+              "wrong_ids": []
+            },
+            "handoff_kind": {
+              "cases": 1,
+              "correct": 1,
+              "accuracy": 1.0,
+              "confusion_matrix": {
+                "authorization": {
+                  "authorization": 1
+                }
+              },
+              "wrong_ids": []
+            }
+          }
+        },
+        "current": {
+          "distribution_all_cases": {
+            "state": {
+              "caveats": 6,
+              "done": 19,
+              "needs-you": 8,
+              "rejected": 2
+            },
+            "gesture": {
+              "answer": 2,
+              "artifact": 6,
+              "authorization": 1,
+              "caveats": 5,
+              "decision": 2,
+              "done": 6,
+              "needs-you": 5,
+              "plan": 2,
+              "published": 1,
+              "rejected": 2,
+              "review": 3
+            }
+          },
+          "classifier_only_latency": {
+            "samples": 35,
+            "median_ms": 0.242542,
+            "p95_ms": 0.4326123999999998,
+            "p99_ms": 0.502278,
+            "max_ms": 0.509333
+          },
+          "strict": {
+            "state": {
+              "cases": 35,
+              "correct": 35,
+              "accuracy": 1.0,
+              "confusion_matrix": {
+                "caveats": {
+                  "caveats": 6
+                },
+                "done": {
+                  "done": 19
+                },
+                "needs-you": {
+                  "needs-you": 8
+                },
+                "rejected": {
+                  "rejected": 2
+                }
+              },
+              "wrong_ids": []
+            },
+            "gesture": {
+              "cases": 35,
+              "correct": 35,
+              "accuracy": 1.0,
+              "confusion_matrix": {
+                "answer": {
+                  "answer": 2
+                },
+                "artifact": {
+                  "artifact": 6
+                },
+                "authorization": {
+                  "authorization": 1
+                },
+                "caveats": {
+                  "caveats": 5
+                },
+                "decision": {
+                  "decision": 2
+                },
+                "done": {
+                  "done": 6
+                },
+                "needs-you": {
+                  "needs-you": 5
+                },
+                "plan": {
+                  "plan": 2
+                },
+                "published": {
+                  "published": 1
+                },
+                "rejected": {
+                  "rejected": 2
+                },
+                "review": {
+                  "review": 3
+                }
+              },
+              "wrong_ids": []
+            }
+          },
+          "unambiguous_subset": {
+            "state": {
+              "cases": 35,
+              "correct": 35,
+              "accuracy": 1.0,
+              "confusion_matrix": {
+                "caveats": {
+                  "caveats": 6
+                },
+                "done": {
+                  "done": 19
+                },
+                "needs-you": {
+                  "needs-you": 8
+                },
+                "rejected": {
+                  "rejected": 2
+                }
+              },
+              "wrong_ids": []
+            },
+            "gesture": {
+              "cases": 35,
+              "correct": 35,
+              "accuracy": 1.0,
+              "confusion_matrix": {
+                "answer": {
+                  "answer": 2
+                },
+                "artifact": {
+                  "artifact": 6
+                },
+                "authorization": {
+                  "authorization": 1
+                },
+                "caveats": {
+                  "caveats": 5
+                },
+                "decision": {
+                  "decision": 2
+                },
+                "done": {
+                  "done": 6
+                },
+                "needs-you": {
+                  "needs-you": 5
+                },
+                "plan": {
+                  "plan": 2
+                },
+                "published": {
+                  "published": 1
+                },
+                "rejected": {
+                  "rejected": 2
+                },
+                "review": {
+                  "review": 3
+                }
+              },
+              "wrong_ids": []
+            }
+          },
+          "alternative_acceptable": {
+            "state": {
+              "cases": 35,
+              "correct": 35,
+              "accuracy": 1.0,
+              "confusion_matrix": {
+                "caveats": {
+                  "caveats": 6
+                },
+                "done": {
+                  "done": 19
+                },
+                "needs-you": {
+                  "needs-you": 8
+                },
+                "rejected": {
+                  "rejected": 2
+                }
+              },
+              "wrong_ids": []
+            },
+            "gesture": {
+              "cases": 35,
+              "correct": 35,
+              "accuracy": 1.0,
+              "confusion_matrix": {
+                "answer": {
+                  "answer": 2
+                },
+                "artifact": {
+                  "artifact": 6
+                },
+                "authorization": {
+                  "authorization": 1
+                },
+                "caveats": {
+                  "caveats": 5
+                },
+                "decision": {
+                  "decision": 2
+                },
+                "done": {
+                  "done": 6
+                },
+                "needs-you": {
+                  "needs-you": 5
+                },
+                "plan": {
+                  "plan": 2
+                },
+                "published": {
+                  "published": 1
+                },
+                "rejected": {
+                  "rejected": 2
+                },
+                "review": {
+                  "review": 3
+                }
+              },
+              "wrong_ids": []
+            },
+            "joint_state_and_gesture": {
+              "cases": 35,
+              "correct": 35,
+              "accuracy": 1.0
+            }
+          },
+          "quality": {
+            "missed_handoffs": {
+              "count": 0,
+              "denominator": 8,
+              "rate": 0.0,
+              "ids": []
+            },
+            "false_attention": {
+              "count": 0,
+              "denominator": 27,
+              "rate": 0.0,
+              "ids": []
+            },
+            "false_caveats": {
+              "count": 0,
+              "denominator": 29,
+              "rate": 0.0,
+              "ids": []
+            },
+            "unknown": {
+              "count": 0,
+              "denominator": 35,
+              "rate": 0.0,
+              "ids": []
+            },
+            "definition": "Attention means needs-you, consistent with the existing prose evaluation. Rates use relevant expected-positive/negative denominators, not all cases."
+          },
+          "unambiguous_quality": {
+            "missed_handoffs": {
+              "count": 0,
+              "denominator": 8,
+              "rate": 0.0,
+              "ids": []
+            },
+            "false_attention": {
+              "count": 0,
+              "denominator": 27,
+              "rate": 0.0,
+              "ids": []
+            },
+            "false_caveats": {
+              "count": 0,
+              "denominator": 29,
+              "rate": 0.0,
+              "ids": []
+            },
+            "unknown": {
+              "count": 0,
+              "denominator": 35,
+              "rate": 0.0,
+              "ids": []
+            },
+            "definition": "Attention means needs-you, consistent with the existing prose evaluation. Rates use relevant expected-positive/negative denominators, not all cases."
+          },
+          "optional_dimensions": {
+            "expectancy": {
+              "cases": 35,
+              "correct": 35,
+              "accuracy": 1.0,
+              "confusion_matrix": {
+                "none": {
+                  "none": 24
+                },
+                "required-handoff": {
+                  "required-handoff": 8
+                },
+                "review-requested": {
+                  "review-requested": 3
+                }
+              },
+              "wrong_ids": []
+            },
+            "delivery_kind": {
+              "cases": 34,
+              "correct": 34,
+              "accuracy": 1.0,
+              "confusion_matrix": {
+                "answer": {
+                  "answer": 3
+                },
+                "artifact": {
+                  "artifact": 9
+                },
+                "change": {
+                  "change": 7
+                },
+                "plan": {
+                  "plan": 3
+                },
+                "published": {
+                  "published": 2
+                },
+                "unknown": {
+                  "unknown": 10
+                }
+              },
+              "wrong_ids": []
+            },
+            "handoff_kind": {
+              "cases": 1,
+              "correct": 1,
+              "accuracy": 1.0,
+              "confusion_matrix": {
+                "authorization": {
+                  "authorization": 1
+                }
+              },
+              "wrong_ids": []
+            }
+          }
+        }
+      },
+      "primary_eligible": 35,
+      "primary_excluded": 0,
+      "ambiguous_eligible": 0,
+      "changed_count": 0,
+      "changed_cases": [],
+      "transition_counts": {
+        "state": {
+          "caveats": {
+            "caveats": 6
+          },
+          "done": {
+            "done": 19
+          },
+          "needs-you": {
+            "needs-you": 8
+          },
+          "rejected": {
+            "rejected": 2
+          }
+        },
+        "gesture": {
+          "answer": {
+            "answer": 2
+          },
+          "artifact": {
+            "artifact": 6
+          },
+          "authorization": {
+            "authorization": 1
+          },
+          "caveats": {
+            "caveats": 5
+          },
+          "decision": {
+            "decision": 2
+          },
+          "done": {
+            "done": 6
+          },
+          "needs-you": {
+            "needs-you": 5
+          },
+          "plan": {
+            "plan": 2
+          },
+          "published": {
+            "published": 1
+          },
+          "rejected": {
+            "rejected": 2
+          },
+          "review": {
+            "review": 3
+          }
+        }
+      }
+    },
+    "existing_vnext": {
+      "cases": 115,
+      "versions": {
+        "baseline": {
+          "distribution_all_cases": {
+            "state": {
+              "caveats": 19,
+              "done": 31,
+              "needs-you": 12,
+              "unknown": 53
+            },
+            "gesture": {
+              "answer": 54,
+              "artifact": 8,
+              "authorization": 5,
+              "caveats": 19,
+              "done": 5,
+              "in-flight": 4,
+              "needs-you": 7,
+              "published": 7,
+              "verdict": 6
+            }
+          },
+          "classifier_only_latency": {
+            "samples": 115,
+            "median_ms": 0.180667,
+            "p95_ms": 0.34712069999999995,
+            "p99_ms": 0.38334864,
+            "max_ms": 0.429833
+          },
+          "strict": {
+            "state": {
+              "cases": 115,
+              "correct": 114,
+              "accuracy": 0.991304347826087,
+              "confusion_matrix": {
+                "caveats": {
+                  "caveats": 19
+                },
+                "done": {
+                  "done": 30
+                },
+                "needs-you": {
+                  "done": 1,
+                  "needs-you": 12
+                },
+                "unknown": {
+                  "unknown": 53
+                }
+              },
+              "wrong_ids": [
+                "case-52e474ea9ed221951406eb66"
+              ]
+            },
+            "gesture": {
+              "cases": 115,
+              "correct": 114,
+              "accuracy": 0.991304347826087,
+              "confusion_matrix": {
+                "answer": {
+                  "answer": 54
+                },
+                "artifact": {
+                  "artifact": 8
+                },
+                "authorization": {
+                  "authorization": 5,
+                  "done": 1
+                },
+                "caveats": {
+                  "caveats": 19
+                },
+                "done": {
+                  "done": 4
+                },
+                "in-flight": {
+                  "in-flight": 4
+                },
+                "needs-you": {
+                  "needs-you": 7
+                },
+                "published": {
+                  "published": 7
+                },
+                "verdict": {
+                  "verdict": 6
+                }
+              },
+              "wrong_ids": [
+                "case-52e474ea9ed221951406eb66"
+              ]
+            }
+          },
+          "unambiguous_subset": {
+            "state": {
+              "cases": 115,
+              "correct": 114,
+              "accuracy": 0.991304347826087,
+              "confusion_matrix": {
+                "caveats": {
+                  "caveats": 19
+                },
+                "done": {
+                  "done": 30
+                },
+                "needs-you": {
+                  "done": 1,
+                  "needs-you": 12
+                },
+                "unknown": {
+                  "unknown": 53
+                }
+              },
+              "wrong_ids": [
+                "case-52e474ea9ed221951406eb66"
+              ]
+            },
+            "gesture": {
+              "cases": 115,
+              "correct": 114,
+              "accuracy": 0.991304347826087,
+              "confusion_matrix": {
+                "answer": {
+                  "answer": 54
+                },
+                "artifact": {
+                  "artifact": 8
+                },
+                "authorization": {
+                  "authorization": 5,
+                  "done": 1
+                },
+                "caveats": {
+                  "caveats": 19
+                },
+                "done": {
+                  "done": 4
+                },
+                "in-flight": {
+                  "in-flight": 4
+                },
+                "needs-you": {
+                  "needs-you": 7
+                },
+                "published": {
+                  "published": 7
+                },
+                "verdict": {
+                  "verdict": 6
+                }
+              },
+              "wrong_ids": [
+                "case-52e474ea9ed221951406eb66"
+              ]
+            }
+          },
+          "alternative_acceptable": {
+            "state": {
+              "cases": 115,
+              "correct": 114,
+              "accuracy": 0.991304347826087,
+              "confusion_matrix": {
+                "caveats": {
+                  "caveats": 19
+                },
+                "done": {
+                  "done": 30
+                },
+                "needs-you": {
+                  "done": 1,
+                  "needs-you": 12
+                },
+                "unknown": {
+                  "unknown": 53
+                }
+              },
+              "wrong_ids": [
+                "case-52e474ea9ed221951406eb66"
+              ]
+            },
+            "gesture": {
+              "cases": 115,
+              "correct": 114,
+              "accuracy": 0.991304347826087,
+              "confusion_matrix": {
+                "answer": {
+                  "answer": 54
+                },
+                "artifact": {
+                  "artifact": 8
+                },
+                "authorization": {
+                  "authorization": 5,
+                  "done": 1
+                },
+                "caveats": {
+                  "caveats": 19
+                },
+                "done": {
+                  "done": 4
+                },
+                "in-flight": {
+                  "in-flight": 4
+                },
+                "needs-you": {
+                  "needs-you": 7
+                },
+                "published": {
+                  "published": 7
+                },
+                "verdict": {
+                  "verdict": 6
+                }
+              },
+              "wrong_ids": [
+                "case-52e474ea9ed221951406eb66"
+              ]
+            },
+            "joint_state_and_gesture": {
+              "cases": 115,
+              "correct": 114,
+              "accuracy": 0.991304347826087
+            }
+          },
+          "quality": {
+            "missed_handoffs": {
+              "count": 1,
+              "denominator": 13,
+              "rate": 0.07692307692307693,
+              "ids": [
+                "case-52e474ea9ed221951406eb66"
+              ]
+            },
+            "false_attention": {
+              "count": 0,
+              "denominator": 102,
+              "rate": 0.0,
+              "ids": []
+            },
+            "false_caveats": {
+              "count": 0,
+              "denominator": 96,
+              "rate": 0.0,
+              "ids": []
+            },
+            "unknown": {
+              "count": 53,
+              "denominator": 115,
+              "rate": 0.4608695652173913,
+              "ids": [
+                "case-a7f333f35d6687d0c907bb7a",
+                "case-d85508d151b323fd2ec9b6c3",
+                "case-7672a0f16358e051750493f2",
+                "case-0bbdf56116baeff9edcb5c40",
+                "case-3a295d8b902ae6e346380255",
+                "case-646ebeebb5523b0e40108c69",
+                "case-6017b90cc5538526385a33c3",
+                "case-ab314422f70bfe518eb1aa5c",
+                "case-4c830cfab6c5ab4c4a025f46",
+                "case-c731c717c9228948f98d5955",
+                "case-d8cc271e6deb0912eed1e3b8",
+                "case-cd47480f013415507680b649",
+                "case-88fe868413f4bd32b3eafd02",
+                "case-d62c57b0d29cff0a11ddb67e",
+                "case-d49194409e68e48ef70481c0",
+                "case-5b92a9300e3824a408ad2296",
+                "case-68bb36e3c9f800d8b961cc1c",
+                "case-9e8c5f5655832327cf71001a",
+                "case-e84fe8cf2d37d9f9989a36aa",
+                "case-d83d12be1bbd1d7670a4f9eb",
+                "case-9660bcc50a17c7779df539e3",
+                "case-68965ed86507ec8c17153f4b",
+                "case-c572a398621a55814791d37c",
+                "case-7a8044d5413e617e0be272f6",
+                "case-25eacd2c40fd855cbda05a64",
+                "case-c6340567da8863e1ff751550",
+                "case-0a789ffd23c842f6e464bbaa",
+                "case-6a284b6aa934bf8cf8a1a9c3",
+                "case-bddd15d9ef67ec02726ecd06",
+                "case-7d0db0a97ccbf854afc4c26b",
+                "case-cab943e30babf1b1fa07391a",
+                "case-7d68716114553db024fee1ef",
+                "case-6270f1f3d8e61ec64db7eec4",
+                "case-11aaf8e9f81d4f6103f18dc8",
+                "case-68d0020d05daefef525aaa12",
+                "case-ee720a462c4307af0065d3e5",
+                "case-03b7c21d1796abc492bea368",
+                "case-88a031ceb9fc360a8a63f016",
+                "case-5b0c6e873f933b1418058d5c",
+                "case-df868cc08157404e045272fb",
+                "case-366f85109cea5c9993d20713",
+                "case-1f085981a1cd01d227a7eb11",
+                "case-0ef32d8d9e0b9640338612a3",
+                "case-d4735158778800cfeab505fe",
+                "case-39d3e6a1cb1edbd67bc30b65",
+                "case-cedb08f3dffead25269dd090",
+                "case-25b3d9ae6b961b0bf5a189c1",
+                "case-a884079590dcf9cc47175035",
+                "case-86d98817accccab3d1f30e07",
+                "case-2afb927f9272f8464271b76d",
+                "case-d8c9e74bb8a9e7a4ef52bd0c",
+                "case-4cf4814687faba056630f532",
+                "case-b0485331f07ab13a53438a2e"
+              ]
+            },
+            "definition": "Attention means needs-you, consistent with the existing prose evaluation. Rates use relevant expected-positive/negative denominators, not all cases."
+          },
+          "unambiguous_quality": {
+            "missed_handoffs": {
+              "count": 1,
+              "denominator": 13,
+              "rate": 0.07692307692307693,
+              "ids": [
+                "case-52e474ea9ed221951406eb66"
+              ]
+            },
+            "false_attention": {
+              "count": 0,
+              "denominator": 102,
+              "rate": 0.0,
+              "ids": []
+            },
+            "false_caveats": {
+              "count": 0,
+              "denominator": 96,
+              "rate": 0.0,
+              "ids": []
+            },
+            "unknown": {
+              "count": 53,
+              "denominator": 115,
+              "rate": 0.4608695652173913,
+              "ids": [
+                "case-a7f333f35d6687d0c907bb7a",
+                "case-d85508d151b323fd2ec9b6c3",
+                "case-7672a0f16358e051750493f2",
+                "case-0bbdf56116baeff9edcb5c40",
+                "case-3a295d8b902ae6e346380255",
+                "case-646ebeebb5523b0e40108c69",
+                "case-6017b90cc5538526385a33c3",
+                "case-ab314422f70bfe518eb1aa5c",
+                "case-4c830cfab6c5ab4c4a025f46",
+                "case-c731c717c9228948f98d5955",
+                "case-d8cc271e6deb0912eed1e3b8",
+                "case-cd47480f013415507680b649",
+                "case-88fe868413f4bd32b3eafd02",
+                "case-d62c57b0d29cff0a11ddb67e",
+                "case-d49194409e68e48ef70481c0",
+                "case-5b92a9300e3824a408ad2296",
+                "case-68bb36e3c9f800d8b961cc1c",
+                "case-9e8c5f5655832327cf71001a",
+                "case-e84fe8cf2d37d9f9989a36aa",
+                "case-d83d12be1bbd1d7670a4f9eb",
+                "case-9660bcc50a17c7779df539e3",
+                "case-68965ed86507ec8c17153f4b",
+                "case-c572a398621a55814791d37c",
+                "case-7a8044d5413e617e0be272f6",
+                "case-25eacd2c40fd855cbda05a64",
+                "case-c6340567da8863e1ff751550",
+                "case-0a789ffd23c842f6e464bbaa",
+                "case-6a284b6aa934bf8cf8a1a9c3",
+                "case-bddd15d9ef67ec02726ecd06",
+                "case-7d0db0a97ccbf854afc4c26b",
+                "case-cab943e30babf1b1fa07391a",
+                "case-7d68716114553db024fee1ef",
+                "case-6270f1f3d8e61ec64db7eec4",
+                "case-11aaf8e9f81d4f6103f18dc8",
+                "case-68d0020d05daefef525aaa12",
+                "case-ee720a462c4307af0065d3e5",
+                "case-03b7c21d1796abc492bea368",
+                "case-88a031ceb9fc360a8a63f016",
+                "case-5b0c6e873f933b1418058d5c",
+                "case-df868cc08157404e045272fb",
+                "case-366f85109cea5c9993d20713",
+                "case-1f085981a1cd01d227a7eb11",
+                "case-0ef32d8d9e0b9640338612a3",
+                "case-d4735158778800cfeab505fe",
+                "case-39d3e6a1cb1edbd67bc30b65",
+                "case-cedb08f3dffead25269dd090",
+                "case-25b3d9ae6b961b0bf5a189c1",
+                "case-a884079590dcf9cc47175035",
+                "case-86d98817accccab3d1f30e07",
+                "case-2afb927f9272f8464271b76d",
+                "case-d8c9e74bb8a9e7a4ef52bd0c",
+                "case-4cf4814687faba056630f532",
+                "case-b0485331f07ab13a53438a2e"
+              ]
+            },
+            "definition": "Attention means needs-you, consistent with the existing prose evaluation. Rates use relevant expected-positive/negative denominators, not all cases."
+          },
+          "optional_dimensions": {
+            "expectancy": {
+              "cases": 68,
+              "correct": 67,
+              "accuracy": 0.9852941176470589,
+              "confusion_matrix": {
+                "none": {
+                  "none": 63
+                },
+                "required-handoff": {
+                  "none": 1,
+                  "required-handoff": 4
+                }
+              },
+              "wrong_ids": [
+                "case-52e474ea9ed221951406eb66"
+              ]
+            },
+            "delivery_kind": {
+              "cases": 42,
+              "correct": 42,
+              "accuracy": 1.0,
+              "confusion_matrix": {
+                "answer": {
+                  "answer": 10
+                },
+                "artifact": {
+                  "artifact": 5
+                },
+                "published": {
+                  "published": 6
+                },
+                "unknown": {
+                  "unknown": 21
+                }
+              },
+              "wrong_ids": []
+            },
+            "activity": {
+              "cases": 34,
+              "correct": 34,
+              "accuracy": 1.0,
+              "confusion_matrix": {
+                "final": {
+                  "final": 10
+                },
+                "in-flight": {
+                  "in-flight": 6
+                },
+                "unknown": {
+                  "unknown": 18
+                }
+              },
+              "wrong_ids": []
+            },
+            "assessment_kind": {
+              "cases": 11,
+              "correct": 11,
+              "accuracy": 1.0,
+              "confusion_matrix": {
+                "none": {
+                  "none": 4
+                },
+                "verdict": {
+                  "verdict": 7
+                }
+              },
+              "wrong_ids": []
+            },
+            "handoff_kind": {
+              "cases": 12,
+              "correct": 11,
+              "accuracy": 0.9166666666666666,
+              "confusion_matrix": {
+                "action": {
+                  "action": 6
+                },
+                "authorization": {
+                  "action": 1,
+                  "authorization": 5
+                }
+              },
+              "wrong_ids": [
+                "case-52e474ea9ed221951406eb66"
+              ]
+            }
+          }
+        },
+        "current": {
+          "distribution_all_cases": {
+            "state": {
+              "caveats": 19,
+              "done": 30,
+              "needs-you": 13,
+              "unknown": 53
+            },
+            "gesture": {
+              "answer": 54,
+              "artifact": 8,
+              "authorization": 6,
+              "caveats": 19,
+              "done": 4,
+              "in-flight": 4,
+              "needs-you": 7,
+              "published": 7,
+              "verdict": 6
+            }
+          },
+          "classifier_only_latency": {
+            "samples": 115,
+            "median_ms": 0.207417,
+            "p95_ms": 0.37882109999999997,
+            "p99_ms": 0.42960062,
+            "max_ms": 0.436791
+          },
+          "strict": {
+            "state": {
+              "cases": 115,
+              "correct": 115,
+              "accuracy": 1.0,
+              "confusion_matrix": {
+                "caveats": {
+                  "caveats": 19
+                },
+                "done": {
+                  "done": 30
+                },
+                "needs-you": {
+                  "needs-you": 13
+                },
+                "unknown": {
+                  "unknown": 53
+                }
+              },
+              "wrong_ids": []
+            },
+            "gesture": {
+              "cases": 115,
+              "correct": 115,
+              "accuracy": 1.0,
+              "confusion_matrix": {
+                "answer": {
+                  "answer": 54
+                },
+                "artifact": {
+                  "artifact": 8
+                },
+                "authorization": {
+                  "authorization": 6
+                },
+                "caveats": {
+                  "caveats": 19
+                },
+                "done": {
+                  "done": 4
+                },
+                "in-flight": {
+                  "in-flight": 4
+                },
+                "needs-you": {
+                  "needs-you": 7
+                },
+                "published": {
+                  "published": 7
+                },
+                "verdict": {
+                  "verdict": 6
+                }
+              },
+              "wrong_ids": []
+            }
+          },
+          "unambiguous_subset": {
+            "state": {
+              "cases": 115,
+              "correct": 115,
+              "accuracy": 1.0,
+              "confusion_matrix": {
+                "caveats": {
+                  "caveats": 19
+                },
+                "done": {
+                  "done": 30
+                },
+                "needs-you": {
+                  "needs-you": 13
+                },
+                "unknown": {
+                  "unknown": 53
+                }
+              },
+              "wrong_ids": []
+            },
+            "gesture": {
+              "cases": 115,
+              "correct": 115,
+              "accuracy": 1.0,
+              "confusion_matrix": {
+                "answer": {
+                  "answer": 54
+                },
+                "artifact": {
+                  "artifact": 8
+                },
+                "authorization": {
+                  "authorization": 6
+                },
+                "caveats": {
+                  "caveats": 19
+                },
+                "done": {
+                  "done": 4
+                },
+                "in-flight": {
+                  "in-flight": 4
+                },
+                "needs-you": {
+                  "needs-you": 7
+                },
+                "published": {
+                  "published": 7
+                },
+                "verdict": {
+                  "verdict": 6
+                }
+              },
+              "wrong_ids": []
+            }
+          },
+          "alternative_acceptable": {
+            "state": {
+              "cases": 115,
+              "correct": 115,
+              "accuracy": 1.0,
+              "confusion_matrix": {
+                "caveats": {
+                  "caveats": 19
+                },
+                "done": {
+                  "done": 30
+                },
+                "needs-you": {
+                  "needs-you": 13
+                },
+                "unknown": {
+                  "unknown": 53
+                }
+              },
+              "wrong_ids": []
+            },
+            "gesture": {
+              "cases": 115,
+              "correct": 115,
+              "accuracy": 1.0,
+              "confusion_matrix": {
+                "answer": {
+                  "answer": 54
+                },
+                "artifact": {
+                  "artifact": 8
+                },
+                "authorization": {
+                  "authorization": 6
+                },
+                "caveats": {
+                  "caveats": 19
+                },
+                "done": {
+                  "done": 4
+                },
+                "in-flight": {
+                  "in-flight": 4
+                },
+                "needs-you": {
+                  "needs-you": 7
+                },
+                "published": {
+                  "published": 7
+                },
+                "verdict": {
+                  "verdict": 6
+                }
+              },
+              "wrong_ids": []
+            },
+            "joint_state_and_gesture": {
+              "cases": 115,
+              "correct": 115,
+              "accuracy": 1.0
+            }
+          },
+          "quality": {
+            "missed_handoffs": {
+              "count": 0,
+              "denominator": 13,
+              "rate": 0.0,
+              "ids": []
+            },
+            "false_attention": {
+              "count": 0,
+              "denominator": 102,
+              "rate": 0.0,
+              "ids": []
+            },
+            "false_caveats": {
+              "count": 0,
+              "denominator": 96,
+              "rate": 0.0,
+              "ids": []
+            },
+            "unknown": {
+              "count": 53,
+              "denominator": 115,
+              "rate": 0.4608695652173913,
+              "ids": [
+                "case-a7f333f35d6687d0c907bb7a",
+                "case-d85508d151b323fd2ec9b6c3",
+                "case-7672a0f16358e051750493f2",
+                "case-0bbdf56116baeff9edcb5c40",
+                "case-3a295d8b902ae6e346380255",
+                "case-646ebeebb5523b0e40108c69",
+                "case-6017b90cc5538526385a33c3",
+                "case-ab314422f70bfe518eb1aa5c",
+                "case-4c830cfab6c5ab4c4a025f46",
+                "case-c731c717c9228948f98d5955",
+                "case-d8cc271e6deb0912eed1e3b8",
+                "case-cd47480f013415507680b649",
+                "case-88fe868413f4bd32b3eafd02",
+                "case-d62c57b0d29cff0a11ddb67e",
+                "case-d49194409e68e48ef70481c0",
+                "case-5b92a9300e3824a408ad2296",
+                "case-68bb36e3c9f800d8b961cc1c",
+                "case-9e8c5f5655832327cf71001a",
+                "case-e84fe8cf2d37d9f9989a36aa",
+                "case-d83d12be1bbd1d7670a4f9eb",
+                "case-9660bcc50a17c7779df539e3",
+                "case-68965ed86507ec8c17153f4b",
+                "case-c572a398621a55814791d37c",
+                "case-7a8044d5413e617e0be272f6",
+                "case-25eacd2c40fd855cbda05a64",
+                "case-c6340567da8863e1ff751550",
+                "case-0a789ffd23c842f6e464bbaa",
+                "case-6a284b6aa934bf8cf8a1a9c3",
+                "case-bddd15d9ef67ec02726ecd06",
+                "case-7d0db0a97ccbf854afc4c26b",
+                "case-cab943e30babf1b1fa07391a",
+                "case-7d68716114553db024fee1ef",
+                "case-6270f1f3d8e61ec64db7eec4",
+                "case-11aaf8e9f81d4f6103f18dc8",
+                "case-68d0020d05daefef525aaa12",
+                "case-ee720a462c4307af0065d3e5",
+                "case-03b7c21d1796abc492bea368",
+                "case-88a031ceb9fc360a8a63f016",
+                "case-5b0c6e873f933b1418058d5c",
+                "case-df868cc08157404e045272fb",
+                "case-366f85109cea5c9993d20713",
+                "case-1f085981a1cd01d227a7eb11",
+                "case-0ef32d8d9e0b9640338612a3",
+                "case-d4735158778800cfeab505fe",
+                "case-39d3e6a1cb1edbd67bc30b65",
+                "case-cedb08f3dffead25269dd090",
+                "case-25b3d9ae6b961b0bf5a189c1",
+                "case-a884079590dcf9cc47175035",
+                "case-86d98817accccab3d1f30e07",
+                "case-2afb927f9272f8464271b76d",
+                "case-d8c9e74bb8a9e7a4ef52bd0c",
+                "case-4cf4814687faba056630f532",
+                "case-b0485331f07ab13a53438a2e"
+              ]
+            },
+            "definition": "Attention means needs-you, consistent with the existing prose evaluation. Rates use relevant expected-positive/negative denominators, not all cases."
+          },
+          "unambiguous_quality": {
+            "missed_handoffs": {
+              "count": 0,
+              "denominator": 13,
+              "rate": 0.0,
+              "ids": []
+            },
+            "false_attention": {
+              "count": 0,
+              "denominator": 102,
+              "rate": 0.0,
+              "ids": []
+            },
+            "false_caveats": {
+              "count": 0,
+              "denominator": 96,
+              "rate": 0.0,
+              "ids": []
+            },
+            "unknown": {
+              "count": 53,
+              "denominator": 115,
+              "rate": 0.4608695652173913,
+              "ids": [
+                "case-a7f333f35d6687d0c907bb7a",
+                "case-d85508d151b323fd2ec9b6c3",
+                "case-7672a0f16358e051750493f2",
+                "case-0bbdf56116baeff9edcb5c40",
+                "case-3a295d8b902ae6e346380255",
+                "case-646ebeebb5523b0e40108c69",
+                "case-6017b90cc5538526385a33c3",
+                "case-ab314422f70bfe518eb1aa5c",
+                "case-4c830cfab6c5ab4c4a025f46",
+                "case-c731c717c9228948f98d5955",
+                "case-d8cc271e6deb0912eed1e3b8",
+                "case-cd47480f013415507680b649",
+                "case-88fe868413f4bd32b3eafd02",
+                "case-d62c57b0d29cff0a11ddb67e",
+                "case-d49194409e68e48ef70481c0",
+                "case-5b92a9300e3824a408ad2296",
+                "case-68bb36e3c9f800d8b961cc1c",
+                "case-9e8c5f5655832327cf71001a",
+                "case-e84fe8cf2d37d9f9989a36aa",
+                "case-d83d12be1bbd1d7670a4f9eb",
+                "case-9660bcc50a17c7779df539e3",
+                "case-68965ed86507ec8c17153f4b",
+                "case-c572a398621a55814791d37c",
+                "case-7a8044d5413e617e0be272f6",
+                "case-25eacd2c40fd855cbda05a64",
+                "case-c6340567da8863e1ff751550",
+                "case-0a789ffd23c842f6e464bbaa",
+                "case-6a284b6aa934bf8cf8a1a9c3",
+                "case-bddd15d9ef67ec02726ecd06",
+                "case-7d0db0a97ccbf854afc4c26b",
+                "case-cab943e30babf1b1fa07391a",
+                "case-7d68716114553db024fee1ef",
+                "case-6270f1f3d8e61ec64db7eec4",
+                "case-11aaf8e9f81d4f6103f18dc8",
+                "case-68d0020d05daefef525aaa12",
+                "case-ee720a462c4307af0065d3e5",
+                "case-03b7c21d1796abc492bea368",
+                "case-88a031ceb9fc360a8a63f016",
+                "case-5b0c6e873f933b1418058d5c",
+                "case-df868cc08157404e045272fb",
+                "case-366f85109cea5c9993d20713",
+                "case-1f085981a1cd01d227a7eb11",
+                "case-0ef32d8d9e0b9640338612a3",
+                "case-d4735158778800cfeab505fe",
+                "case-39d3e6a1cb1edbd67bc30b65",
+                "case-cedb08f3dffead25269dd090",
+                "case-25b3d9ae6b961b0bf5a189c1",
+                "case-a884079590dcf9cc47175035",
+                "case-86d98817accccab3d1f30e07",
+                "case-2afb927f9272f8464271b76d",
+                "case-d8c9e74bb8a9e7a4ef52bd0c",
+                "case-4cf4814687faba056630f532",
+                "case-b0485331f07ab13a53438a2e"
+              ]
+            },
+            "definition": "Attention means needs-you, consistent with the existing prose evaluation. Rates use relevant expected-positive/negative denominators, not all cases."
+          },
+          "optional_dimensions": {
+            "expectancy": {
+              "cases": 68,
+              "correct": 68,
+              "accuracy": 1.0,
+              "confusion_matrix": {
+                "none": {
+                  "none": 63
+                },
+                "required-handoff": {
+                  "required-handoff": 5
+                }
+              },
+              "wrong_ids": []
+            },
+            "delivery_kind": {
+              "cases": 42,
+              "correct": 42,
+              "accuracy": 1.0,
+              "confusion_matrix": {
+                "answer": {
+                  "answer": 10
+                },
+                "artifact": {
+                  "artifact": 5
+                },
+                "published": {
+                  "published": 6
+                },
+                "unknown": {
+                  "unknown": 21
+                }
+              },
+              "wrong_ids": []
+            },
+            "activity": {
+              "cases": 34,
+              "correct": 34,
+              "accuracy": 1.0,
+              "confusion_matrix": {
+                "final": {
+                  "final": 10
+                },
+                "in-flight": {
+                  "in-flight": 6
+                },
+                "unknown": {
+                  "unknown": 18
+                }
+              },
+              "wrong_ids": []
+            },
+            "assessment_kind": {
+              "cases": 11,
+              "correct": 11,
+              "accuracy": 1.0,
+              "confusion_matrix": {
+                "none": {
+                  "none": 4
+                },
+                "verdict": {
+                  "verdict": 7
+                }
+              },
+              "wrong_ids": []
+            },
+            "handoff_kind": {
+              "cases": 12,
+              "correct": 12,
+              "accuracy": 1.0,
+              "confusion_matrix": {
+                "action": {
+                  "action": 6
+                },
+                "authorization": {
+                  "authorization": 6
+                }
+              },
+              "wrong_ids": []
+            }
+          }
+        }
+      },
+      "primary_eligible": 115,
+      "primary_excluded": 0,
+      "ambiguous_eligible": 0,
+      "changed_count": 1,
+      "changed_cases": [
+        {
+          "id": "case-52e474ea9ed221951406eb66",
+          "baseline": {
+            "state": "done",
+            "gesture": "done"
+          },
+          "current": {
+            "state": "needs-you",
+            "gesture": "authorization"
+          },
+          "primary_scoring_eligible": true,
+          "ambiguous": false,
+          "strict_label_change": {
+            "state": "improved",
+            "gesture": "improved"
+          }
+        }
+      ],
+      "transition_counts": {
+        "state": {
+          "caveats": {
+            "caveats": 19
+          },
+          "done": {
+            "done": 30,
+            "needs-you": 1
+          },
+          "needs-you": {
+            "needs-you": 12
+          },
+          "unknown": {
+            "unknown": 53
+          }
+        },
+        "gesture": {
+          "answer": {
+            "answer": 54
+          },
+          "artifact": {
+            "artifact": 8
+          },
+          "authorization": {
+            "authorization": 5
+          },
+          "caveats": {
+            "caveats": 19
+          },
+          "done": {
+            "authorization": 1,
+            "done": 4
+          },
+          "in-flight": {
+            "in-flight": 4
+          },
+          "needs-you": {
+            "needs-you": 7
+          },
+          "published": {
+            "published": 7
+          },
+          "verdict": {
+            "verdict": 6
+          }
+        }
+      }
+    },
+    "fresh_holdout": {
+      "cases": 100,
+      "versions": {
+        "baseline": {
+          "distribution_all_cases": {
+            "state": {
+              "caveats": 1,
+              "done": 68,
+              "ignored": 1,
+              "needs-you": 1,
+              "unknown": 29
+            },
+            "gesture": {
+              "answer": 54,
+              "caveats": 1,
+              "decision": 1,
+              "done": 35,
+              "ignored": 1,
+              "plan": 1,
+              "published": 7
+            }
+          },
+          "classifier_only_latency": {
+            "samples": 100,
+            "median_ms": 1.881729,
+            "p95_ms": 8.32157465,
+            "p99_ms": 10.038854340000011,
+            "max_ms": 12.186
+          },
+          "strict": {
+            "state": {
+              "cases": 92,
+              "correct": 66,
+              "accuracy": 0.717391304347826,
+              "confusion_matrix": {
+                "caveats": {
+                  "caveats": 1,
+                  "done": 3,
+                  "unknown": 1
+                },
+                "done": {
+                  "done": 64,
+                  "ignored": 1,
+                  "needs-you": 1,
+                  "unknown": 19
+                },
+                "unknown": {
+                  "done": 1,
+                  "unknown": 1
+                }
+              },
+              "wrong_ids": [
+                "case-6aa15954a432525fc8853df1",
+                "case-d3bf4bd47507d59bdd727f9a",
+                "case-2723120802c9e70069efcde1",
+                "case-19cf6019da9d587bd086d5c1",
+                "case-97516c3e547e74df42cb171d",
+                "case-0d52875cd56c21f8be766ec0",
+                "case-e1af9106b714e372c972573c",
+                "case-71b2bc2363cfaa588a3cad61",
+                "case-c94760dce27f12c8234d6bd9",
+                "case-8f54fc0070d56742d5a02802",
+                "case-79fc3e16f8cf32969d364550",
+                "case-4a6161b1bede5ff7b967cc54",
+                "case-66037d5c9d624cebfe490efc",
+                "case-b250d0d11019cc3a7cd0f4e3",
+                "case-8508b6ab4fff71592d10cda2",
+                "case-b0ca044e6ab91507455a478e",
+                "case-b4f8b17e14bc20b79942b8fc",
+                "case-7d13c2590385a9fa08e37bd1",
+                "case-f57c3cc07fc61a58a77e6853",
+                "case-b0f1bd28910cc0bcc0e360f6",
+                "case-40df9f27660bc57bd23ff0cc",
+                "case-bb5d820cd9ddf8e29f22514e",
+                "case-992a3da6a9658d6203bd7104",
+                "case-99508af33c238a5c5e7b6da6",
+                "case-3012d91c4827969daf87e7e5",
+                "case-dd302f88f45297b7670a587e"
+              ]
+            },
+            "gesture": {
+              "cases": 92,
+              "correct": 41,
+              "accuracy": 0.44565217391304346,
+              "confusion_matrix": {
+                "answer": {
+                  "answer": 8,
+                  "done": 4,
+                  "ignored": 1
+                },
+                "artifact": {
+                  "answer": 1,
+                  "done": 3
+                },
+                "caveats": {
+                  "answer": 3,
+                  "caveats": 1,
+                  "done": 1
+                },
+                "done": {
+                  "answer": 9,
+                  "decision": 1,
+                  "done": 24
+                },
+                "in-flight": {
+                  "done": 1
+                },
+                "plan": {
+                  "answer": 4,
+                  "plan": 1
+                },
+                "published": {
+                  "answer": 1,
+                  "done": 1,
+                  "published": 7
+                },
+                "verdict": {
+                  "answer": 20,
+                  "done": 1
+                }
+              },
+              "wrong_ids": [
+                "case-6aa15954a432525fc8853df1",
+                "case-d3bf4bd47507d59bdd727f9a",
+                "case-2723120802c9e70069efcde1",
+                "case-19cf6019da9d587bd086d5c1",
+                "case-97516c3e547e74df42cb171d",
+                "case-0d52875cd56c21f8be766ec0",
+                "case-020ea48497acf8da81bea3b2",
+                "case-938ab7e2e6bd405e11d3d4b3",
+                "case-00da88b81377e9be66096d76",
+                "case-e1af9106b714e372c972573c",
+                "case-71b2bc2363cfaa588a3cad61",
+                "case-c94760dce27f12c8234d6bd9",
+                "case-ca1717e9d554d0c0c8bf717d",
+                "case-8f54fc0070d56742d5a02802",
+                "case-1654dc7f8ead4dae7ac81899",
+                "case-76c59c812b43c5d137dae95c",
+                "case-4a6161b1bede5ff7b967cc54",
+                "case-8efa56bdb74afcec4c14418d",
+                "case-e8477fc6353f9879bc63a391",
+                "case-66037d5c9d624cebfe490efc",
+                "case-b250d0d11019cc3a7cd0f4e3",
+                "case-c84c68a929c27f0a42aadd3d",
+                "case-838ba54e128cdb1d21a847d4",
+                "case-8508b6ab4fff71592d10cda2",
+                "case-b0ca044e6ab91507455a478e",
+                "case-b4f8b17e14bc20b79942b8fc",
+                "case-8c7ee17d3d62ae999e3a916c",
+                "case-2da762a8c6418abfe6e025b6",
+                "case-cfa83bec22b93b488150b536",
+                "case-71d18acbcef51bffe71bf532",
+                "case-e94b4c3b0a4ff418d3843966",
+                "case-ee4859f7052701e48bff11ff",
+                "case-62bd2e155d63732d61e3b2bf",
+                "case-2fd5578c2dcace8260f95239",
+                "case-b2801520141c3088a58716c1",
+                "case-7d13c2590385a9fa08e37bd1",
+                "case-8f616d49e67518250c698f00",
+                "case-f57c3cc07fc61a58a77e6853",
+                "case-80d0f80a177fc5375caab3ff",
+                "case-b16b610f879e96bfccbd5c0f",
+                "case-fe8dbe04ec5483ae3ff7177e",
+                "case-b0f1bd28910cc0bcc0e360f6",
+                "case-61a8c04132a0c8800d01b7eb",
+                "case-40df9f27660bc57bd23ff0cc",
+                "case-bb5d820cd9ddf8e29f22514e",
+                "case-a3aadd17adf16f99ef5dbd23",
+                "case-c9c3d0f18bf8519b7cb7e4bc",
+                "case-992a3da6a9658d6203bd7104",
+                "case-99508af33c238a5c5e7b6da6",
+                "case-dd302f88f45297b7670a587e",
+                "case-afd0f420ad91b0fe861235c8"
+              ]
+            }
+          },
+          "unambiguous_subset": {
+            "state": {
+              "cases": 67,
+              "correct": 48,
+              "accuracy": 0.7164179104477612,
+              "confusion_matrix": {
+                "caveats": {
+                  "done": 1,
+                  "unknown": 1
+                },
+                "done": {
+                  "done": 48,
+                  "ignored": 1,
+                  "needs-you": 1,
+                  "unknown": 14
+                },
+                "unknown": {
+                  "done": 1
+                }
+              },
+              "wrong_ids": [
+                "case-6aa15954a432525fc8853df1",
+                "case-d3bf4bd47507d59bdd727f9a",
+                "case-2723120802c9e70069efcde1",
+                "case-19cf6019da9d587bd086d5c1",
+                "case-97516c3e547e74df42cb171d",
+                "case-e1af9106b714e372c972573c",
+                "case-c94760dce27f12c8234d6bd9",
+                "case-8f54fc0070d56742d5a02802",
+                "case-66037d5c9d624cebfe490efc",
+                "case-b250d0d11019cc3a7cd0f4e3",
+                "case-8508b6ab4fff71592d10cda2",
+                "case-b4f8b17e14bc20b79942b8fc",
+                "case-7d13c2590385a9fa08e37bd1",
+                "case-f57c3cc07fc61a58a77e6853",
+                "case-b0f1bd28910cc0bcc0e360f6",
+                "case-992a3da6a9658d6203bd7104",
+                "case-99508af33c238a5c5e7b6da6",
+                "case-3012d91c4827969daf87e7e5",
+                "case-dd302f88f45297b7670a587e"
+              ]
+            },
+            "gesture": {
+              "cases": 67,
+              "correct": 33,
+              "accuracy": 0.4925373134328358,
+              "confusion_matrix": {
+                "answer": {
+                  "answer": 4,
+                  "done": 2,
+                  "ignored": 1
+                },
+                "artifact": {
+                  "done": 1
+                },
+                "caveats": {
+                  "answer": 1,
+                  "done": 1
+                },
+                "done": {
+                  "answer": 7,
+                  "decision": 1,
+                  "done": 22
+                },
+                "in-flight": {
+                  "done": 1
+                },
+                "plan": {
+                  "answer": 1
+                },
+                "published": {
+                  "answer": 1,
+                  "done": 1,
+                  "published": 7
+                },
+                "verdict": {
+                  "answer": 15,
+                  "done": 1
+                }
+              },
+              "wrong_ids": [
+                "case-6aa15954a432525fc8853df1",
+                "case-d3bf4bd47507d59bdd727f9a",
+                "case-2723120802c9e70069efcde1",
+                "case-19cf6019da9d587bd086d5c1",
+                "case-97516c3e547e74df42cb171d",
+                "case-00da88b81377e9be66096d76",
+                "case-e1af9106b714e372c972573c",
+                "case-c94760dce27f12c8234d6bd9",
+                "case-ca1717e9d554d0c0c8bf717d",
+                "case-8f54fc0070d56742d5a02802",
+                "case-76c59c812b43c5d137dae95c",
+                "case-66037d5c9d624cebfe490efc",
+                "case-b250d0d11019cc3a7cd0f4e3",
+                "case-8508b6ab4fff71592d10cda2",
+                "case-b4f8b17e14bc20b79942b8fc",
+                "case-e94b4c3b0a4ff418d3843966",
+                "case-ee4859f7052701e48bff11ff",
+                "case-62bd2e155d63732d61e3b2bf",
+                "case-2fd5578c2dcace8260f95239",
+                "case-b2801520141c3088a58716c1",
+                "case-7d13c2590385a9fa08e37bd1",
+                "case-8f616d49e67518250c698f00",
+                "case-f57c3cc07fc61a58a77e6853",
+                "case-80d0f80a177fc5375caab3ff",
+                "case-b16b610f879e96bfccbd5c0f",
+                "case-fe8dbe04ec5483ae3ff7177e",
+                "case-b0f1bd28910cc0bcc0e360f6",
+                "case-61a8c04132a0c8800d01b7eb",
+                "case-a3aadd17adf16f99ef5dbd23",
+                "case-c9c3d0f18bf8519b7cb7e4bc",
+                "case-992a3da6a9658d6203bd7104",
+                "case-99508af33c238a5c5e7b6da6",
+                "case-dd302f88f45297b7670a587e",
+                "case-afd0f420ad91b0fe861235c8"
+              ]
+            }
+          },
+          "alternative_acceptable": {
+            "state": {
+              "cases": 92,
+              "correct": 68,
+              "accuracy": 0.7391304347826086,
+              "confusion_matrix": {
+                "caveats": {
+                  "caveats": 1,
+                  "done": 3,
+                  "unknown": 1
+                },
+                "done": {
+                  "done": 64,
+                  "ignored": 1,
+                  "needs-you": 1,
+                  "unknown": 19
+                },
+                "unknown": {
+                  "done": 1,
+                  "unknown": 1
+                }
+              },
+              "wrong_ids": [
+                "case-6aa15954a432525fc8853df1",
+                "case-d3bf4bd47507d59bdd727f9a",
+                "case-2723120802c9e70069efcde1",
+                "case-19cf6019da9d587bd086d5c1",
+                "case-97516c3e547e74df42cb171d",
+                "case-0d52875cd56c21f8be766ec0",
+                "case-e1af9106b714e372c972573c",
+                "case-c94760dce27f12c8234d6bd9",
+                "case-8f54fc0070d56742d5a02802",
+                "case-79fc3e16f8cf32969d364550",
+                "case-4a6161b1bede5ff7b967cc54",
+                "case-66037d5c9d624cebfe490efc",
+                "case-b250d0d11019cc3a7cd0f4e3",
+                "case-8508b6ab4fff71592d10cda2",
+                "case-b0ca044e6ab91507455a478e",
+                "case-b4f8b17e14bc20b79942b8fc",
+                "case-7d13c2590385a9fa08e37bd1",
+                "case-f57c3cc07fc61a58a77e6853",
+                "case-b0f1bd28910cc0bcc0e360f6",
+                "case-bb5d820cd9ddf8e29f22514e",
+                "case-992a3da6a9658d6203bd7104",
+                "case-99508af33c238a5c5e7b6da6",
+                "case-3012d91c4827969daf87e7e5",
+                "case-dd302f88f45297b7670a587e"
+              ]
+            },
+            "gesture": {
+              "cases": 92,
+              "correct": 49,
+              "accuracy": 0.532608695652174,
+              "confusion_matrix": {
+                "answer": {
+                  "answer": 8,
+                  "done": 4,
+                  "ignored": 1
+                },
+                "artifact": {
+                  "answer": 1,
+                  "done": 3
+                },
+                "caveats": {
+                  "answer": 3,
+                  "caveats": 1,
+                  "done": 1
+                },
+                "done": {
+                  "answer": 9,
+                  "decision": 1,
+                  "done": 24
+                },
+                "in-flight": {
+                  "done": 1
+                },
+                "plan": {
+                  "answer": 4,
+                  "plan": 1
+                },
+                "published": {
+                  "answer": 1,
+                  "done": 1,
+                  "published": 7
+                },
+                "verdict": {
+                  "answer": 20,
+                  "done": 1
+                }
+              },
+              "wrong_ids": [
+                "case-6aa15954a432525fc8853df1",
+                "case-d3bf4bd47507d59bdd727f9a",
+                "case-2723120802c9e70069efcde1",
+                "case-19cf6019da9d587bd086d5c1",
+                "case-97516c3e547e74df42cb171d",
+                "case-020ea48497acf8da81bea3b2",
+                "case-938ab7e2e6bd405e11d3d4b3",
+                "case-00da88b81377e9be66096d76",
+                "case-e1af9106b714e372c972573c",
+                "case-c94760dce27f12c8234d6bd9",
+                "case-ca1717e9d554d0c0c8bf717d",
+                "case-8f54fc0070d56742d5a02802",
+                "case-1654dc7f8ead4dae7ac81899",
+                "case-76c59c812b43c5d137dae95c",
+                "case-66037d5c9d624cebfe490efc",
+                "case-b250d0d11019cc3a7cd0f4e3",
+                "case-8508b6ab4fff71592d10cda2",
+                "case-b4f8b17e14bc20b79942b8fc",
+                "case-8c7ee17d3d62ae999e3a916c",
+                "case-2da762a8c6418abfe6e025b6",
+                "case-cfa83bec22b93b488150b536",
+                "case-71d18acbcef51bffe71bf532",
+                "case-e94b4c3b0a4ff418d3843966",
+                "case-ee4859f7052701e48bff11ff",
+                "case-62bd2e155d63732d61e3b2bf",
+                "case-2fd5578c2dcace8260f95239",
+                "case-b2801520141c3088a58716c1",
+                "case-7d13c2590385a9fa08e37bd1",
+                "case-8f616d49e67518250c698f00",
+                "case-f57c3cc07fc61a58a77e6853",
+                "case-80d0f80a177fc5375caab3ff",
+                "case-b16b610f879e96bfccbd5c0f",
+                "case-fe8dbe04ec5483ae3ff7177e",
+                "case-b0f1bd28910cc0bcc0e360f6",
+                "case-61a8c04132a0c8800d01b7eb",
+                "case-40df9f27660bc57bd23ff0cc",
+                "case-bb5d820cd9ddf8e29f22514e",
+                "case-a3aadd17adf16f99ef5dbd23",
+                "case-c9c3d0f18bf8519b7cb7e4bc",
+                "case-992a3da6a9658d6203bd7104",
+                "case-99508af33c238a5c5e7b6da6",
+                "case-dd302f88f45297b7670a587e",
+                "case-afd0f420ad91b0fe861235c8"
+              ]
+            },
+            "joint_state_and_gesture": {
+              "cases": 92,
+              "correct": 44,
+              "accuracy": 0.4782608695652174
+            }
+          },
+          "quality": {
+            "missed_handoffs": {
+              "count": 0,
+              "denominator": 0,
+              "rate": null,
+              "ids": []
+            },
+            "false_attention": {
+              "count": 1,
+              "denominator": 92,
+              "rate": 0.010869565217391304,
+              "ids": [
+                "case-d3bf4bd47507d59bdd727f9a"
+              ]
+            },
+            "false_caveats": {
+              "count": 0,
+              "denominator": 87,
+              "rate": 0.0,
+              "ids": []
+            },
+            "unknown": {
+              "count": 21,
+              "denominator": 92,
+              "rate": 0.22826086956521738,
+              "ids": [
+                "case-19cf6019da9d587bd086d5c1",
+                "case-97516c3e547e74df42cb171d",
+                "case-0d52875cd56c21f8be766ec0",
+                "case-e1af9106b714e372c972573c",
+                "case-c94760dce27f12c8234d6bd9",
+                "case-8f54fc0070d56742d5a02802",
+                "case-79fc3e16f8cf32969d364550",
+                "case-db2e5532bc2ddc4e7837cab4",
+                "case-4a6161b1bede5ff7b967cc54",
+                "case-66037d5c9d624cebfe490efc",
+                "case-b250d0d11019cc3a7cd0f4e3",
+                "case-8508b6ab4fff71592d10cda2",
+                "case-b0ca044e6ab91507455a478e",
+                "case-b4f8b17e14bc20b79942b8fc",
+                "case-7d13c2590385a9fa08e37bd1",
+                "case-f57c3cc07fc61a58a77e6853",
+                "case-b0f1bd28910cc0bcc0e360f6",
+                "case-bb5d820cd9ddf8e29f22514e",
+                "case-992a3da6a9658d6203bd7104",
+                "case-99508af33c238a5c5e7b6da6",
+                "case-3012d91c4827969daf87e7e5"
+              ]
+            },
+            "definition": "Attention means needs-you, consistent with the existing prose evaluation. Rates use relevant expected-positive/negative denominators, not all cases."
+          },
+          "unambiguous_quality": {
+            "missed_handoffs": {
+              "count": 0,
+              "denominator": 0,
+              "rate": null,
+              "ids": []
+            },
+            "false_attention": {
+              "count": 1,
+              "denominator": 67,
+              "rate": 0.014925373134328358,
+              "ids": [
+                "case-d3bf4bd47507d59bdd727f9a"
+              ]
+            },
+            "false_caveats": {
+              "count": 0,
+              "denominator": 65,
+              "rate": 0.0,
+              "ids": []
+            },
+            "unknown": {
+              "count": 15,
+              "denominator": 67,
+              "rate": 0.22388059701492538,
+              "ids": [
+                "case-19cf6019da9d587bd086d5c1",
+                "case-97516c3e547e74df42cb171d",
+                "case-e1af9106b714e372c972573c",
+                "case-c94760dce27f12c8234d6bd9",
+                "case-8f54fc0070d56742d5a02802",
+                "case-66037d5c9d624cebfe490efc",
+                "case-b250d0d11019cc3a7cd0f4e3",
+                "case-8508b6ab4fff71592d10cda2",
+                "case-b4f8b17e14bc20b79942b8fc",
+                "case-7d13c2590385a9fa08e37bd1",
+                "case-f57c3cc07fc61a58a77e6853",
+                "case-b0f1bd28910cc0bcc0e360f6",
+                "case-992a3da6a9658d6203bd7104",
+                "case-99508af33c238a5c5e7b6da6",
+                "case-3012d91c4827969daf87e7e5"
+              ]
+            },
+            "definition": "Attention means needs-you, consistent with the existing prose evaluation. Rates use relevant expected-positive/negative denominators, not all cases."
+          },
+          "optional_dimensions": {}
+        },
+        "current": {
+          "distribution_all_cases": {
+            "state": {
+              "caveats": 1,
+              "done": 68,
+              "ignored": 1,
+              "needs-you": 1,
+              "unknown": 29
+            },
+            "gesture": {
+              "answer": 54,
+              "caveats": 1,
+              "decision": 1,
+              "done": 35,
+              "ignored": 1,
+              "plan": 1,
+              "published": 7
+            }
+          },
+          "classifier_only_latency": {
+            "samples": 100,
+            "median_ms": 2.26025,
+            "p95_ms": 9.094902099999999,
+            "p99_ms": 11.72639259000001,
+            "max_ms": 13.638042
+          },
+          "strict": {
+            "state": {
+              "cases": 92,
+              "correct": 66,
+              "accuracy": 0.717391304347826,
+              "confusion_matrix": {
+                "caveats": {
+                  "caveats": 1,
+                  "done": 3,
+                  "unknown": 1
+                },
+                "done": {
+                  "done": 64,
+                  "ignored": 1,
+                  "needs-you": 1,
+                  "unknown": 19
+                },
+                "unknown": {
+                  "done": 1,
+                  "unknown": 1
+                }
+              },
+              "wrong_ids": [
+                "case-6aa15954a432525fc8853df1",
+                "case-d3bf4bd47507d59bdd727f9a",
+                "case-2723120802c9e70069efcde1",
+                "case-19cf6019da9d587bd086d5c1",
+                "case-97516c3e547e74df42cb171d",
+                "case-0d52875cd56c21f8be766ec0",
+                "case-e1af9106b714e372c972573c",
+                "case-71b2bc2363cfaa588a3cad61",
+                "case-c94760dce27f12c8234d6bd9",
+                "case-8f54fc0070d56742d5a02802",
+                "case-79fc3e16f8cf32969d364550",
+                "case-4a6161b1bede5ff7b967cc54",
+                "case-66037d5c9d624cebfe490efc",
+                "case-b250d0d11019cc3a7cd0f4e3",
+                "case-8508b6ab4fff71592d10cda2",
+                "case-b0ca044e6ab91507455a478e",
+                "case-b4f8b17e14bc20b79942b8fc",
+                "case-7d13c2590385a9fa08e37bd1",
+                "case-f57c3cc07fc61a58a77e6853",
+                "case-b0f1bd28910cc0bcc0e360f6",
+                "case-40df9f27660bc57bd23ff0cc",
+                "case-bb5d820cd9ddf8e29f22514e",
+                "case-992a3da6a9658d6203bd7104",
+                "case-99508af33c238a5c5e7b6da6",
+                "case-3012d91c4827969daf87e7e5",
+                "case-dd302f88f45297b7670a587e"
+              ]
+            },
+            "gesture": {
+              "cases": 92,
+              "correct": 41,
+              "accuracy": 0.44565217391304346,
+              "confusion_matrix": {
+                "answer": {
+                  "answer": 8,
+                  "done": 4,
+                  "ignored": 1
+                },
+                "artifact": {
+                  "answer": 1,
+                  "done": 3
+                },
+                "caveats": {
+                  "answer": 3,
+                  "caveats": 1,
+                  "done": 1
+                },
+                "done": {
+                  "answer": 9,
+                  "decision": 1,
+                  "done": 24
+                },
+                "in-flight": {
+                  "done": 1
+                },
+                "plan": {
+                  "answer": 4,
+                  "plan": 1
+                },
+                "published": {
+                  "answer": 1,
+                  "done": 1,
+                  "published": 7
+                },
+                "verdict": {
+                  "answer": 20,
+                  "done": 1
+                }
+              },
+              "wrong_ids": [
+                "case-6aa15954a432525fc8853df1",
+                "case-d3bf4bd47507d59bdd727f9a",
+                "case-2723120802c9e70069efcde1",
+                "case-19cf6019da9d587bd086d5c1",
+                "case-97516c3e547e74df42cb171d",
+                "case-0d52875cd56c21f8be766ec0",
+                "case-020ea48497acf8da81bea3b2",
+                "case-938ab7e2e6bd405e11d3d4b3",
+                "case-00da88b81377e9be66096d76",
+                "case-e1af9106b714e372c972573c",
+                "case-71b2bc2363cfaa588a3cad61",
+                "case-c94760dce27f12c8234d6bd9",
+                "case-ca1717e9d554d0c0c8bf717d",
+                "case-8f54fc0070d56742d5a02802",
+                "case-1654dc7f8ead4dae7ac81899",
+                "case-76c59c812b43c5d137dae95c",
+                "case-4a6161b1bede5ff7b967cc54",
+                "case-8efa56bdb74afcec4c14418d",
+                "case-e8477fc6353f9879bc63a391",
+                "case-66037d5c9d624cebfe490efc",
+                "case-b250d0d11019cc3a7cd0f4e3",
+                "case-c84c68a929c27f0a42aadd3d",
+                "case-838ba54e128cdb1d21a847d4",
+                "case-8508b6ab4fff71592d10cda2",
+                "case-b0ca044e6ab91507455a478e",
+                "case-b4f8b17e14bc20b79942b8fc",
+                "case-8c7ee17d3d62ae999e3a916c",
+                "case-2da762a8c6418abfe6e025b6",
+                "case-cfa83bec22b93b488150b536",
+                "case-71d18acbcef51bffe71bf532",
+                "case-e94b4c3b0a4ff418d3843966",
+                "case-ee4859f7052701e48bff11ff",
+                "case-62bd2e155d63732d61e3b2bf",
+                "case-2fd5578c2dcace8260f95239",
+                "case-b2801520141c3088a58716c1",
+                "case-7d13c2590385a9fa08e37bd1",
+                "case-8f616d49e67518250c698f00",
+                "case-f57c3cc07fc61a58a77e6853",
+                "case-80d0f80a177fc5375caab3ff",
+                "case-b16b610f879e96bfccbd5c0f",
+                "case-fe8dbe04ec5483ae3ff7177e",
+                "case-b0f1bd28910cc0bcc0e360f6",
+                "case-61a8c04132a0c8800d01b7eb",
+                "case-40df9f27660bc57bd23ff0cc",
+                "case-bb5d820cd9ddf8e29f22514e",
+                "case-a3aadd17adf16f99ef5dbd23",
+                "case-c9c3d0f18bf8519b7cb7e4bc",
+                "case-992a3da6a9658d6203bd7104",
+                "case-99508af33c238a5c5e7b6da6",
+                "case-dd302f88f45297b7670a587e",
+                "case-afd0f420ad91b0fe861235c8"
+              ]
+            }
+          },
+          "unambiguous_subset": {
+            "state": {
+              "cases": 67,
+              "correct": 48,
+              "accuracy": 0.7164179104477612,
+              "confusion_matrix": {
+                "caveats": {
+                  "done": 1,
+                  "unknown": 1
+                },
+                "done": {
+                  "done": 48,
+                  "ignored": 1,
+                  "needs-you": 1,
+                  "unknown": 14
+                },
+                "unknown": {
+                  "done": 1
+                }
+              },
+              "wrong_ids": [
+                "case-6aa15954a432525fc8853df1",
+                "case-d3bf4bd47507d59bdd727f9a",
+                "case-2723120802c9e70069efcde1",
+                "case-19cf6019da9d587bd086d5c1",
+                "case-97516c3e547e74df42cb171d",
+                "case-e1af9106b714e372c972573c",
+                "case-c94760dce27f12c8234d6bd9",
+                "case-8f54fc0070d56742d5a02802",
+                "case-66037d5c9d624cebfe490efc",
+                "case-b250d0d11019cc3a7cd0f4e3",
+                "case-8508b6ab4fff71592d10cda2",
+                "case-b4f8b17e14bc20b79942b8fc",
+                "case-7d13c2590385a9fa08e37bd1",
+                "case-f57c3cc07fc61a58a77e6853",
+                "case-b0f1bd28910cc0bcc0e360f6",
+                "case-992a3da6a9658d6203bd7104",
+                "case-99508af33c238a5c5e7b6da6",
+                "case-3012d91c4827969daf87e7e5",
+                "case-dd302f88f45297b7670a587e"
+              ]
+            },
+            "gesture": {
+              "cases": 67,
+              "correct": 33,
+              "accuracy": 0.4925373134328358,
+              "confusion_matrix": {
+                "answer": {
+                  "answer": 4,
+                  "done": 2,
+                  "ignored": 1
+                },
+                "artifact": {
+                  "done": 1
+                },
+                "caveats": {
+                  "answer": 1,
+                  "done": 1
+                },
+                "done": {
+                  "answer": 7,
+                  "decision": 1,
+                  "done": 22
+                },
+                "in-flight": {
+                  "done": 1
+                },
+                "plan": {
+                  "answer": 1
+                },
+                "published": {
+                  "answer": 1,
+                  "done": 1,
+                  "published": 7
+                },
+                "verdict": {
+                  "answer": 15,
+                  "done": 1
+                }
+              },
+              "wrong_ids": [
+                "case-6aa15954a432525fc8853df1",
+                "case-d3bf4bd47507d59bdd727f9a",
+                "case-2723120802c9e70069efcde1",
+                "case-19cf6019da9d587bd086d5c1",
+                "case-97516c3e547e74df42cb171d",
+                "case-00da88b81377e9be66096d76",
+                "case-e1af9106b714e372c972573c",
+                "case-c94760dce27f12c8234d6bd9",
+                "case-ca1717e9d554d0c0c8bf717d",
+                "case-8f54fc0070d56742d5a02802",
+                "case-76c59c812b43c5d137dae95c",
+                "case-66037d5c9d624cebfe490efc",
+                "case-b250d0d11019cc3a7cd0f4e3",
+                "case-8508b6ab4fff71592d10cda2",
+                "case-b4f8b17e14bc20b79942b8fc",
+                "case-e94b4c3b0a4ff418d3843966",
+                "case-ee4859f7052701e48bff11ff",
+                "case-62bd2e155d63732d61e3b2bf",
+                "case-2fd5578c2dcace8260f95239",
+                "case-b2801520141c3088a58716c1",
+                "case-7d13c2590385a9fa08e37bd1",
+                "case-8f616d49e67518250c698f00",
+                "case-f57c3cc07fc61a58a77e6853",
+                "case-80d0f80a177fc5375caab3ff",
+                "case-b16b610f879e96bfccbd5c0f",
+                "case-fe8dbe04ec5483ae3ff7177e",
+                "case-b0f1bd28910cc0bcc0e360f6",
+                "case-61a8c04132a0c8800d01b7eb",
+                "case-a3aadd17adf16f99ef5dbd23",
+                "case-c9c3d0f18bf8519b7cb7e4bc",
+                "case-992a3da6a9658d6203bd7104",
+                "case-99508af33c238a5c5e7b6da6",
+                "case-dd302f88f45297b7670a587e",
+                "case-afd0f420ad91b0fe861235c8"
+              ]
+            }
+          },
+          "alternative_acceptable": {
+            "state": {
+              "cases": 92,
+              "correct": 68,
+              "accuracy": 0.7391304347826086,
+              "confusion_matrix": {
+                "caveats": {
+                  "caveats": 1,
+                  "done": 3,
+                  "unknown": 1
+                },
+                "done": {
+                  "done": 64,
+                  "ignored": 1,
+                  "needs-you": 1,
+                  "unknown": 19
+                },
+                "unknown": {
+                  "done": 1,
+                  "unknown": 1
+                }
+              },
+              "wrong_ids": [
+                "case-6aa15954a432525fc8853df1",
+                "case-d3bf4bd47507d59bdd727f9a",
+                "case-2723120802c9e70069efcde1",
+                "case-19cf6019da9d587bd086d5c1",
+                "case-97516c3e547e74df42cb171d",
+                "case-0d52875cd56c21f8be766ec0",
+                "case-e1af9106b714e372c972573c",
+                "case-c94760dce27f12c8234d6bd9",
+                "case-8f54fc0070d56742d5a02802",
+                "case-79fc3e16f8cf32969d364550",
+                "case-4a6161b1bede5ff7b967cc54",
+                "case-66037d5c9d624cebfe490efc",
+                "case-b250d0d11019cc3a7cd0f4e3",
+                "case-8508b6ab4fff71592d10cda2",
+                "case-b0ca044e6ab91507455a478e",
+                "case-b4f8b17e14bc20b79942b8fc",
+                "case-7d13c2590385a9fa08e37bd1",
+                "case-f57c3cc07fc61a58a77e6853",
+                "case-b0f1bd28910cc0bcc0e360f6",
+                "case-bb5d820cd9ddf8e29f22514e",
+                "case-992a3da6a9658d6203bd7104",
+                "case-99508af33c238a5c5e7b6da6",
+                "case-3012d91c4827969daf87e7e5",
+                "case-dd302f88f45297b7670a587e"
+              ]
+            },
+            "gesture": {
+              "cases": 92,
+              "correct": 49,
+              "accuracy": 0.532608695652174,
+              "confusion_matrix": {
+                "answer": {
+                  "answer": 8,
+                  "done": 4,
+                  "ignored": 1
+                },
+                "artifact": {
+                  "answer": 1,
+                  "done": 3
+                },
+                "caveats": {
+                  "answer": 3,
+                  "caveats": 1,
+                  "done": 1
+                },
+                "done": {
+                  "answer": 9,
+                  "decision": 1,
+                  "done": 24
+                },
+                "in-flight": {
+                  "done": 1
+                },
+                "plan": {
+                  "answer": 4,
+                  "plan": 1
+                },
+                "published": {
+                  "answer": 1,
+                  "done": 1,
+                  "published": 7
+                },
+                "verdict": {
+                  "answer": 20,
+                  "done": 1
+                }
+              },
+              "wrong_ids": [
+                "case-6aa15954a432525fc8853df1",
+                "case-d3bf4bd47507d59bdd727f9a",
+                "case-2723120802c9e70069efcde1",
+                "case-19cf6019da9d587bd086d5c1",
+                "case-97516c3e547e74df42cb171d",
+                "case-020ea48497acf8da81bea3b2",
+                "case-938ab7e2e6bd405e11d3d4b3",
+                "case-00da88b81377e9be66096d76",
+                "case-e1af9106b714e372c972573c",
+                "case-c94760dce27f12c8234d6bd9",
+                "case-ca1717e9d554d0c0c8bf717d",
+                "case-8f54fc0070d56742d5a02802",
+                "case-1654dc7f8ead4dae7ac81899",
+                "case-76c59c812b43c5d137dae95c",
+                "case-66037d5c9d624cebfe490efc",
+                "case-b250d0d11019cc3a7cd0f4e3",
+                "case-8508b6ab4fff71592d10cda2",
+                "case-b4f8b17e14bc20b79942b8fc",
+                "case-8c7ee17d3d62ae999e3a916c",
+                "case-2da762a8c6418abfe6e025b6",
+                "case-cfa83bec22b93b488150b536",
+                "case-71d18acbcef51bffe71bf532",
+                "case-e94b4c3b0a4ff418d3843966",
+                "case-ee4859f7052701e48bff11ff",
+                "case-62bd2e155d63732d61e3b2bf",
+                "case-2fd5578c2dcace8260f95239",
+                "case-b2801520141c3088a58716c1",
+                "case-7d13c2590385a9fa08e37bd1",
+                "case-8f616d49e67518250c698f00",
+                "case-f57c3cc07fc61a58a77e6853",
+                "case-80d0f80a177fc5375caab3ff",
+                "case-b16b610f879e96bfccbd5c0f",
+                "case-fe8dbe04ec5483ae3ff7177e",
+                "case-b0f1bd28910cc0bcc0e360f6",
+                "case-61a8c04132a0c8800d01b7eb",
+                "case-40df9f27660bc57bd23ff0cc",
+                "case-bb5d820cd9ddf8e29f22514e",
+                "case-a3aadd17adf16f99ef5dbd23",
+                "case-c9c3d0f18bf8519b7cb7e4bc",
+                "case-992a3da6a9658d6203bd7104",
+                "case-99508af33c238a5c5e7b6da6",
+                "case-dd302f88f45297b7670a587e",
+                "case-afd0f420ad91b0fe861235c8"
+              ]
+            },
+            "joint_state_and_gesture": {
+              "cases": 92,
+              "correct": 44,
+              "accuracy": 0.4782608695652174
+            }
+          },
+          "quality": {
+            "missed_handoffs": {
+              "count": 0,
+              "denominator": 0,
+              "rate": null,
+              "ids": []
+            },
+            "false_attention": {
+              "count": 1,
+              "denominator": 92,
+              "rate": 0.010869565217391304,
+              "ids": [
+                "case-d3bf4bd47507d59bdd727f9a"
+              ]
+            },
+            "false_caveats": {
+              "count": 0,
+              "denominator": 87,
+              "rate": 0.0,
+              "ids": []
+            },
+            "unknown": {
+              "count": 21,
+              "denominator": 92,
+              "rate": 0.22826086956521738,
+              "ids": [
+                "case-19cf6019da9d587bd086d5c1",
+                "case-97516c3e547e74df42cb171d",
+                "case-0d52875cd56c21f8be766ec0",
+                "case-e1af9106b714e372c972573c",
+                "case-c94760dce27f12c8234d6bd9",
+                "case-8f54fc0070d56742d5a02802",
+                "case-79fc3e16f8cf32969d364550",
+                "case-db2e5532bc2ddc4e7837cab4",
+                "case-4a6161b1bede5ff7b967cc54",
+                "case-66037d5c9d624cebfe490efc",
+                "case-b250d0d11019cc3a7cd0f4e3",
+                "case-8508b6ab4fff71592d10cda2",
+                "case-b0ca044e6ab91507455a478e",
+                "case-b4f8b17e14bc20b79942b8fc",
+                "case-7d13c2590385a9fa08e37bd1",
+                "case-f57c3cc07fc61a58a77e6853",
+                "case-b0f1bd28910cc0bcc0e360f6",
+                "case-bb5d820cd9ddf8e29f22514e",
+                "case-992a3da6a9658d6203bd7104",
+                "case-99508af33c238a5c5e7b6da6",
+                "case-3012d91c4827969daf87e7e5"
+              ]
+            },
+            "definition": "Attention means needs-you, consistent with the existing prose evaluation. Rates use relevant expected-positive/negative denominators, not all cases."
+          },
+          "unambiguous_quality": {
+            "missed_handoffs": {
+              "count": 0,
+              "denominator": 0,
+              "rate": null,
+              "ids": []
+            },
+            "false_attention": {
+              "count": 1,
+              "denominator": 67,
+              "rate": 0.014925373134328358,
+              "ids": [
+                "case-d3bf4bd47507d59bdd727f9a"
+              ]
+            },
+            "false_caveats": {
+              "count": 0,
+              "denominator": 65,
+              "rate": 0.0,
+              "ids": []
+            },
+            "unknown": {
+              "count": 15,
+              "denominator": 67,
+              "rate": 0.22388059701492538,
+              "ids": [
+                "case-19cf6019da9d587bd086d5c1",
+                "case-97516c3e547e74df42cb171d",
+                "case-e1af9106b714e372c972573c",
+                "case-c94760dce27f12c8234d6bd9",
+                "case-8f54fc0070d56742d5a02802",
+                "case-66037d5c9d624cebfe490efc",
+                "case-b250d0d11019cc3a7cd0f4e3",
+                "case-8508b6ab4fff71592d10cda2",
+                "case-b4f8b17e14bc20b79942b8fc",
+                "case-7d13c2590385a9fa08e37bd1",
+                "case-f57c3cc07fc61a58a77e6853",
+                "case-b0f1bd28910cc0bcc0e360f6",
+                "case-992a3da6a9658d6203bd7104",
+                "case-99508af33c238a5c5e7b6da6",
+                "case-3012d91c4827969daf87e7e5"
+              ]
+            },
+            "definition": "Attention means needs-you, consistent with the existing prose evaluation. Rates use relevant expected-positive/negative denominators, not all cases."
+          },
+          "optional_dimensions": {}
+        }
+      },
+      "primary_eligible": 92,
+      "primary_excluded": 8,
+      "ambiguous_eligible": 25,
+      "changed_count": 0,
+      "changed_cases": [],
+      "transition_counts": {
+        "state": {
+          "caveats": {
+            "caveats": 1
+          },
+          "done": {
+            "done": 68
+          },
+          "ignored": {
+            "ignored": 1
+          },
+          "needs-you": {
+            "needs-you": 1
+          },
+          "unknown": {
+            "unknown": 29
+          }
+        },
+        "gesture": {
+          "answer": {
+            "answer": 54
+          },
+          "caveats": {
+            "caveats": 1
+          },
+          "decision": {
+            "decision": 1
+          },
+          "done": {
+            "done": 35
+          },
+          "ignored": {
+            "ignored": 1
+          },
+          "plan": {
+            "plan": 1
+          },
+          "published": {
+            "published": 7
+          }
+        }
+      }
+    },
+    "all_candidates": {
+      "cases": 5728,
+      "versions": {
+        "baseline": {
+          "distribution_all_cases": {
+            "state": {
+              "caveats": 85,
+              "done": 3801,
+              "ignored": 18,
+              "needs-you": 161,
+              "unknown": 1663
+            },
+            "gesture": {
+              "answer": 2570,
+              "artifact": 29,
+              "caveats": 85,
+              "decision": 60,
+              "done": 2357,
+              "ignored": 18,
+              "needs-you": 101,
+              "plan": 46,
+              "published": 439,
+              "review": 20,
+              "verdict": 3
+            }
+          },
+          "classifier_only_latency": {
+            "samples": 5728,
+            "median_ms": 1.4947915,
+            "p95_ms": 6.263272599999999,
+            "p99_ms": 13.02469738999994,
+            "max_ms": 31.503458
+          }
+        },
+        "current": {
+          "distribution_all_cases": {
+            "state": {
+              "caveats": 85,
+              "done": 3802,
+              "ignored": 18,
+              "needs-you": 161,
+              "unknown": 1662
+            },
+            "gesture": {
+              "answer": 2569,
+              "artifact": 29,
+              "caveats": 85,
+              "decision": 60,
+              "done": 2357,
+              "ignored": 18,
+              "needs-you": 101,
+              "plan": 46,
+              "published": 440,
+              "review": 20,
+              "verdict": 3
+            }
+          },
+          "classifier_only_latency": {
+            "samples": 5728,
+            "median_ms": 1.7237705,
+            "p95_ms": 7.214668549999977,
+            "p99_ms": 15.305967409999914,
+            "max_ms": 35.657375
+          }
+        }
+      },
+      "changed_count": 1,
+      "changed_cases": [
+        {
+          "id": "case-19872f6fdab37b3cf44a046a",
+          "baseline": {
+            "state": "unknown",
+            "gesture": "answer"
+          },
+          "current": {
+            "state": "done",
+            "gesture": "published"
+          }
+        }
+      ],
+      "transition_counts": {
+        "state": {
+          "caveats": {
+            "caveats": 85
+          },
+          "done": {
+            "done": 3801
+          },
+          "ignored": {
+            "ignored": 18
+          },
+          "needs-you": {
+            "needs-you": 161
+          },
+          "unknown": {
+            "done": 1,
+            "unknown": 1662
+          }
+        },
+        "gesture": {
+          "answer": {
+            "answer": 2569,
+            "published": 1
+          },
+          "artifact": {
+            "artifact": 29
+          },
+          "caveats": {
+            "caveats": 85
+          },
+          "decision": {
+            "decision": 60
+          },
+          "done": {
+            "done": 2357
+          },
+          "ignored": {
+            "ignored": 18
+          },
+          "needs-you": {
+            "needs-you": 101
+          },
+          "plan": {
+            "plan": 46
+          },
+          "published": {
+            "published": 439
+          },
+          "review": {
+            "review": 20
+          },
+          "verdict": {
+            "verdict": 3
+          }
+        }
+      },
+      "interpretation": "Unlabeled cached-corpus distribution and latency only; changed routing is not an accuracy estimate."
+    }
+  }
+}

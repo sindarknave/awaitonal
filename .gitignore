@@ -7,3 +7,6 @@ __pycache__/
 dist/
 examples/claude-hooks.local.json
 .DS_Store
+# Rebuild locally or download the complete listening preview from a release.
+/artifacts/variation-preview/audio/
+/artifacts/variation-preview/index.html

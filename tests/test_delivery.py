@@ -4,7 +4,7 @@ import sys
 
 import pytest
 
-from awaitonal.delivery import detect_delivery
+from awaitonal.delivery import detect_assessment, detect_delivery
 from awaitonal.text import assistant_prose
 
 
@@ -135,6 +135,90 @@ def test_current_result_wins_without_promoting_optional_or_historical_actions(pr
 def test_quoted_claims_are_removed_by_the_callers_prose_extractor():
     prose = assistant_prose('The log said "I published the release".\n> I exported a PDF.\nI fixed the parser.')
     assert detect_delivery(prose) == "change"
+
+
+_ARTIFACT_URL = "https://claude.ai/code/artifact/00000000-0000-4000-8000-000000000001"
+_PR_URL = "https://github.com/example/widgets/pull/42"
+
+
+@pytest.mark.parametrize("text,expected", [
+    (f"Republished to the same URL — {_ARTIFACT_URL} The table now includes both runs.", "artifact"),
+    (f"Fixed — same URL: {_ARTIFACT_URL}", "artifact"),
+    (f"I've updated the artifact: {_ARTIFACT_URL}", "artifact"),
+    (f"The artifact is ready: {_ARTIFACT_URL}", "artifact"),
+    ("The artifacts are ready.", "artifact"),
+    ("I created an artifact with the requested comparisons.", "artifact"),
+    ("Here is the artifact with the requested comparisons.", "artifact"),
+    (f"Here is the revised table: {_ARTIFACT_URL}", "artifact"),
+    (f"PR is up: {_PR_URL}", "published"),
+    (f"The pull request is now up at {_PR_URL}", "published"),
+    ("Our PR is up on GitHub.", "published"),
+    (f"Fixed — same URL: {_ARTIFACT_URL}\nI published the package.", "published"),
+])
+def test_presented_artifacts_and_pull_requests(text, expected):
+    assert detect_delivery(assistant_prose(text, link_types=True)) == expected
+
+
+@pytest.mark.parametrize("text,expected", [
+    (_ARTIFACT_URL, "unknown"),
+    (f"Same URL: {_ARTIFACT_URL}", "unknown"),
+    (f"For reference, the previous comparison is at {_ARTIFACT_URL}", "unknown"),
+    (f"Here is the source: {_ARTIFACT_URL}", "unknown"),
+    (f"If I republished to the same URL — {_ARTIFACT_URL} — it would replace the draft.", "unknown"),
+    (f"I will update the artifact: {_ARTIFACT_URL}", "unknown"),
+    (f"I have not updated the artifact: {_ARTIFACT_URL}", "unknown"),
+    (f"Yesterday I republished to the same URL: {_ARTIFACT_URL}", "unknown"),
+    (f"Example:\nFixed — same URL: {_ARTIFACT_URL}", "unknown"),
+    (f'The log said "Republished to the same URL: {_ARTIFACT_URL}".', "unknown"),
+    (f"> The artifact is ready: {_ARTIFACT_URL}", "unknown"),
+    ("The artifact is not ready.", "unknown"),
+    (f"I fixed the parser using this reference: {_ARTIFACT_URL}", "change"),
+    (f"I updated the docs with a link to {_ARTIFACT_URL}", "change"),
+    (f"I published the site with an image from {_ARTIFACT_URL}", "published"),
+    (f"PR is not up: {_PR_URL}", "unknown"),
+    (f"If the PR is up: {_PR_URL}", "unknown"),
+    (f"The docs say the PR is up: {_PR_URL}", "unknown"),
+    (f"Yesterday the PR was up: {_PR_URL}", "unknown"),
+    ("The PR is up to date.", "unknown"),
+    ("The PR is up next.", "unknown"),
+    ("The PR count is up.", "unknown"),
+])
+def test_references_and_non_delivery_status_do_not_inherit_link_type(text, expected):
+    assert detect_delivery(assistant_prose(text, link_types=True)) == expected
+
+
+@pytest.mark.parametrize("text", [
+    "## Business Summary\n\nApprove. The change does what the ticket asked and the tests cover the new branch.",
+    "**Business Summary** Don't build it. The dashboards look broken, but the pipeline is behaving correctly.",
+    "## Business Summary\n\nSafe, but not doing anything we can measure yet. The new setting has not moved the error rate.",
+    "**Business Summary** **Safe**, but the new setting has not moved the error rate.",
+    "Business Summary:\nRequest changes. The handler still loses the cancellation signal during retry.",
+])
+def test_summary_bottom_line_with_supporting_prose_is_a_verdict(text):
+    prose = assistant_prose(text, link_types=True)
+    assert detect_assessment(prose) == "verdict"
+    assert detect_delivery(prose) == "answer"
+
+
+@pytest.mark.parametrize("text", [
+    "## Business Summary\nThe incident lasted four minutes.",
+    "## Business Summary\nApprove.",
+    "## Business Summary\nSafe.",
+    "## Business Summary\nApprove the access request so the tool can continue.",
+    "## Business Summary\nSafe. I will inspect the patch after the next run.",
+    "## Business Summary\nDon't build it.\nExample:\nThe pipeline is behaving correctly and the labels are stale.",
+    "## Business Summary\nYes, the output directory contains the requested files.",
+    "## Business Summary\nDon't panic. The files remain available in the previous location.",
+    "## Business Summary\nDon't build it if the experiment later shows no improvement.",
+    "## Business Summary\nSafe if the missing checks eventually pass on the new branch.",
+    "## Business Summary\nEarlier I recommended not building it because the pipeline was working.",
+    "Example:\n## Business Summary\nDon't build it. The dashboards look broken but the pipeline is behaving correctly.",
+    '## Business Summary\nThe comment said "Don\'t build it. The pipeline is behaving correctly."',
+    "> ## Business Summary\n> Don't build it. The pipeline is behaving correctly and the gap is a labeling issue.",
+    "Here is a sample response:\n## Business Summary\nDon't build it. The dashboards are only displaying stale labels.",
+])
+def test_summary_headings_quotes_and_conditional_advice_are_not_verdicts(text):
+    assert detect_assessment(assistant_prose(text, link_types=True)) == "none"
 
 
 @pytest.mark.parametrize("prose", [None, {}, "", "  ", "x" * 131_073])

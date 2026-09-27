@@ -1,5 +1,45 @@
 # Observed validation
 
+## v0.7.0 release checks
+
+The implementation suite reports [2,069 Python tests passed, with two optional-model
+skips](artifacts/tests-contextual-variations.txt). After synchronizing the package
+and plugin versions to 0.7.0, [130 packaging, lifecycle, diagnostics, and CLI checks
+passed](artifacts/tests-v0.7.0-packaging.txt), along with all
+[23 Pi extension tests](artifacts/tests-v0.7.0-pi.txt).
+
+A [fresh-wheel smoke check](artifacts/package-v0.7.0-smoke.json) installed only
+Awaitonal 0.7.0 and NumPy into a disposable Python 3.13 environment. Imports and
+CLI calls ran outside the checkout. Claude, Codex, and Pi adapters delivered
+synthetic lifecycle events to a private socket; the service rendered 15 finite,
+peak-limited PCM cues with the expected duration choices and stable voices.
+Missing timing, shared mute, cancellation before admission, recovery, and socket
+cleanup passed. Long durations used test-only clock injection. No user service,
+settings, model, or audio device was exercised.
+
+[Variation validation](artifacts/gesture-variations-validation.json) records the
+source hashes and duration policy. Tests cover the inclusive 120-second cutoff,
+missing/ambiguous timing, independent session/gesture/group histories, bounded
+retention, mute and cancellation admission, custom palette overrides, and the
+independent optional extended ending. Grouping metadata does not change rendered
+samples. Audio checks cover finite output, distinct phrases, RMS matching, peak
+limits, and motif direction; they do not establish human recognition or preference.
+
+The downloadable offline preview contains 61 WAVs. All 48 individual phrases,
+six original comparisons, and the sampler match the preceding gallery. Six
+duration-guided comparisons use the real selector with synthetic turn durations;
+their phrase samples and A/B onset positions match exactly. All WAV URLs returned
+HTTP 200, and the browser gallery was checked for roles, selection explanations,
+missing-timing examples, and click-only audio. The release ZIP was extracted and
+all audio hashes and headers matched its manifest.
+
+The [classifier evaluation](docs/classification-v061-evaluation.md) is a separate,
+frozen classifier-only study. Its 16 targeted regression cases improve, while
+agreement on 92 eligible public replies is unchanged. AI labeling, ambiguity,
+completion-heavy sampling, and the absence of required handoffs limit what that
+sample can establish. No raw conversations or labeling rationales are published.
+The earlier evaluation's timing and source hashes remain historical measurements.
+
 ## v0.6.0 release checks
 
 The final release suite reports [1,603 Python tests passed, with two optional-model

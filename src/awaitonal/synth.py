@@ -21,6 +21,8 @@ STATE_ORDER = GESTURE_ORDER
 # Elapsed time can enrich a routine result without changing its meaning.
 # Attention cues and unfinished/continuing work keep their fixed arrangement.
 LONG_TURN_GESTURES = frozenset(("done", "answer", "verdict", "plan", "artifact", "published"))
+VARIATION_GESTURES = frozenset(("done", "answer"))
+MAX_VARIATIONS = 4
 _SEMITONES = {"C": 0, "D": 2, "E": 4, "F": 5, "G": 7, "A": 9, "B": 11}
 
 
@@ -56,6 +58,74 @@ def _sample_rate(config: dict) -> int:
     if value != int(value):
         raise ValueError("sample_rate must be an integer")
     return int(value)
+
+
+def variation_count(state: str, config: dict | None = None) -> int:
+    """Return one original plus up to three authored done/answer phrases.
+
+    A missing or empty variations list keeps the original phrase only. Entries
+    replace duration/events in full; an omitted long_turn table inherits the
+    state's existing arrangement. Numeric and pitch limits are checked at render.
+    """
+    if state not in GESTURE_ORDER:
+        raise ValueError(f"Unknown gesture {state!r}; expected one of {', '.join(GESTURE_ORDER)}")
+    if state not in VARIATION_GESTURES:
+        return 1
+    config = load_config() if config is None else config
+    variations = config["states"][state].get("variations", [])
+    if not isinstance(variations, list) or len(variations) >= MAX_VARIATIONS:
+        raise ValueError(f"states.{state}.variations must contain at most three phrase tables")
+    for patch in variations:
+        if not isinstance(patch, dict) or not {"duration", "events"}.issubset(patch):
+            raise ValueError("Each variation requires a duration and a full events list")
+        events = patch["events"]
+        if not isinstance(events, list) or not 1 <= len(events) <= 32:
+            raise ValueError("A variation must contain between 1 and 32 events")
+        required = {"time", "notes", "duration", "attack", "decay", "release", "gain"}
+        if any(not isinstance(event, dict) or not required.issubset(event) for event in events):
+            raise ValueError("A variation requires complete event tables")
+        if "long_turn" in patch and not isinstance(patch["long_turn"], dict):
+            raise ValueError("A variation's long_turn must be a table")
+    return len(variations) + 1
+
+
+def variation_groups(state: str, config: dict | None = None) -> dict[str, tuple[int, ...]] | None:
+    """Return an explicit light/full partition, never infer one from the notes.
+
+    Original-only and ungrouped palettes have no duration-based arrangement
+    roles. A configured partition must include every available phrase exactly
+    once; returned tuples do not share mutable lists with the palette.
+    """
+    config = load_config() if config is None else config
+    count = variation_count(state, config)
+    if count == 1 or "variation_groups" not in config["states"][state]:
+        return None
+    groups = config["states"][state]["variation_groups"]
+    if not isinstance(groups, dict) or set(groups) != {"light", "full"}:
+        raise ValueError(f"states.{state}.variation_groups must contain exactly light and full")
+    result = {}
+    for role in ("light", "full"):
+        ids = groups[role]
+        if (not isinstance(ids, (list, tuple)) or not ids
+                or any(type(index) is not int or not 0 <= index < count for index in ids)
+                or len(ids) != len(set(ids))):
+            raise ValueError(f"variation_groups.{role} must contain unique available integer IDs")
+        result[role] = tuple(ids)
+    light, full = set(result["light"]), set(result["full"])
+    if light & full or light | full != set(range(count)):
+        raise ValueError("variation_groups must cover every available phrase exactly once")
+    return result
+
+
+def _variation_patch(state: str, config: dict, variation: int) -> dict:
+    if variation >= variation_count(state, config):
+        raise ValueError(f"Variation {variation} is not configured for {state}")
+    base = config["states"][state]
+    patch = deepcopy(base["variations"][variation - 1])
+    _number(patch["duration"], "variation duration", 0.05, 10.0)
+    if "long_turn" not in patch and "long_turn" in base:
+        patch["long_turn"] = deepcopy(base["long_turn"])
+    return patch
 
 
 def _voice_profile(config: dict, voice: str) -> dict | None:
@@ -121,10 +191,10 @@ def _long_turn_patch(patch: dict) -> dict:
 
 
 def _render_events(state: str, config: dict, brightness: float, *, extended: bool = False,
-                   voice_profile: dict | None = None) -> np.ndarray:
+                   voice_profile: dict | None = None, variation: int = 0) -> np.ndarray:
     settings = config["synth"] if voice_profile is None else voice_profile
     sample_rate = _sample_rate(config)
-    patch = config["states"][state]
+    patch = config["states"][state] if variation == 0 else _variation_patch(state, config, variation)
     if extended:
         patch = _long_turn_patch(patch)
     duration = _number(patch["duration"], "state duration", 0.05, 10.8 if extended else 10.0)
@@ -207,7 +277,7 @@ def _render_events(state: str, config: dict, brightness: float, *, extended: boo
 
 
 def render(state: str, config: dict | None = None, response_length: int = 0,
-           *, long_turn: bool = False, voice: str = "default") -> np.ndarray:
+           *, long_turn: bool = False, voice: str = "default", variation: int = 0) -> np.ndarray:
     """Render one gesture as mono float64 samples, with guaranteed headroom.
 
     Brightness is opt-in, bounded, and RMS-matched to the same fixed gesture.
@@ -217,11 +287,19 @@ def render(state: str, config: dict | None = None, response_length: int = 0,
     Named session voices use different partials and envelopes at the same RMS
     level. Compact voices keep pitches/onsets and shorten note tails; long turns
     retain their two extra rising attacks. The default voice preserves the
-    original palette sample for sample.
+    original palette sample for sample. Variation zero retains the original
+    phrase; done/answer can select up to three palette-authored alternatives,
+    RMS-matched to the original before the existing master gain and peak limit.
     """
     config = load_config() if config is None else config
     if state not in GESTURE_ORDER:
         raise ValueError(f"Unknown gesture {state!r}; expected one of {', '.join(GESTURE_ORDER)}")
+    if type(variation) is not int or not 0 <= variation < MAX_VARIATIONS:
+        raise ValueError("variation must be an integer from 0 to 3")
+    if variation and state not in VARIATION_GESTURES:
+        raise ValueError("Nonzero variations are supported only for done and answer")
+    if variation and variation >= variation_count(state, config):
+        raise ValueError(f"Variation {variation} is not configured for {state}")
     profile = _voice_profile(config, voice)
     settings = config["synth"]
     master_gain = _number(settings["master_gain"], "master_gain", 0.0, 1.0)
@@ -236,8 +314,9 @@ def render(state: str, config: dict | None = None, response_length: int = 0,
         max_boost = _number(brightness_config["max_boost"], "max_boost", 0.0, 2.0)
         count = _number(response_length, "response_length", 0.0, 1e15)
         amount = max_boost * count / (count + scale)
-    if amount > 0 or extended or profile is not None:
-        variant = _render_events(state, config, amount, extended=extended, voice_profile=profile)
+    if amount > 0 or extended or profile is not None or variation:
+        variant = _render_events(state, config, amount, extended=extended, voice_profile=profile,
+                                 variation=variation)
         energy = float(np.dot(variant, variant))
         if energy > 0:
             variant *= math.sqrt(reference_energy / energy * (len(variant) / len(samples)))

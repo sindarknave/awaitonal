@@ -1,0 +1,119 @@
+{
+  "audio_played": false,
+  "cli": {
+    "classify": "passed",
+    "render": "passed",
+    "render_matches_pcm": true,
+    "wav_frames": 34320,
+    "wav_sample_rate": 48000
+  },
+  "environment": {
+    "application_distributions": {
+      "awaitonal": "0.7.0",
+      "numpy": "2.5.3"
+    },
+    "fresh_venv": true,
+    "import_from_installed_site_packages": true,
+    "machine": "arm64",
+    "outside_checkout": true,
+    "platform": "Darwin",
+    "python": "3.13.1"
+  },
+  "limitations": [
+    "Synthetic notification prose only; this is packaging/lifecycle validation, not a classifier accuracy or real-time latency benchmark.",
+    "Long elapsed durations were injected into the isolated timing registry rather than waited out.",
+    "Audio PCM was rendered and checked in memory; perceptual sound quality was not evaluated."
+  ],
+  "palette": {
+    "answer_group_alternation": [
+      0,
+      2,
+      1,
+      3
+    ],
+    "cutoff_inclusive": true,
+    "full_after_seconds": 120,
+    "variation_counts": {
+      "answer": 4,
+      "done": 4
+    },
+    "variation_groups": {
+      "answer": {
+        "full": [
+          2,
+          3
+        ],
+        "light": [
+          0,
+          1
+        ]
+      },
+      "done": {
+        "full": [
+          1,
+          3
+        ],
+        "light": [
+          0,
+          2
+        ]
+      }
+    }
+  },
+  "passed": true,
+  "real_user_service_touched": false,
+  "schema": 1,
+  "service": {
+    "authenticated_status_stop": "passed",
+    "cancel_before_admission": "passed",
+    "classifier": "rules",
+    "global_mute_all_providers": "passed",
+    "metadata_only_playback_logs": true,
+    "missing_timing_group": "ordinary",
+    "missing_timing_variations": [
+      0,
+      0
+    ],
+    "pcm_finite_and_peak_limited": true,
+    "providers": {
+      "claude": {
+        "extended_ending": false,
+        "stable_voice": "marimba",
+        "timed_variations": [
+          0,
+          1,
+          2,
+          3
+        ]
+      },
+      "codex": {
+        "extended_ending": false,
+        "stable_voice": "powersaw",
+        "timed_variations": [
+          0,
+          1,
+          2,
+          3
+        ]
+      },
+      "pi": {
+        "extended_ending": false,
+        "stable_voice": "harp",
+        "timed_variations": [
+          0,
+          1,
+          2,
+          3
+        ]
+      }
+    },
+    "recovery_after_cancel": "passed",
+    "socket_cleanup": "passed",
+    "successful_pcm_renders": 15,
+    "timing_method": "matched lifecycle inputs via installed adapters/socket; test-only start timestamp injection for 30/150-second durations",
+    "transport": "private temporary Unix socket"
+  },
+  "version": "0.7.0",
+  "wheel": "awaitonal-0.7.0-py3-none-any.whl",
+  "wheel_sha256": "60b8914f0ba5df6c140006530ab81ef5337c08acc1d355b4273c53c9c8cd1ae2"
+}

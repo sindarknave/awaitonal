@@ -54,7 +54,8 @@ where practical. They preserve typed link evidence while removing URL destinatio
 URLs are parsed locally, never fetched; query strings and fragments are not
 classification evidence. An artifact/PR link needs current delivery wording.
 A reference, quotation, historical action, conditional, or negated action does not
-establish a new output.
+establish a new output. Explicit delivery can be terse: “Fixed — same URL” with an
+artifact link selects `artifact`, and “PR is up” selects `published`.
 
 Error vocabulary alone is insufficient for caveats. A completed diagnosis can
 discuss failures; “the error handling is fixed” can report a completed fix.
@@ -63,15 +64,25 @@ always reveal whether diagnosing failed tests was the task, or fixing them was.
 Unknown preserves that limit rather than making a correctness claim.
 
 A verdict needs assessment framing or an identified assessed object, not a generic
-“Yes,” “No,” or “Business Summary” heading. Completed “Approve” assessments must
+“Yes,” “No,” or “Business Summary” heading alone. A Business Summary that opens with
+a supported bottom line such as “Approve,” “Don't build it,” or “Safe, but…” can
+establish a verdict. Completed “Approve” assessments must
 not be confused with asking the user to approve something. “Saved locally; I can
 publish if useful” is an optional offer. “The draft is ready; awaiting your approval
-to publish” is a current authorization dependency.
+to publish” is a current authorization dependency. So are direct confirmations
+about prepared outward work: “The draft reply is above. Want me to post it?” and
+“The branch is ready. Say the word and I'll push it.” This also applies to polite
+“Would you like me to send it?” wording after a prepared draft. An offer to prepare
+new work, a hypothetical request, or a later resolved request stays neutral.
 
 Reported ongoing work is distinct from “I'll run CI,” which promises future work.
 Bounded background counts can corroborate a present-running statement. Those counts
 are session-wide, so a persistent monitor must not change a delivered artifact into
-an in-flight notification. Known empty registries and missing metadata are distinct.
+an in-flight notification. A closing follow-up explicitly tied to current work
+finishing can take precedence over a completed earlier step: “Pushed the fix. CI is
+still running; I'll report back once it completes.” Its coarse state remains
+`unknown`, with `activity` and `gesture` set to `in-flight`. A later completion clears
+the earlier ongoing status. Known empty registries and missing metadata are distinct.
 Handoffs and explicit limitations take precedence over a background claim.
 
 ## Hooks, timing, and playback
@@ -91,7 +102,7 @@ perfectly distinguish every resolved conversation without its preceding context.
 The in-flight pulse is off by default. To audition it: `awaitonal play in-flight`.
 Set `[notifications] notify_in_flight = true` to hear classified ongoing reports.
 
-Both timing thresholds default to zero (disabled):
+Short-turn suppression and extended endings default to zero (disabled):
 
 ```toml
 [notifications]
@@ -114,6 +125,11 @@ prompt IDs (Claude 2.1.196+) and an observed start. Missing IDs, overlapping sta
 restarts, expired timing records, and autonomous follow-ups retain ordinary playback.
 The older installed 2.1.158 schema supplies background metadata but lacks prompt IDs.
 
+Separately, [answer and done arrangements](gesture-variations.md) use matched
+elapsed time to choose lighter or fuller phrases, alternating within that group.
+This is enabled by default with a 120-second cutoff and does not enable suppression
+or extended endings. Missing timing selects the original phrase.
+
 ## Rules and optional embeddings
 
 Both backends share explicit delivery, handoff, limitation, and in-flight routing.
@@ -131,6 +147,7 @@ Run from the source checkout:
 .venv/bin/awaitonal evaluate --fixtures examples/evaluation.jsonl
 .venv/bin/awaitonal evaluate --fixtures examples/gesture-evaluation.jsonl
 .venv/bin/awaitonal evaluate --fixtures examples/classification-vNext.jsonl
+.venv/bin/awaitonal evaluate --fixtures examples/classification-v061.jsonl
 ```
 
 Fixtures are synthetic development examples, not private transcript excerpts or

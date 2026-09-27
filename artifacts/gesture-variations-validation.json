@@ -1,0 +1,79 @@
+{
+  "status": "validated",
+  "tests": {
+    "command": ".venv/bin/python -m pytest -q",
+    "log": "tests-contextual-variations.txt",
+    "passed": 2069,
+    "skipped": 2,
+    "seconds": 50.59,
+    "skips": "Optional local-model checks; no model download needed."
+  },
+  "source_sha256": {
+    "src/awaitonal/synth.py": "0629b0633a70cd216ebe13fbff227a823ec966c2ff6af0e6c0b493dc7683a4cd",
+    "src/awaitonal/palette.toml": "a2b000de678617e1067d554f1ca64d6a55ba42b76f1b16d91628df2a408917dd",
+    "src/awaitonal/variations.py": "b34462b3f5ee2cb4163c731af676107c6e318805f2bcffe526038123808c8569",
+    "src/awaitonal/service.py": "b2b37af5e36a3b1b23652cca6d7874d0a1e38c2b183a14d97aa464fff0be5245",
+    "src/awaitonal/cli.py": "7240fb8c2572bfebd23b215773fdaa76579c6dab3d4904a70ba55aafc2002d3d",
+    "src/awaitonal/config.py": "ae6fa5ddd9131e5265a25a0b3ab740404e7c3877446acea34d27c2909d6d5c08",
+    "tools/build_variation_preview.py": "5e76c00c245a2905e2c435b3dc1075ba9c08b8abd7d93b9451b0c0aedcbc2eb3",
+    "src/awaitonal/__init__.py": "af621916a337ea2669c9406ae2a4d568edfef002ae96a26f0389987a96f8c883"
+  },
+  "preview": {
+    "manifest": "variation-preview/manifest.json",
+    "manifest_sha256": "f06c4fd6312fd6649acf997bf3bafb904223886b254c8adc22c87361774f12dc",
+    "voices": [
+      "marimba",
+      "powersaw",
+      "harp",
+      "clarinet",
+      "crystal",
+      "flute"
+    ],
+    "footprint": {
+      "wav_files": 61,
+      "wav_bytes": 17487164
+    }
+  },
+  "checks": [
+    "Matched elapsed timing is collected with gesture variations enabled, even when suppression and extended endings are disabled.",
+    "The full group begins at the configured cutoff; missing or unusable timing uses original 0.",
+    "Session, gesture and timing-group histories alternate independently with bounded retention.",
+    "Muted, cancelled, suppressed, duplicate and stale cues do not consume choices; admitted playback failures can.",
+    "Custom phrase changes drop inherited groups; explicit partitions are complete replacements and ungrouped palettes do not inherit stock roles.",
+    "Grouping metadata leaves every waveform unchanged across default and session voices and optional extended endings.",
+    "Four distinct finite, RMS-matched, peak-limited choices retain descending done and ascending answer motifs.",
+    "All 48 individual preview WAVs and seven original-comparison/sampler WAVs are unchanged from the prior gallery.",
+    "Six duration-guided sequences use choices [0,0,2,3,1,3,1,2], share exact A/B onsets, and match individual clip PCM.",
+    "All 61 preview WAV URLs return HTTP 200 and expected lengths; browser shows roles, elapsed-time explanations and missing-timing examples without autoplay."
+  ],
+  "listening_limit": "Signal checks establish numerical properties, not human recognition or musical preference.",
+  "selection_policy": {
+    "full_after_seconds": 120,
+    "groups": {
+      "answer": {
+        "light": [
+          0,
+          1
+        ],
+        "full": [
+          2,
+          3
+        ]
+      },
+      "done": {
+        "light": [
+          0,
+          2
+        ],
+        "full": [
+          1,
+          3
+        ]
+      }
+    },
+    "within_group": "Deterministic alternation per session and gesture, after playback admission.",
+    "unknown_timing": "Original variation 0; no group cursor advances.",
+    "long_turn_extension": "Independent optional setting; remains disabled by default."
+  },
+  "release_version": "0.7.0"
+}

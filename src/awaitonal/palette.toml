@@ -120,6 +120,10 @@ max_note_duration = 0.36
 caveats_threshold = 0.5
 
 [notifications]
+# Cycle authored same-meaning phrases for done/answer; other cues stay fixed.
+gesture_variations = true
+# Choose the fuller phrase group after this many matched elapsed seconds.
+variation_full_after_seconds = 120
 # Opt in to stable instruments, rotating as new sessions arrive.
 session_voices = false
 # Optional subset/order; active sessions get an unused voice whenever possible.
@@ -127,7 +131,7 @@ voice_cycle = ["marimba", "powersaw", "harp", "clarinet", "crystal", "flute"]
 # Suppress only routine completion cues with a matched prompt start/stop pair.
 # Zero disables suppression. Missing or ambiguous turn IDs always play.
 min_turn_seconds = 0
-# Optional extended ending after a matched elapsed turn; zero leaves cues fixed.
+# Optional extended ending after a matched elapsed turn; zero disables extension.
 # This measures time waiting for the turn, not time spent reasoning.
 long_turn_seconds = 0
 # Ongoing background work normally stays silent. Enable its small pulse here.
@@ -137,6 +141,7 @@ notify_in_flight = false
 
 [states.done]
 duration = 1.08
+variation_groups = { light = [0, 2], full = [1, 3] }
 [[states.done.events]]
 time = 0.02
 notes = ["G4"]
@@ -164,6 +169,7 @@ gain = 0.8445754641
 
 [states.answer]
 duration = 0.95
+variation_groups = { light = [0, 1], full = [2, 3] }
 [[states.answer.events]]
 time = 0.02
 notes = ["C4"]
@@ -568,3 +574,73 @@ chord = ["C4", "G4", "C5", "E5", "G5", "C6"]
 [states.published.long_turn]
 lift = ["G4", "B4"]
 chord = ["C3", "G3", "C4", "E4", "G4", "C5"]
+
+# Same-meaning alternatives. Variation 0 is the original state above; these
+# three full patches are variations 1..3. Each supplies its own duration and
+# complete events list. Omit long_turn to inherit the original state's lift
+# and chord. Set variations = [] on a state to keep only its original phrase.
+# Rendering matches every choice to the original gesture's RMS before applying
+# the normal master gain and peak limit. No instrument, tuning, or effect changes.
+
+# Done always descends G–E toward a resolved C-major ending.
+[[states.done.variations]]
+name = "Low landing"
+duration = 1.12
+long_turn = { lift = ["G4", "B4"], chord = ["C3", "G3", "C4", "E4", "G4"] }
+events = [
+  { time = 0.02, notes = ["G4"], duration = 0.25, attack = 0.012, decay = 0.17, release = 0.065, gain = 0.8445754641 },
+  { time = 0.25, notes = ["E4"], duration = 0.26, attack = 0.012, decay = 0.17, release = 0.065, gain = 0.8445754641 },
+  { time = 0.48, notes = ["C3", "E4", "G4", "C5"], duration = 0.59, attack = 0.012, decay = 0.17, release = 0.065, gain = 0.8445754641 },
+]
+
+[[states.done.variations]]
+name = "Upper descent"
+duration = 1.03
+long_turn = { lift = ["G4", "B4"], chord = ["C4", "G4", "C5", "E5"] }
+events = [
+  { time = 0.02, notes = ["G5"], duration = 0.22, attack = 0.012, decay = 0.17, release = 0.065, gain = 0.8445754641 },
+  { time = 0.16, notes = ["E5"], duration = 0.26, attack = 0.012, decay = 0.17, release = 0.065, gain = 0.8445754641 },
+  { time = 0.35, notes = ["C4", "E4", "G4", "C5"], duration = 0.63, attack = 0.012, decay = 0.17, release = 0.065, gain = 0.8445754641 },
+]
+
+[[states.done.variations]]
+name = "Stepped landing"
+duration = 1.16
+long_turn = { lift = ["E4", "G4"], chord = ["C3", "G3", "E4", "G4", "C5"] }
+events = [
+  { time = 0.02, notes = ["G4"], duration = 0.23, attack = 0.012, decay = 0.17, release = 0.065, gain = 0.8445754641 },
+  { time = 0.16, notes = ["E4"], duration = 0.24, attack = 0.012, decay = 0.17, release = 0.065, gain = 0.8445754641 },
+  { time = 0.32, notes = ["C4"], duration = 0.25, attack = 0.012, decay = 0.17, release = 0.065, gain = 0.8445754641 },
+  { time = 0.50, notes = ["C3", "C4", "E4", "G4"], duration = 0.61, attack = 0.012, decay = 0.17, release = 0.065, gain = 0.8445754641 },
+]
+
+# Answer keeps the open G/D color, without the separated A–B attention tail.
+[[states.answer.variations]]
+name = "Spaced reply"
+duration = 1.00
+long_turn = { lift = ["E4", "G4"], chord = ["D4", "G4", "C5"] }
+events = [
+  { time = 0.02, notes = ["C4"], duration = 0.25, attack = 0.012, decay = 0.17, release = 0.065, gain = 0.8041315631 },
+  { time = 0.20, notes = ["E4"], duration = 0.26, attack = 0.012, decay = 0.17, release = 0.065, gain = 0.8041315631 },
+  { time = 0.39, notes = ["D4", "G4"], duration = 0.56, attack = 0.012, decay = 0.17, release = 0.065, gain = 0.8041315631 },
+]
+
+[[states.answer.variations]]
+name = "Wide reply"
+duration = 1.04
+long_turn = { lift = ["G4", "C5"], chord = ["G3", "D4", "E4", "C5", "D5"] }
+events = [
+  { time = 0.02, notes = ["C4", "G4"], duration = 0.25, attack = 0.012, decay = 0.17, release = 0.065, gain = 0.8041315631 },
+  { time = 0.13, notes = ["E4", "C5"], duration = 0.26, attack = 0.012, decay = 0.17, release = 0.065, gain = 0.8041315631 },
+  { time = 0.32, notes = ["D4", "G4", "D5"], duration = 0.65, attack = 0.012, decay = 0.17, release = 0.065, gain = 0.8041315631 },
+]
+
+[[states.answer.variations]]
+name = "Lifted reply"
+duration = 0.99
+long_turn = { lift = ["G4", "C5"], chord = ["G4", "C5", "D5", "E5"] }
+events = [
+  { time = 0.02, notes = ["C5"], duration = 0.26, attack = 0.012, decay = 0.17, release = 0.065, gain = 0.8041315631 },
+  { time = 0.17, notes = ["E5"], duration = 0.25, attack = 0.012, decay = 0.17, release = 0.065, gain = 0.8041315631 },
+  { time = 0.33, notes = ["G4", "C5", "D5"], duration = 0.60, attack = 0.012, decay = 0.17, release = 0.065, gain = 0.8041315631 },
+]

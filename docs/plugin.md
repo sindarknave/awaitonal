@@ -6,7 +6,7 @@ classifier or synthesizer.
 
 Pi uses an extension package with `/awaitonal-setup`, `/awaitonal-status`,
 `/awaitonal-mute`, and `/awaitonal-unmute` commands. Install it with
-`pi install git:github.com/sindarknave/awaitonal@v0.6.0`, or use
+`pi install git:github.com/sindarknave/awaitonal@v0.7.0`, or use
 `pi install /absolute/path/to/awaitonal` for a local checkout. Remove it with
 `pi remove` followed by that same source. See the [Pi guide](pi.md) for setup and
 updates. Pi owns extension registration; setup only installs/updates the shared

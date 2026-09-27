@@ -11,7 +11,7 @@ Use Pi 0.87.1 or newer, Python 3.11+, and [uv](https://docs.astral.sh/uv/).
 Install the release from GitHub:
 
 ```sh
-pi install git:github.com/sindarknave/awaitonal@v0.6.0
+pi install git:github.com/sindarknave/awaitonal@v0.7.0
 ```
 
 For local development, use `pi install /absolute/path/to/awaitonal` instead.
@@ -33,7 +33,7 @@ load the Claude/Codex setup skills. Pi owns package registration and settings;
 Awaitonal's `init`, `uninstall`, and `hook-config` commands are for Claude/Codex
 hook files, not Pi packages.
 
-The release install is pinned to v0.6.0. When installing a newer release, use its
+The release install is pinned to v0.7.0. When installing a newer release, use its
 tag, then `/reload` and rerun `/awaitonal-setup` to update the Python runtime.
 For a local installation, run those same commands after changing the checkout.
 Keep that checkout at its installed path, or reinstall it from its new location.
@@ -130,7 +130,7 @@ service. Remote Pi sessions need a separate local bridge to reach your Mac.
 Remove the package using the same source used for installation:
 
 ```sh
-pi remove git:github.com/sindarknave/awaitonal@v0.6.0
+pi remove git:github.com/sindarknave/awaitonal@v0.7.0
 ```
 
 For a local installation, use `pi remove /absolute/path/to/awaitonal` instead.

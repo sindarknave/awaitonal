@@ -1,0 +1,12 @@
+{
+  "command": ".venv/bin/python -m pytest -q",
+  "date": "2026-09-27",
+  "baseline_commit": "284b7f3226a93501158380f0fd175ecc254510f1",
+  "passed": 1758,
+  "skipped": 2,
+  "skip_reason": "Optional local-model integration tests; no new model downloaded for this run.",
+  "duration_seconds": 38.56,
+  "scope": "Full Python suite, including adapters, service, playback, classification and adversarial-input bounds.",
+  "diff_check": "passed",
+  "release_status": "Unreleased classifier tuning; package version unchanged."
+}

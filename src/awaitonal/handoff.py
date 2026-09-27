@@ -112,9 +112,22 @@ _PREPARED = _rx(
     r"\b(?:draft|patch|branch|changes|preview|release|email|message|report|review|video|package)\b[^.!?\n]{0,45}"
     r"\b(?:ready|complete|completed|prepared|written|committed|rendered|saved)\b|"
     r"\b(?:i |we )?(?:prepared|wrote|rendered|saved|committed)\b[^.!?\n]{0,45}"
-    r"\b(?:draft|patch|branch|changes|preview|release|email|message|report|review|video|package)\b"
+    r"\b(?:draft|patch|branch|changes|preview|release|email|message|report|review|video|package)\b|"
+    r"\b(?:the |my |our )?draft (?:reply|response|message|email) (?:is |appears )?(?:above|below|attached)\b"
 )
 _OUTWARD = _rx(r"\b(?:push|publish|post|send|submit|merge|deploy|release)\b")
+_STAGED_OFFER = _rx(
+    r"(?:^|[,:—]\s*|\band\s+)(?:(?:do you )?want (?:me|us) to|would you like (?:me|us) to)\s+"
+    r"(?:push|publish|post|send|submit|merge|deploy|release)\b|"
+    r"(?:^|[,:—]\s*|\band\s+)say the word[^.!?\n]{0,45}\b(?:i'll|i will|we'll|we will)\s+"
+    r"(?:push|publish|post|send|submit|merge|deploy|release)\b"
+)
+_OUTWARD_COMPLETED = _rx(
+    r"(?:^|\b(?:i|we|i've|we've) (?:have )?(?:already |just )?)(?:pushed|published|posted|sent|submitted|merged|deployed|released)\b|"
+    r"\b(?:pr|pull request) is (?:open|merged)\b|"
+    r"\b(?:pr|pull request) is up(?=\s*(?:[.!,:;]|$|\bawaitonalprlink\b))"
+)
+_NOT_PREPARED = _rx(r"\b(?:if|would|will|no|not|never|isn't|aren't|haven't|hasn't|wasn't|weren't)\b")
 
 
 def _staged_authorization(prose: str) -> bool:
@@ -196,6 +209,7 @@ def analyze_handoff(prose: str) -> Handoff:
     if not isinstance(prose, str) or not prose.strip() or len(prose) > MAX_PROSE_CHARS:
         return Handoff()
     pending: dict[str, Expectancy] = {}
+    prepared = False
     review_approval_coupled = False
     in_instructions = False
     prose = prose.replace("’", "'")
@@ -217,6 +231,16 @@ def analyze_handoff(prose: str) -> Handoff:
             continue
         if _HISTORICAL.search(clause) or _FUTURE.search(clause):
             continue
+        # A concrete prepared deliverable makes an outward-action confirmation
+        # a handoff. An unprepared offer of more work remains optional. Track
+        # these in order so later permission or publication can resolve them.
+        prepared_match = _PREPARED.search(clause)
+        if prepared_match:
+            preparation = clause[:prepared_match.end()]
+            prepared = not bool(_NOT_PREPARED.search(preparation) or _OPTIONAL.search(preparation))
+        staged_offer = _STAGED_OFFER.search(clause) if prepared else None
+        if re.search(r"\b(?:if|optional|can also|happy to|next time)\b", clause):
+            staged_offer = None
         # Keep resolution positions: an answer can arrive later in the same
         # clause as a previously stated request.
         events = []
@@ -224,7 +248,13 @@ def analyze_handoff(prose: str) -> Handoff:
             for kind, pattern in _RESOLUTIONS.items():
                 events.extend((match.start(), 1, kind, None)
                               for match in pattern.finditer(clause))
+            completed = list(_OUTWARD_COMPLETED.finditer(clause))
+            if completed:
+                events.extend((match.start(), 1, "staged-approval", None) for match in completed)
+                prepared = False
         if _NEGATED.search(clause):
+            if re.search(r"\bno need to (?:push|publish|post|send|submit|merge|deploy|release)\b", clause):
+                pending.pop("staged-approval", None)
             for kind, words in {
                 "auth": r"auth|sign|log|access", "approval": r"approv|permission|consent|go-ahead",
                 "review": r"review|feedback", "choice": r"choic|decis|input|answer|clarif|select",
@@ -232,10 +262,13 @@ def analyze_handoff(prose: str) -> Handoff:
             }.items():
                 if re.search(words, clause):
                     pending.pop(kind, None)
+                    if kind == "approval":
+                        pending.pop("staged-approval", None)
             continue
-        if _OPTIONAL.search(clause):
-            if re.search(r"\bno (?:response|reply) (?:is )?(?:needed|required)\b", clause):
+        if _OPTIONAL.search(clause) and not staged_offer:
+            if re.search(r"\bno (?:response|reply|action) (?:is )?(?:needed|required)\b", clause):
                 pending.pop("review", None)
+                pending.pop("staged-approval", None)
             continue
         # Compute clause facts once: repeating a full-clause search for each
         # imperative would be quadratic on repeated adversarial requests.
@@ -245,6 +278,8 @@ def analyze_handoff(prose: str) -> Handoff:
             ("review-answer", _REVIEW_ANSWER), ("confirm-choice", _CONFIRM_CHOICE),
         ) if pattern.search(clause)}
         candidates: list[tuple[int, str]] = []
+        if staged_offer:
+            candidates.append((staged_offer.start(), "staged-approval"))
         for match in _DIRECT.finditer(clause):
             if match["verb"] == "review" and re.match(r"\s+verdict\s*:", clause[match.end():]):
                 continue
@@ -290,6 +325,8 @@ def analyze_handoff(prose: str) -> Handoff:
         for _, _, kind, expectancy in sorted(events):
             if expectancy is None:
                 pending.pop(kind, None)
+                if kind == "approval":
+                    pending.pop("staged-approval", None)
                 if kind == "approval" and review_approval_coupled:
                     pending.pop("review", None)
                     review_approval_coupled = False
@@ -302,6 +339,8 @@ def analyze_handoff(prose: str) -> Handoff:
     required = {kind for kind, value in pending.items() if value == "required-handoff"}
     if required:
         # A required action wins when both action and a preference are pending.
+        if "staged-approval" in required and not required - {"review", "approval", "staged-approval"}:
+            return Handoff("required-handoff", "authorization")
         if required - {"review"} == {"approval"} and _staged_authorization(prose):
             return Handoff("required-handoff", "authorization")
         return Handoff("required-handoff", "decision" if required - {"review"} == {"choice"} else "action")
