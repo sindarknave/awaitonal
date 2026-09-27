@@ -1,0 +1,7 @@
+{
+  "session_id": "pi-demo-session",
+  "turn_id": "pi-demo-activity",
+  "hook_event_name": "agent_settled",
+  "outcome": "completed",
+  "last_assistant_message": "Implemented the fix and all tests pass."
+}

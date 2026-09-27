@@ -1,0 +1,49 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"${PLUGIN_ROOT}/scripts/plugin-hook.sh\" --adapter codex >/dev/null 2>&1 || true",
+            "timeout": 2
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "^(request_user_input|request_user_input_async)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"${PLUGIN_ROOT}/scripts/plugin-hook.sh\" --adapter codex >/dev/null 2>&1 || true",
+            "timeout": 2
+          }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"${PLUGIN_ROOT}/scripts/plugin-hook.sh\" --adapter codex >/dev/null 2>&1 || true",
+            "timeout": 2
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"${PLUGIN_ROOT}/scripts/plugin-hook.sh\" --adapter codex >/dev/null 2>&1 || true",
+            "timeout": 2
+          }
+        ]
+      }
+    ]
+  }
+}

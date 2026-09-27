@@ -1,0 +1,6 @@
+{
+  "hook_event_name": "UserPromptSubmit",
+  "session_id": "codex-example-session",
+  "turn_id": "example-turn",
+  "prompt": "Fix the failing test."
+}

@@ -10,6 +10,17 @@ permissions:
   contents: read
 
 jobs:
+  pi-extension:
+    name: Pi extension lifecycle
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: "24"
+      - name: Extension tests without a model or Pi profile
+        run: node --experimental-strip-types --test tests/pi-extension.test.mjs
   core:
     name: ${{ matrix.os }} / Python ${{ matrix.python }}
     runs-on: ${{ matrix.os }}

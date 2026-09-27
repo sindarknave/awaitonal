@@ -8,9 +8,14 @@ import sys
 from . import __version__
 
 
-def diagnose(settings_path=None, socket_path=None):
+def diagnose(settings_path=None, socket_path=None, *, adapter="claude"):
     from .lifecycle import service_status
     from .setup import default_settings, hook_inventory
+    if adapter == "pi":
+        if settings_path is not None:
+            raise ValueError("Pi manages its extensions; use pi list instead of --settings")
+    else:
+        settings_path = settings_path or default_settings(adapter)
     checks = []
 
     def check(name, ok, message):
@@ -39,17 +44,31 @@ def diagnose(settings_path=None, socket_path=None):
                   "service belongs to another installation; use its CLI to stop it before switching")
     except (OSError, ValueError, RuntimeError):
         check("service", False, "listener could not be verified; inspect socket ownership/permissions. If upgrading from v0.2, stop its foreground service in its terminal, then start this version")
-    try:
-        inventory = hook_inventory(settings_path or default_settings())
-        configured = bool(inventory["manual_hooks"]) or inventory["plugin_enabled"]
-        check("hooks", configured, "hooks configured" if configured else "no Awaitonal hooks found in this settings scope")
-        check("hook-executables", inventory["broken_manual_hooks"] == 0,
-              "manual hook executables available" if not inventory["broken_manual_hooks"] else
-              "manual hook executable missing or not executable; rerun setup/migrate the old path")
-        check("duplicates", not inventory["duplicates"], "duplicate installations detected; migrate manual hooks" if inventory["duplicates"] else "no duplicate manual/plugin registration detected in this scope")
-    except (OSError, ValueError):
-        check("hooks", False, "settings are malformed or unavailable; no changes made")
+    if adapter == "pi":
+        checks.append({"name": "extension", "status": "unknown", "message":
+                       "Pi owns extension registration. Use pi list and /awaitonal-status in Pi; active extensions were not inspected"})
+    else:
+        try:
+            inventory = hook_inventory(settings_path, adapter=adapter)
+            configured = bool(inventory["manual_hooks"]) or inventory["plugin_enabled"]
+            check("hooks", configured, "hooks configured" if configured else "no Awaitonal hooks found in this settings scope")
+            if adapter == "codex":
+                # Plugin and inline TOML hooks are additive and their trust is owned
+                # by Codex. A JSON-file inventory cannot establish that they run.
+                checks[-1]["message"] = ("manual Codex hooks configured" if configured else
+                                         "no manual Codex hooks in this file; plugin and inline hooks are not inspected")
+                checks[-1]["status"] = "ok" if configured else "unknown"
+                checks.append({"name": "hook-trust", "status": "unknown", "message":
+                               "Use /hooks in Codex CLI to review all hook sources and trust new or changed hooks; trust was not inspected"})
+            check("hook-executables", inventory["broken_manual_hooks"] == 0,
+                  "manual hook executables available" if not inventory["broken_manual_hooks"] else
+                  "manual hook executable missing or not executable; rerun setup/migrate the old path")
+            check("duplicates", not inventory["duplicates"], "duplicate installations detected; migrate manual hooks" if inventory["duplicates"] else
+                  ("no duplicate manual hooks in this file; plugin/inline registrations not inspected" if adapter == "codex" else
+                   "no duplicate manual/plugin registration detected in this scope"))
+        except (OSError, ValueError):
+            check("hooks", False, "settings are malformed or unavailable; no changes made")
     player = shutil.which("afplay") if sys.platform == "darwin" else None
     check("playback", bool(player), "afplay available; audible output not tested" if player else "macOS afplay unavailable; rendering still works")
-    return {"ok": all(item["status"] == "ok" for item in checks), "checks": checks,
-            "audio_tested": False, "settings_scope": str(settings_path or default_settings())}
+    return {"ok": all(item["status"] != "needs-attention" for item in checks), "checks": checks,
+            "audio_tested": False, "settings_scope": str(settings_path) if settings_path is not None else None}

@@ -116,7 +116,7 @@ class Event:
     evidence_source: str = "text"
     turn_id: str = ""
     dedup_key: str = ""
-    kind: Literal["notification", "turn-start"] = "notification"
+    kind: Literal["notification", "turn-start", "turn-end"] = "notification"
     failure_code: str | None = None
     background_tasks: int | None = None
     session_crons: int | None = None

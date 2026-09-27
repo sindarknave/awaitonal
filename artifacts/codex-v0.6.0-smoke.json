@@ -1,0 +1,42 @@
+{
+  "platform": "Darwin",
+  "machine": "arm64",
+  "python": "3.13.1",
+  "notes": "Fresh installed wheel, warm resident rules service, one event at a time. Timing starts before hook process spawn and ends after PCM WAV synthesis/write. Excludes Codex hook scheduling, afplay startup, device onset, and queue contention. No live Codex turn or audio playback; no user config changed.",
+  "claude": {
+    "first_wav_ready_ms": 75.265,
+    "hook_process": {
+      "n": 20,
+      "median_ms": 57.805,
+      "p95_ms": 91.11
+    },
+    "hook_to_wav_ready": {
+      "n": 20,
+      "median_ms": 64.445,
+      "p95_ms": 94.828
+    }
+  },
+  "codex": {
+    "first_wav_ready_ms": 76.501,
+    "hook_process": {
+      "n": 20,
+      "median_ms": 57.655,
+      "p95_ms": 72.303
+    },
+    "hook_to_wav_ready": {
+      "n": 20,
+      "median_ms": 62.581,
+      "p95_ms": 88.972
+    }
+  },
+  "checks": {
+    "both_provider_hooks": true,
+    "codex_plugin_wrapper": true,
+    "questions_and_approvals": true,
+    "six_distinct_stable_session_voices": true,
+    "global_mute_both_providers": true,
+    "same_warm_service_after_unmute": true,
+    "no_private_content_in_logs": true,
+    "pcm_wav_synthesis": true
+  }
+}

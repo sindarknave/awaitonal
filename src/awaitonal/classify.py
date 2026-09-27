@@ -3,6 +3,7 @@ import re
 from .activity import detect_activity
 from .delivery import detect_assessment, detect_delivery
 from .handoff import analyze_handoff
+from .hook_events import QUESTION_SOURCES
 from .text import assistant_prose, sentences
 from .types import Classification, Event, STATES, controls_for, map_controls
 
@@ -26,7 +27,7 @@ def explicit_result(event: Event, threshold: float) -> Classification | None:
     if event.explicit_state in STATES:
         reason = "Structured API failure: " + event.failure_code + "." if event.failure_code else "Explicit structured event."
         return result(event.explicit_state, event, reason, threshold,
-                      handoff_kind="decision" if event.evidence_source == "claude:PreToolUse" else "action")
+                      handoff_kind="decision" if event.evidence_source in QUESTION_SOURCES else "action")
     return None
 
 
@@ -149,7 +150,7 @@ class RulesClassifier:
         self.threshold = threshold
 
     def classify(self, event: Event) -> Classification | None:
-        if not isinstance(event, Event) or event.kind == "turn-start":
+        if not isinstance(event, Event) or event.kind != "notification":
             return None
         if event.explicit_state is not None:
             return explicit_result(event, self.threshold)

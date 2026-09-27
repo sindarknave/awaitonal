@@ -1,0 +1,70 @@
+{
+  "codex_version": "0.155.0-alpha.16.4",
+  "scope": "isolated temporary CODEX_HOME and project directory",
+  "configuration": "awaitonal init --adapter codex --settings TEMP/hooks.json --apply",
+  "validation": "app-server initialize and hooks/list; no model or hook execution",
+  "generated_events": [
+    "PermissionRequest",
+    "PreToolUse",
+    "Stop",
+    "UserPromptSubmit"
+  ],
+  "discovered_events": [
+    "permissionRequest",
+    "preToolUse",
+    "stop",
+    "userPromptSubmit"
+  ],
+  "hooks": [
+    {
+      "eventName": "preToolUse",
+      "handlerType": "command",
+      "matcher": "^(request_user_input|request_user_input_async)$",
+      "async": false,
+      "source": "user",
+      "enabled": true,
+      "isManaged": false,
+      "trustStatus": "untrusted",
+      "timeoutSec": 2
+    },
+    {
+      "eventName": "permissionRequest",
+      "handlerType": "command",
+      "matcher": null,
+      "async": false,
+      "source": "user",
+      "enabled": true,
+      "isManaged": false,
+      "trustStatus": "untrusted",
+      "timeoutSec": 2
+    },
+    {
+      "eventName": "userPromptSubmit",
+      "handlerType": "command",
+      "matcher": null,
+      "async": false,
+      "source": "user",
+      "enabled": true,
+      "isManaged": false,
+      "trustStatus": "untrusted",
+      "timeoutSec": 2
+    },
+    {
+      "eventName": "stop",
+      "handlerType": "command",
+      "matcher": null,
+      "async": false,
+      "source": "user",
+      "enabled": true,
+      "isManaged": false,
+      "trustStatus": "untrusted",
+      "timeoutSec": 2
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "all_four_events_discovered": true,
+  "all_untrusted": true,
+  "real_user_configuration_changed": false,
+  "hook_trust_bypassed_or_written": false
+}

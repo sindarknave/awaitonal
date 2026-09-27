@@ -1,0 +1,18 @@
+{
+  "hook_event_name": "PreToolUse",
+  "session_id": "codex-example-session",
+  "turn_id": "example-turn",
+  "tool_name": "request_user_input",
+  "tool_use_id": "example-question",
+  "tool_input": {
+    "questions": [{
+      "header": "Storage",
+      "id": "storage",
+      "question": "Which database should I use?",
+      "options": [
+        {"label": "SQLite", "description": "Keep data on this machine."},
+        {"label": "Postgres", "description": "Use a shared database."}
+      ]
+    }]
+  }
+}

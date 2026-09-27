@@ -1,0 +1,10 @@
+{
+  "hook_event_name": "PreToolUse",
+  "session_id": "codex-example-session",
+  "turn_id": "example-turn",
+  "tool_name": "request_user_input_async",
+  "tool_use_id": "example-async-question",
+  "tool_input": {
+    "questions": [{"title": "Which database should I use?", "options": ["SQLite", "Postgres"]}]
+  }
+}

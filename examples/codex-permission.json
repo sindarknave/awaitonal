@@ -1,0 +1,7 @@
+{
+  "hook_event_name": "PermissionRequest",
+  "session_id": "codex-example-session",
+  "turn_id": "example-turn",
+  "tool_name": "Bash",
+  "tool_input": {"command": "git push", "description": "Publish the completed change."}
+}

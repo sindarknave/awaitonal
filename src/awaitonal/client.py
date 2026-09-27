@@ -9,7 +9,7 @@ import struct
 import sys
 import time
 
-from .adapter import MAX_INPUT, MAX_WIRE, adapt_claude
+from .adapter import MAX_INPUT, MAX_WIRE, adapt_claude, adapt_codex, adapt_pi
 from .types import Event
 
 
@@ -93,15 +93,18 @@ def read_hook_input(timeout: float = 0.15) -> bytes:
             raise ValueError("hook input is too large")
 
 
-def run_hook(socket_path=None, dry_run: bool = False) -> int:
+def run_hook(socket_path=None, dry_run: bool = False, *, adapter: str = "claude") -> int:
     """Never return a decision, feedback, or failure to a coding agent."""
     try:
-        event = adapt_claude(json.loads(read_hook_input()))
+        adapt = {"claude": adapt_claude, "codex": adapt_codex, "pi": adapt_pi}.get(adapter)
+        event = adapt(json.loads(read_hook_input())) if adapt is not None else None
         if dry_run:
             if event is None:
                 print(json.dumps({"ignored": True, "reason": "unsupported, subagent, or malformed event"}))
             elif event.kind == "turn-start":
                 print(json.dumps({"recorded": "turn-start", "timing_available": bool(event.turn_id)}))
+            elif event.kind == "turn-end":
+                print(json.dumps({"recorded": "turn-end", "silent": True}))
             else:
                 from .classify import RulesClassifier
                 result = RulesClassifier().classify(event)

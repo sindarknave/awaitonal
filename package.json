@@ -1,0 +1,21 @@
+{
+  "name": "awaitonal",
+  "version": "0.6.0",
+  "description": "Local musical notifications for how your coding agent leaves things.",
+  "type": "module",
+  "license": "MIT",
+  "repository": { "type": "git", "url": "https://github.com/sindarknave/awaitonal.git" },
+  "keywords": ["pi-package", "notifications", "audio", "local"],
+  "engines": { "node": ">=22.19.0" },
+  "peerDependencies": { "@earendil-works/pi-coding-agent": "*" },
+  "pi": {
+    "extensions": ["./extensions/pi.ts"],
+    "skills": [],
+    "prompts": [],
+    "themes": []
+  },
+  "scripts": {
+    "test:pi": "node --experimental-strip-types --test tests/pi-extension.test.mjs"
+  },
+  "files": ["extensions/pi.ts", "scripts/plugin-runtime.sh", "src/awaitonal/*.py", "src/awaitonal/*.json", "src/awaitonal/*.toml", "pyproject.toml", "README.md", "LICENSE"]
+}

@@ -85,7 +85,7 @@ class SemanticClassifier:
                                                    convert_to_numpy=True, show_progress_bar=False)
 
     def classify(self, event: Event):
-        if not isinstance(event, Event) or event.kind == "turn-start":
+        if not isinstance(event, Event) or event.kind != "notification":
             return None
         if event.explicit_state is not None:
             return explicit_result(event, self.threshold)

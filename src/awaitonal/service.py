@@ -18,6 +18,7 @@ import uuid
 from . import __version__
 from .adapter import MAX_WIRE, event_from_wire
 from .client import _peer_uid, default_socket
+from .hook_events import STOP_SOURCES, TURN_END_SOURCES
 from .types import Event
 from .voices import SessionVoices
 
@@ -30,6 +31,7 @@ class Pending:
     turn_seconds: float | None = None
     mute_generation: int = 0
     voice: str = "default"
+    cancelled: bool = False
 
 
 @dataclass
@@ -91,6 +93,7 @@ class EventQueue:
             raise ValueError("queue limits must be positive")
         self.capacity, self.ttl, self.dedup_seconds = capacity, ttl, dedup_seconds
         self.items = deque()
+        self.current: Pending | None = None
         self.seen = {}
         self.condition = threading.Condition()
         self.closed = False
@@ -102,6 +105,17 @@ class EventQueue:
                 p.event.session_id == event.session_id and p.event.failure_code is not None))
             self.seen = {k: v for k, v in self.seen.items() if not (k[0] == event.session_id and v[3])}
 
+    def end_turn(self, event: Event):
+        """Retire queued and unadmitted active cues only for the known turn."""
+        if not event.turn_id:
+            return
+        with self.condition:
+            self.items = deque(p for p in self.items if not (
+                p.event.session_id == event.session_id and p.event.turn_id == event.turn_id))
+            if (self.current is not None and self.current.event.session_id == event.session_id
+                    and self.current.event.turn_id == event.turn_id):
+                self.current.cancelled = True
+
     def put(self, event: Event, attention=False, now=None, state=None, turn_seconds=None,
             classification=None, supersede=True, mute_generation=0, voice="default") -> bool:
         now = time.monotonic() if now is None else now
@@ -112,7 +126,7 @@ class EventQueue:
             uninformative = (classification is not None and classification.state == "unknown"
                              and classification.delivery_kind == "unknown"
                              and classification.expectancy == "none" and classification.activity == "unknown")
-            if event.evidence_source == "claude:Stop" and (state == "needs-you" or uninformative):
+            if event.evidence_source in STOP_SOURCES and (state == "needs-you" or uninformative):
                 # A question or permission hook already announced this waiting
                 # state. An ambiguous closing sentence is not a second outcome.
                 # Keep the window short even with prompt IDs: a later question
@@ -132,13 +146,13 @@ class EventQueue:
                 if previous_id.split(":", 1)[0] != event.event_id.split(":", 1)[0]:
                     return False
             self.items = deque(p for p in self.items if now - p.received < self.ttl)
-            resolves_attention = (event.evidence_source == "claude:Stop" and not attention
+            resolves_attention = (event.evidence_source in STOP_SOURCES and not attention
                                   and not uninformative)
             if supersede:
                 self.items = deque(p for p in self.items if not (
                     p.event.session_id == event.session_id and (
                         not p.attention or resolves_attention or
-                        (event.evidence_source == "claude:Stop" and p.event.failure_code is not None) or
+                        (event.evidence_source in STOP_SOURCES and p.event.failure_code is not None) or
                         (event.turn_id and p.event.turn_id and event.turn_id != p.event.turn_id))))
             if len(self.items) >= self.capacity:
                 if not supersede:
@@ -164,6 +178,8 @@ class EventQueue:
 
     def get(self):
         item = self.get_pending()
+        if item is not None:
+            self.complete(item)
         return item.event if item is not None else None
 
     def get_pending(self):
@@ -174,14 +190,23 @@ class EventQueue:
                 if self.items:
                     item = next((p for p in self.items if p.attention), self.items[0])
                     self.items.remove(item)
+                    # Publish the serial worker's active item before releasing
+                    # the queue lock, so settlement cannot miss a dequeued cue.
+                    self.current = item
                     return item
                 self.condition.wait(0.2)
             return None
+
+    def complete(self, item):
+        with self.condition:
+            if self.current is item:
+                self.current = None
 
     def close(self):
         with self.condition:
             self.closed = True
             self.items.clear()
+            self.current = None
             self.condition.notify_all()
 
     def other_session_waiting(self, session_id, now=None):
@@ -299,6 +324,15 @@ class Service:
                 mute_generation = self._mute_generation
             if self.muted or mute_generation != self._mute_generation:
                 return
+            if event.kind == "turn-end":
+                # Serialize cancellation with the worker's final admission
+                # check. A cue admitted already may finish; a classifying cue
+                # for this turn must remain silent when it returns.
+                self.queue.end_turn(event)
+                timing = self.timings.sessions.get(event.session_id)
+                if event.turn_id and timing is not None and timing.turn_id == event.turn_id:
+                    self.timings.finish(event, now)
+                return
         voice = self.voices.assign(event.session_id, now) if self.voices is not None else "default"
         if event.kind == "turn-start":
             self.queue.begin_turn(event)
@@ -307,7 +341,7 @@ class Service:
             return
         turn_seconds = None
         if ((self.min_turn_seconds > 0 or self.long_turn_seconds > 0)
-                and event.evidence_source in ("claude:Stop", "claude:StopFailure")):
+                and event.evidence_source in TURN_END_SOURCES):
             turn_seconds = self.timings.finish(event, now)
         hint = hints.classify(event)
         # A default-silent activity update must not erase an unplayed delivery
@@ -321,12 +355,12 @@ class Service:
 
     def _worker(self):
         while (pending := self.queue.get_pending()) is not None:
-            with self._mute_lock:
-                if self.muted or pending.mute_generation != self._mute_generation:
-                    continue
             event = pending.event
-            started = time.perf_counter()
             try:
+                with self._mute_lock:
+                    if self.muted or pending.mute_generation != self._mute_generation or pending.cancelled:
+                        continue
+                started = time.perf_counter()
                 result = self.classifier.classify(event)
                 elapsed = (time.perf_counter() - started) * 1000
                 if self.queue.closed or self._stop.is_set():
@@ -336,6 +370,8 @@ class Service:
                     with self._mute_lock:
                         if self.muted or pending.mute_generation != self._mute_generation:
                             suppressed = "muted"
+                        elif pending.cancelled:
+                            suppressed = "turn-ended"
                     long_turn = not suppressed and self._long_turn(result, pending.turn_seconds)
                     burst_compacted = (self.session_voices and long_turn
                                        and self.queue.other_session_waiting(event.session_id))
@@ -354,11 +390,12 @@ class Service:
                     self.logger(record)
                     if not suppressed and not self.queue.closed and not self._stop.is_set():
                         player = self.long_turn_player if long_turn and self.long_turn_player else self.player
-                        # Admission is atomic with mute. At most this one
-                        # already-admitted cue may finish after mute replies;
-                        # synthesis/playback never holds the listener's lock.
+                        # Admission is atomic with mute and quiet settlement.
+                        # An already-admitted cue may finish; synthesis and
+                        # playback never hold the listener's lock.
                         with self._mute_lock:
-                            admitted = not self.muted and pending.mute_generation == self._mute_generation
+                            admitted = (not self.muted and pending.mute_generation == self._mute_generation
+                                        and not pending.cancelled)
                         if admitted:
                             if self.session_voices:
                                 self.voice_player(result.gesture, len(event.text), pending.voice, long_turn)
@@ -368,6 +405,8 @@ class Service:
                 # Don't log exception strings: third-party errors may quote input.
                 if not self.queue.closed and not self._stop.is_set():
                     self.logger({"error": type(error).__name__})
+            finally:
+                self.queue.complete(pending)
 
     def run(self, stop: threading.Event | None = None):
         from .classify import RulesClassifier

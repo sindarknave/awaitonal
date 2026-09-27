@@ -1,0 +1,6 @@
+{
+  "session_id": "pi-demo-session",
+  "turn_id": "pi-demo-activity",
+  "hook_event_name": "ui_prompt_start",
+  "request_id": "b41ec093-8f1e-4628-85a8-316872c410bc"
+}

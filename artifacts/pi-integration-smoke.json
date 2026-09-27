@@ -1,0 +1,44 @@
+{
+  "pi_version": "0.87.1",
+  "load_errors": [],
+  "extensions": 1,
+  "commands": [
+    "awaitonal-setup",
+    "awaitonal-mute",
+    "awaitonal-unmute",
+    "awaitonal-status"
+  ],
+  "no_model_calls": true,
+  "no_audio_playback": true,
+  "checks": [
+    "native Pi package discovery",
+    "native extension runner",
+    "retry stays quiet until settled",
+    "active dialog decision",
+    "idle dialog quiet",
+    "review",
+    "generic terminal failure",
+    "cancel during retry/compaction without pre-settle boundary stays quiet",
+    "abort remains quiet and preserves next timing",
+    "empty settlement quiet",
+    "shared mute Pi/Claude/Codex",
+    "no replay",
+    "three distinct session voices",
+    "metadata-only logs",
+    "PCM WAV synthesis"
+  ],
+  "settled_to_wav_ms": {
+    "samples": 20,
+    "median": 63.07,
+    "p95": 64.4
+  },
+  "limits": "Idle-service warm rules; excludes model request, Pi scheduler before settled event, audio player/device onset, and playback contention.",
+  "package_install_list_remove": true,
+  "isolated_profile": true,
+  "fresh_wheel": true,
+  "user_settings_changed": false,
+  "python_runtime_dependencies": [
+    "awaitonal",
+    "numpy"
+  ]
+}

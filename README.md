@@ -11,7 +11,8 @@ needs your attention. Classification and sound synthesis run locally.
 Each cue describes what the agent reports; it does not verify the work. Awaitonal
 selects from composed phrases and keeps response text on your machine.
 
-For Claude Code, start with the [plugin setup](#connect-claude-code).
+Connect [Claude Code](#connect-claude-code), [local Codex sessions](#connect-codex),
+or [Pi](#connect-pi).
 
 ## Hear it
 
@@ -222,7 +223,8 @@ suppresses the extension. Preview with `awaitonal play verdict --long-turn`.
 The in-flight pulse is independent of timing.
 
 Timing measures elapsed turn time, **not model thinking duration**. It requires
-matching prompt-start and stop IDs, supported in Claude 2.1.196+. Missing or
+matching start and stop IDs: Claude's `prompt_id` (2.1.196+), Codex's
+`turn_id`, or Pi's extension-generated activity ID. Missing or
 ambiguous timing leaves ordinary playback intact. Autonomous follow-ups cannot
 inherit an old wait, and restarting the service clears its in-memory timing map.
 
@@ -297,6 +299,78 @@ chosen Claude settings file's `hooks` object, preserving existing settings.
 Regenerate it after moving the checkout or environment. The generated file is
 excluded from version control and packages. A [portable template](examples/claude-hooks.template.json)
 and [installation and removal guide](docs/claude-hooks.md) are included.
+
+## Connect Codex
+
+Awaitonal also supports local Codex sessions with native lifecycle hooks. From
+this checkout, install the package, start the shared service, and preview the hooks:
+
+```sh
+uv sync --dev
+uv run awaitonal service start
+uv run awaitonal init --adapter codex
+uv run awaitonal init --adapter codex --apply
+```
+
+Open `/hooks` in Codex CLI to review and trust the new hooks. Codex skips
+untrusted hooks, including those bundled in plugins. Restart or open a new
+session after changing the installation. The [plugin guide](docs/plugin.md)
+also covers Codex packaging and setup skills. Codex plugin setup installs these
+same tracked user hooks; it does not depend on bundled-hook discovery.
+
+Setup writes `hooks.json` under `CODEX_HOME` (default `~/.codex`), backs up existing
+content, and preserves unrelated hooks. Use `--settings PATH` for a specific JSON
+hook file. `awaitonal uninstall --adapter codex --apply` removes only its tracked
+Codex handlers; Claude's settings are separate.
+
+Codex `Stop` supplies final text to the same classifier. `UserPromptSubmit`
+starts turn timing, `PermissionRequest` plays the approval cue, and
+`PreToolUse` for `request_user_input` or `request_user_input_async` plays the
+decision cue. No transcript is read. Missing final text, subagent events, and
+unsupported events are ignored. Codex has no documented `StopFailure` equivalent,
+so structured API-error notifications are available through Claude and Pi.
+
+All three agents share the warm service, palette, and voice rotation. Codex session
+IDs are namespaced to keep their turn timing and voices independent of Claude
+sessions. Mute affects **all three** when they use the same service. Remote or cloud
+execution cannot play through your Mac's local socket without a separate bridge.
+
+```sh
+uv run awaitonal hook codex --dry-run < examples/codex-stop.json
+uv run awaitonal hook codex --dry-run < examples/codex-question.json
+uv run awaitonal doctor --adapter codex
+```
+
+Doctor checks the service and manual hooks in the selected JSON file. It reports
+Codex hook trust as unknown; use Codex's `/hooks` to inspect trust, plugin hooks,
+and inline TOML hooks across all scopes. See [Codex compatibility and fixtures](docs/codex-hooks.md).
+
+## Connect Pi
+
+The repository is also a [Pi package](https://github.com/earendil-works/pi).
+Use Pi 0.87.1 or newer and install the release:
+
+```sh
+pi install git:github.com/sindarknave/awaitonal@v0.6.0
+```
+
+For local development, use `pi install /absolute/path/to/awaitonal` instead.
+
+Start Pi or run `/reload`, then run `/awaitonal-setup`. Setup installs the shared
+Python runtime and starts its service. `/awaitonal-status`, `/awaitonal-mute`,
+and `/awaitonal-unmute` inspect and control that service. Mute applies to Claude,
+Codex, and Pi sessions together.
+
+The extension waits for Pi's `agent_settled` event after automatic retries,
+compaction, and queued continuations. It classifies the final assistant text,
+announces blocking extension dialogs during an active run, and plays `failed`
+for a terminal error. Canceled runs end quietly. Thinking, tool output, user
+prompts, and error details are not sent to Awaitonal.
+
+Pi sessions get their own identities for timing and rotating voices. Pi manages
+extension registration; no Claude-style hook settings are written. See
+[Pi setup, commands, and limitations](docs/pi.md), including standalone runtime
+configuration and removal.
 
 ## Optional local embeddings
 
@@ -374,10 +448,12 @@ HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 .venv/bin/python -m pytest -q
 .venv/bin/awaitonal evaluate --fixtures examples/gesture-evaluation.jsonl
 .venv/bin/awaitonal evaluate --fixtures examples/classification-vNext.jsonl
 .venv/bin/python tools/benchmark.py
+node --experimental-strip-types --test tests/pi-extension.test.mjs
 ```
 
 Evaluation fixtures ship with the source distribution. Run from the checkout,
 or pass `--fixtures PATH` when using an installed wheel.
+The Pi extension tests use Node.js 22.19+ and need no npm dependencies or model calls.
 
 After setting up the optional semantic model:
 
@@ -414,7 +490,8 @@ scheduling are uncontrolled, so these measurements are not latency guarantees.
 
 ## Mute, disable, or remove
 
-- **Mute temporarily:** use `/awaitonal:mute` in Claude or `awaitonal service mute`.
+- **Mute temporarily:** use `/awaitonal:mute` in Claude, `/awaitonal-mute` in Pi,
+  or `awaitonal service mute`.
   Resume with the matching `unmute` command. This affects all sessions sharing
   the service.
 - **Stop playback:** stop a foreground service with Ctrl-C, or a managed service
@@ -423,8 +500,12 @@ scheduling are uncontrolled, so these measurements are not latency guarantees.
 - **Remove the Claude plugin and runtime:** use `/awaitonal:uninstall`. See the
   [plugin removal guide](docs/plugin.md#disable-or-remove) for disabling hooks or
   removing a runtime after its plugin has already been removed.
-- **Remove standalone hooks:** run `awaitonal uninstall --apply`. Remove any
+- **Remove standalone hooks:** run `awaitonal uninstall --apply` for Claude or
+  `awaitonal uninstall --adapter codex --apply` for Codex. Remove any
   untracked, hand-pasted Awaitonal handlers manually, preserving unrelated hooks.
+- **Remove the Pi extension:** run `pi remove git:github.com/sindarknave/awaitonal@v0.6.0`,
+  or `pi remove /absolute/path/to/awaitonal` for a local installation, then `/reload`
+  or restart Pi. Use the same source you installed; the shared service stays available.
 - **Remove automatic startup:** if you enabled it, run `awaitonal service uninstall`.
   Then stop the service and remove its installed environment or checkout when no
   longer needed. Optional downloaded model weights can be removed separately.
@@ -435,6 +516,7 @@ the private socket directory; remove it only after the service has stopped.
 ## Code map
 
 - `adapter.py`, `client.py`: event adaptation and quiet hook handoff.
+- `extensions/pi.ts`, `package.json`: Pi lifecycle extension and package registration.
 - `text.py`, `classify.py`, `semantic.py`: prose extraction and outcome classification.
 - `delivery.py`, `handoff.py`: reported delivery and requested human participation.
 - `types.py`: classification controls and deterministic state mapping.
@@ -443,8 +525,9 @@ the private socket directory; remove it only after the service has stopped.
 - `service.py`, `cli.py`: serial worker, private socket, and commands.
 - `evaluation.py`, `tools/benchmark.py`: evaluation and timing measurements.
 
-Claude Code is the only implemented adapter. Awaitonal needs no cloud account,
-API key, or GPU. The plugin and managed service are installed explicitly.
+Claude Code, local Codex, and Pi are supported through separate adapters. Awaitonal
+itself needs no cloud account, API key, or GPU. Plugins and the managed service
+are installed explicitly.
 
 ## License
 

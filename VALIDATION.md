@@ -1,5 +1,100 @@
 # Observed validation
 
+## v0.6.0 release checks
+
+The final release suite reports [1,603 Python tests passed, with two optional-model
+skips](artifacts/tests-v0.6.0-core.txt), and [23 Pi extension tests
+passed](artifacts/tests-v0.6.0-pi.txt). All package and plugin manifests use 0.6.0.
+
+A fresh 0.6.0 wheel installed with NumPy only passes the
+[Claude/Codex transport and shared-service smoke check](artifacts/codex-v0.6.0-smoke.json)
+and the [native Pi 0.87.1 package/lifecycle smoke check](artifacts/pi-v0.6.0-smoke.json).
+These isolated checks render WAVs without playing audio, preserve user settings,
+exercise shared mute and distinct session voices, and check metadata-only logs.
+The timing observations below describe earlier integration runs; the new smoke
+reports record the release-build measurements separately.
+
+## Pi integration, v0.6.0
+
+The [full core suite](artifacts/tests-pi-core.txt) reports **1,603 passed,
+2 optional-model skips**. The [Pi extension suite](artifacts/tests-pi-extension.txt)
+reports **23 passed**. Strict TypeScript checking against the installed Pi
+`0.87.1` declarations also passes. Python checks cover existing Claude/Codex
+behavior, Pi wire validation, privacy filtering, timing, global mute, voice
+isolation, and quiet cancellation before classification or playback admission.
+The extension suite covers automatic continuations, retries, cancellation during
+retry backoff, final outcomes, idle versus active dialogs, size limits, session
+replacement, subprocess deadlines, and explicit service commands.
+
+The [native Pi smoke check](artifacts/pi-integration-smoke.json) installs, lists,
+and removes the local package through Pi `0.87.1` in an isolated temporary
+profile. Pi's resource loader discovers exactly one extension and all four
+commands, without importing the other apps' skills. Its native extension runner
+dispatches fixture lifecycle events to real hook subprocesses and a private
+service installed from a fresh wheel with NumPy only. The service renders PCM
+WAVs without invoking an audio player. Tests verify final-only notifications,
+dialog attention, generic errors, quiet cancellation, preserved timing after
+abort, distinct Pi/Claude/Codex session voices, shared mute/unmute, no replay,
+and logs without response text or fixture identities.
+
+On this arm64 Mac, 20 sequential Pi settlements reached a synthesized WAV in
+**63.1 ms median / 64.4 ms p95** using the resident rules classifier. Timing
+starts at the extension's settlement callback and excludes model execution,
+Pi scheduling before that callback, playback contention, player startup, and
+audio-device latency. No live model request or audible Pi session was exercised.
+User configuration, credentials, and the existing service were untouched.
+
+The source distribution contains the extension, Pi manifest, setup script,
+documentation, and fixtures. The npm package file list excludes Python caches
+and unrelated host plugins. Pi integration requires the settlement APIs available
+in the tested release; no early `agent_end` fallback is registered. Pi's final
+event lacks an outcome field, so late cancellation by another pre-settlement
+handler remains a documented upstream API limitation in [the Pi guide](docs/pi.md).
+
+## Codex integration, v0.6.0
+
+The [full local core suite](artifacts/tests-codex-core.txt) reports **1,446 passed,
+2 optional-model skips**. Coverage includes Codex final replies, synchronous and
+asynchronous questions, approvals, malformed and oversized input, quiet hook
+processes, provider-specific setup/removal, turn timing, long endings, handoff
+deduplication, queued-attention resolution, and shared session voices. Existing
+Claude behavior remains covered by the same suite.
+
+[Native Codex configuration validation](artifacts/codex-standalone-validation.json)
+uses Codex CLI `0.155.0-alpha.16.4` with an isolated temporary configuration.
+`awaitonal init --adapter codex --apply` generates four handlers which Codex's
+app-server `hooks/list` discovers, all enabled and untrusted, with no errors or
+warnings. No model is called and no trust setting is changed.
+
+The Codex plugin installs, lists, and removes successfully in an isolated profile,
+but this build does not expose its bundled hooks through the native inventory.
+Putting Codex handlers in the default plugin hook file or removing the Claude
+manifest did not resolve that gap. Codex plugin setup therefore registers tracked
+user hooks pointing at the stable runtime. Its manifests disable bundled hooks
+to avoid duplicate registration on builds that load them. Claude still uses
+native bundled hooks. Plugin-only removal includes a Codex detach step; shared
+runtime removal and global mute affect Claude, Codex, and Pi.
+
+A [fresh-wheel smoke and timing check](artifacts/codex-integration-smoke.json)
+uses a separate Python 3.13 environment with only the wheel and NumPy. It runs
+real Claude and Codex hook subprocesses against a private service, synthesizes
+PCM WAVs, checks all six initial voice assignments and returning identities,
+exercises Codex plugin wrappers for completion/questions/approval, and verifies
+shared mute/unmute without restarting the service or replaying muted events.
+Logs exclude fixture identities, commands, questions, and final response text.
+
+On this arm64 Mac, 20 measured Codex hook launches reached a synthesized WAV in
+**61.5 ms median / 74.4 ms p95**, compared with **61.5 / 74.8 ms** for Claude.
+Providers were alternated against the same warm rules service, with one event at
+a time. This includes hook process startup, transport, classification, synthesis,
+and WAV writing. It excludes Codex's hook scheduling, competing queued cues,
+audio-player startup, and device onset. OS caches and scheduling are uncontrolled.
+
+These checks do not play audio, change user settings, or invoke a live Codex model
+turn. Hook trust still requires user review in Codex. Structured API-failure
+notifications are supported by Claude and Pi; Codex has no documented
+`StopFailure` equivalent. Pi reports generic terminal failure without raw error details.
+
 ## Rotating voices, v0.5.0 release
 
 The [full local core suite](artifacts/tests-v0.5.0-rotation-core.txt) reports

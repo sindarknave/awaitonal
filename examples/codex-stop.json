@@ -1,0 +1,7 @@
+{
+  "hook_event_name": "Stop",
+  "session_id": "codex-example-session",
+  "turn_id": "example-turn",
+  "stop_hook_active": false,
+  "last_assistant_message": "Implemented the fix. All tests pass."
+}

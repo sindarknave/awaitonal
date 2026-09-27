@@ -1,4 +1,4 @@
-"""Explicit, reviewable Claude settings edits; never used by notification hooks."""
+"""Explicit, reviewable agent hook settings edits; never used by notification hooks."""
 from copy import deepcopy
 from datetime import datetime, timezone
 import difflib
@@ -9,8 +9,12 @@ import stat
 import tempfile
 
 
-def default_settings():
-    return Path(os.environ.get("CLAUDE_CONFIG_DIR", Path.home() / ".claude")) / "settings.json"
+def default_settings(adapter="claude"):
+    if adapter == "codex":
+        return Path(os.environ.get("CODEX_HOME", Path.home() / ".codex")) / "hooks.json"
+    if adapter == "claude":
+        return Path(os.environ.get("CLAUDE_CONFIG_DIR", Path.home() / ".claude")) / "settings.json"
+    raise ValueError("unknown hook adapter")
 
 
 def _read(path):
@@ -115,12 +119,15 @@ def _atomic(path, content, mode=0o600):
 
 
 def configure_hooks(settings_path, fragment=None, *, mode="standalone", apply=False,
-                    legacy_fragment=None):
+                    legacy_fragment=None, adapter="claude"):
     """Preview by default. Only exact tracked (or explicitly supplied legacy) handlers are removed."""
     if mode not in ("standalone", "plugin", "uninstall"):
         raise ValueError("unknown setup mode")
+    if adapter not in ("claude", "codex"):
+        raise ValueError("unknown hook adapter")
     path = Path(settings_path).expanduser().absolute()
-    manifest = path.with_name(path.name + ".awaitonal.json")
+    suffix = ".awaitonal-codex.json" if adapter == "codex" else ".awaitonal.json"
+    manifest = path.with_name(path.name + suffix)
     raw, original = _read(path)
     manifest_raw, installed = _read(manifest)
     _validate_hooks(original)
@@ -176,10 +183,12 @@ def configure_hooks(settings_path, fragment=None, *, mode="standalone", apply=Fa
     return result
 
 
-def hook_inventory(settings_path):
+def hook_inventory(settings_path, *, adapter="claude"):
     """Summarize potential manual duplicates without exposing command contents."""
     import shlex
     import shutil
+    if adapter not in ("claude", "codex"):
+        raise ValueError("unknown hook adapter")
     _, data = _read(Path(settings_path).expanduser())
     _validate_hooks(data)
     counts = {}
@@ -192,7 +201,7 @@ def hook_inventory(settings_path):
                     parts = shlex.split(handler.get("command", ""))
                 except (ValueError, TypeError):
                     continue
-                if len(parts) >= 3 and Path(parts[0]).name == "awaitonal" and parts[1:3] == ["hook", "claude"]:
+                if len(parts) >= 3 and Path(parts[0]).name == "awaitonal" and parts[1:3] == ["hook", adapter]:
                     count += 1
                     target = Path(parts[0]) if Path(parts[0]).is_absolute() else Path(shutil.which(parts[0]) or "/nonexistent-awaitonal")
                     if not target.is_file() or not os.access(target, os.X_OK):
@@ -200,7 +209,7 @@ def hook_inventory(settings_path):
         if count:
             counts[event] = count
     plugins = data.get("enabledPlugins", {})
-    plugin_enabled = isinstance(plugins, dict) and any(
+    plugin_enabled = adapter == "claude" and isinstance(plugins, dict) and any(
         name.startswith("awaitonal@") and enabled is True for name, enabled in plugins.items())
     return {"manual_hooks": counts, "broken_manual_hooks": broken, "plugin_enabled": plugin_enabled,
             "duplicates": any(n > 1 for n in counts.values()) or (bool(counts) and plugin_enabled)}

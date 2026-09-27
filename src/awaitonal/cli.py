@@ -58,14 +58,16 @@ def parser():
     serve.add_argument("--silent", action="store_true", help="classify and log diagnostics without playing (integration testing)")
     serve.add_argument("--min-turn-seconds", type=float, help="suppress short routine turns with known timing; default 0")
     hook = sub.add_parser("hook", help="quiet notification-only agent hook")
-    hook.add_argument("adapter", choices=["claude"])
+    hook.add_argument("adapter", choices=["claude", "codex", "pi"])
     hook.add_argument("--socket", type=Path)
     hook.add_argument("--dry-run", action="store_true", help="inspect fixture with rules; prints JSON, never register this mode as a hook")
-    config = sub.add_parser("hook-config", help="print settings fragment; never edits Claude settings")
+    config = sub.add_parser("hook-config", help="print a hook settings fragment without editing settings")
+    config.add_argument("--adapter", choices=("claude", "codex"), default="claude")
     config.add_argument("--executable", type=Path, help="absolute installed awaitonal executable")
     config.add_argument("--socket", type=Path)
     for name in ("init", "uninstall"):
-        command = sub.add_parser(name, help="preview or apply owned Claude hook settings changes")
+        command = sub.add_parser(name, help="preview or apply owned agent hook settings changes")
+        command.add_argument("--adapter", choices=("claude", "codex"), default="claude")
         command.add_argument("--settings", type=Path)
         command.add_argument("--apply", action="store_true", help="back up and apply the displayed changes")
         command.add_argument("--legacy-executable", type=Path, help="explicitly migrate exact hooks for this old executable")
@@ -74,6 +76,7 @@ def parser():
             command.add_argument("--mode", choices=("standalone", "plugin"), default="standalone")
             command.add_argument("--executable", type=Path)
     doctor = sub.add_parser("doctor", help="inspect setup without sending response text or playing audio")
+    doctor.add_argument("--adapter", choices=("claude", "codex", "pi"), default="claude")
     doctor.add_argument("--settings", type=Path)
     doctor.add_argument("--socket", type=Path)
     doctor.add_argument("--json", action="store_true")
@@ -106,40 +109,46 @@ def parser():
     return cli
 
 
-def hook_configuration(executable: Path | None = None, socket_path=None, *, verify=True):
+def hook_configuration(executable: Path | None = None, socket_path=None, *, verify=True, adapter="claude"):
     # sys.executable lives in the active environment, so the default remains
     # valid from any project directory. No uv invocation/download on hook path.
+    if adapter not in ("claude", "codex"):
+        raise ValueError("unknown hook adapter")
     executable = executable or Path(sys.executable).parent / "awaitonal"
     executable = executable.absolute()
     if verify and (not executable.is_file() or not os.access(executable, os.X_OK)):
         raise ValueError(f"installed awaitonal executable not found: {executable}")
-    parts = [str(executable), "hook", "claude"]
+    parts = [str(executable), "hook", adapter]
     if socket_path:
         parts.extend(["--socket", str(Path(socket_path).absolute())])
     handler = {"type": "command", "command": shlex.join(parts), "timeout": 2}
-    return {"hooks": {
+    hooks = {
         "Stop": [{"hooks": [handler]}],
-        "PreToolUse": [{"matcher": "AskUserQuestion", "hooks": [handler]}],
+        "PreToolUse": [{"matcher": "AskUserQuestion" if adapter == "claude" else
+                       "^(request_user_input|request_user_input_async)$", "hooks": [handler]}],
         "PermissionRequest": [{"hooks": [handler]}],
-        "StopFailure": [{"hooks": [handler]}],
         "UserPromptSubmit": [{"hooks": [handler]}],
-    }}
+    }
+    if adapter == "claude":
+        hooks["StopFailure"] = [{"hooks": [handler]}]
+    return {"hooks": hooks}
 
 
 def execute(args):
     if args.command == "hook":
         from .client import run_hook
-        return run_hook(args.socket, args.dry_run)
+        return run_hook(args.socket, args.dry_run, adapter=args.adapter)
     if args.command == "hook-config":
-        print(json.dumps(hook_configuration(args.executable, args.socket), indent=2))
+        print(json.dumps(hook_configuration(args.executable, args.socket, adapter=args.adapter), indent=2))
         return 0
     if args.command in ("init", "uninstall"):
         from .setup import configure_hooks, default_settings
         mode = args.mode if args.command == "init" else "uninstall"
-        fragment = hook_configuration(args.executable, args.socket) if mode == "standalone" else None
-        legacy = hook_configuration(args.legacy_executable, args.socket, verify=False) if args.legacy_executable else None
-        result = configure_hooks(args.settings or default_settings(), fragment, mode=mode,
-                                 apply=args.apply, legacy_fragment=legacy)
+        fragment = hook_configuration(args.executable, args.socket, adapter=args.adapter) if mode == "standalone" else None
+        legacy = hook_configuration(args.legacy_executable, args.socket, verify=False,
+                                    adapter=args.adapter) if args.legacy_executable else None
+        result = configure_hooks(args.settings or default_settings(args.adapter), fragment, mode=mode,
+                                 apply=args.apply, legacy_fragment=legacy, adapter=args.adapter)
         if result["diff"]:
             print("Changed hook entries only; unrelated settings are preserved.")
             print(result["diff"])
@@ -148,6 +157,8 @@ def execute(args):
         if result["backup"]:
             print(f"Backup: {result['backup']}")
         print("Applied." if args.apply else "Preview only. Use --apply to write these changes.")
+        if args.adapter == "codex" and args.command == "init":
+            print("Codex must review and trust new or changed hooks before they run. Use /hooks in Codex CLI.")
         return 0
     if args.command == "service":
         from .lifecycle import (start_service, stop_service, service_status, set_service_muted,
@@ -171,7 +182,7 @@ def execute(args):
         return 0
     if args.command == "doctor":
         from .diagnostics import diagnose
-        result = diagnose(args.settings, args.socket)
+        result = diagnose(args.settings, args.socket, adapter=args.adapter)
         if args.test_sound:
             execute(parser().parse_args(["play", "done"]))
             result["audio_tested"] = True

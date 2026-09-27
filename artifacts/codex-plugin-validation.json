@@ -1,0 +1,64 @@
+{
+  "date": "2026-09-26",
+  "codex_cli_version": "0.155.0-alpha.16.4",
+  "package_version": "0.5.0",
+  "scope": "Isolated temporary HOME and CODEX_HOME profiles, copied plugin sources, and synthetic shell fixtures.",
+  "local_marketplace": {
+    "source": ".claude-plugin/marketplace.json",
+    "selector": "awaitonal@awaitonal",
+    "add": "passed",
+    "plugin_install": "passed",
+    "plugin_list": "installed and enabled, version 0.5.0",
+    "plugin_remove": "passed"
+  },
+  "native_hook_inventory": {
+    "standalone_hooks": {
+      "events": ["preToolUse", "permissionRequest", "userPromptSubmit", "stop"],
+      "trust_status": "untrusted",
+      "errors": [],
+      "warnings": []
+    },
+    "bundled_hook_probes": [
+      {
+        "case": "Portable and compatibility manifests explicitly select hooks/codex.json",
+        "cached_hook_file_present": true,
+        "plugin_enabled": true,
+        "plugin_read_hooks": [],
+        "hooks_list": [],
+        "errors": [],
+        "warnings": []
+      },
+      {
+        "case": "Copied package places Codex hook JSON at default hooks/hooks.json",
+        "plugin_read_hooks": [],
+        "hooks_list": [],
+        "errors": [],
+        "warnings": []
+      },
+      {
+        "case": "Copied package omits the Claude identity manifest while retaining portable and Codex manifests",
+        "plugin_read_hooks": [],
+        "hooks_list": [],
+        "errors": [],
+        "warnings": []
+      }
+    ],
+    "limitation": "Bundled hooks did not appear in the tested build's native inventory; install success alone does not demonstrate hook registration.",
+    "implemented_path": "Codex setup runs init --adapter codex --mode standalone --apply against the stable runtime. Both Codex manifests set hooks to an empty array, preventing default discovery and future duplicate registration. Detach removes only tracked Codex hooks."
+  },
+  "validation": {
+    "plugin_tests_passed": 40,
+    "skill_frontmatter_checks_passed": 5,
+    "shell_syntax": "passed",
+    "git_diff_check": "passed",
+    "bundled_plugin_validator": "Its sole rejection is the hooks field. Current official OpenAI documentation supports explicit hook arrays in both portable extensions and compatibility manifests; all other manifest and skill checks pass.",
+    "manifest_reference": "https://developers.openai.com/plugins/build/plugins"
+  },
+  "boundaries": {
+    "user_profiles_modified": false,
+    "models_invoked": false,
+    "hooks_executed_by_codex": false,
+    "hook_trust_granted_or_bypassed": false,
+    "personal_marketplace_changed": false
+  }
+}

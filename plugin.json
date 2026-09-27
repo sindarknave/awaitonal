@@ -1,0 +1,30 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "awaitonal",
+  "version": "0.6.0",
+  "description": "Local musical notifications for how your coding agent leaves things.",
+  "author": { "name": "sindarknave" },
+  "homepage": "https://github.com/sindarknave/awaitonal",
+  "repository": "https://github.com/sindarknave/awaitonal",
+  "license": "MIT",
+  "keywords": ["audio", "notifications", "local", "codex", "claude-code"],
+  "extensions": {
+    "com.openai": {
+      "hooks": [],
+      "interface": {
+        "displayName": "Awaitonal",
+        "shortDescription": "Hear how your coding agent left things",
+        "longDescription": "Classify final replies locally and synthesize musical cues for completion, findings, feedback, and required action. Uses a shared local service with explicit setup and mute controls. Audio playback currently targets macOS.",
+        "developerName": "sindarknave",
+        "category": "Productivity",
+        "capabilities": ["Read", "Write"],
+        "websiteURL": "https://github.com/sindarknave/awaitonal",
+        "defaultPrompt": [
+          "Set up Awaitonal notifications in Codex.",
+          "Check Awaitonal's service and hooks.",
+          "Mute Awaitonal notifications."
+        ]
+      }
+    }
+  }
+}

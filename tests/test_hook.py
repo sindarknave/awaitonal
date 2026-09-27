@@ -29,6 +29,7 @@ def hook(args=None, data=b"", *, cwd=None, env=None):
                           timeout=5, cwd=cwd or ROOT, env=environment)
 
 
+@pytest.mark.parametrize("adapter", ["claude", "codex", "pi"])
 @pytest.mark.parametrize("data", [
     b"", b"not json", b"{", b"null", b"[]", b"42", b"{}", b"\xff\xfe",
     b'{"hook_event_name":"Stop","session_id":"s"}',
@@ -36,8 +37,8 @@ def hook(args=None, data=b"", *, cwd=None, env=None):
     json.dumps({"session_id": "s", "hook_event_name": "Stop",
                 "last_assistant_message": "Done. " + "x" * MAX_INPUT}).encode(),
 ])
-def test_bad_hook_input_is_silent_success(data):
-    result = hook(data=data)
+def test_bad_hook_input_is_silent_success(data, adapter):
+    result = hook(["hook", adapter], data=data)
     assert (result.returncode, result.stdout, result.stderr) == (0, b"", b"")
 
 
@@ -245,3 +246,63 @@ def test_hook_config_rejects_missing_executable(tmp_path):
     assert result.returncode != 0
     assert result.stdout == b""
     assert b"executable not found" in result.stderr
+
+
+def codex_payload(name):
+    payload = {"session_id": "thread-process", "turn_id": "turn-process",
+               "hook_event_name": name, "transcript_path": "PRIVATE TRANSCRIPT PATH"}
+    if name == "Stop":
+        payload.update(last_assistant_message="Implemented the fix and all tests pass.", stop_hook_active=False)
+    elif name == "UserPromptSubmit":
+        payload.update(prompt="PRIVATE PROMPT")
+    elif name == "PreToolUse":
+        payload.update(tool_name="request_user_input", tool_use_id="call-process",
+                       tool_input={"questions": [{"question": "PRIVATE QUESTION"}]})
+    else:
+        payload.update(tool_name="Bash", tool_input={"command": "PRIVATE COMMAND"})
+    return json.dumps(payload).encode()
+
+
+@pytest.mark.parametrize("name,state", [("Stop", "done"), ("PermissionRequest", "needs-you"),
+                                       ("PreToolUse", "needs-you"), ("UserPromptSubmit", None)])
+def test_codex_dry_run_routes_events_without_service(name, state):
+    result = hook(["hook", "codex", "--dry-run"], codex_payload(name))
+    assert result.returncode == 0 and result.stderr == b""
+    report = json.loads(result.stdout)
+    if state is None:
+        assert report == {"recorded": "turn-start", "timing_available": True}
+    else:
+        assert report["state"] == state
+        assert report["evidence_source"] == f"codex:{name}"
+
+
+@pytest.mark.skipif(os.name != "posix", reason="The local service uses Unix sockets")
+@pytest.mark.parametrize("name", ["Stop", "UserPromptSubmit", "PermissionRequest", "PreToolUse"])
+def test_codex_hook_sends_bounded_event_without_waiting_for_response(name):
+    with tempfile.TemporaryDirectory(prefix="aw-hook-", dir="/tmp") as directory:
+        path = Path(directory) / "service.sock"
+        with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as listener:
+            listener.bind(str(path))
+            path.chmod(0o600)
+            listener.listen(1)
+            listener.settimeout(0.15)
+            result = hook(["hook", "codex", "--socket", str(path)], codex_payload(name))
+            assert (result.returncode, result.stdout, result.stderr) == (0, b"", b"")
+            connection, _ = listener.accept()
+            with connection:
+                connection.settimeout(0.5)
+                chunks = []
+                while part := connection.recv(8192):
+                    chunks.append(part)
+            wire = b"".join(chunks)
+            event = json.loads(wire)
+            assert event["session_id"] == "codex:thread-process"
+            assert event["turn_id"] == "turn-process"
+            assert event["evidence_source"] == f"codex:{name}"
+            assert event["text"] == ("Implemented the fix and all tests pass." if name == "Stop" else "")
+            assert b"PRIVATE" not in wire
+
+
+def test_codex_failure_hook_is_unsupported_and_silent():
+    result = hook(["hook", "codex"], codex_payload("StopFailure"))
+    assert (result.returncode, result.stdout, result.stderr) == (0, b"", b"")
