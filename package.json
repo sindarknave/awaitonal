@@ -1,21 +1,59 @@
 {
   "name": "awaitonal",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "Local musical notifications for how your coding agent leaves things.",
   "type": "module",
   "license": "MIT",
-  "repository": { "type": "git", "url": "https://github.com/sindarknave/awaitonal.git" },
-  "keywords": ["pi-package", "notifications", "audio", "local"],
-  "engines": { "node": ">=22.19.0" },
-  "peerDependencies": { "@earendil-works/pi-coding-agent": "*" },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sindarknave/awaitonal.git"
+  },
+  "keywords": [
+    "pi-package",
+    "notifications",
+    "audio",
+    "local",
+    "opencode-plugin"
+  ],
+  "engines": {
+    "node": ">=22.19.0"
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*",
+    "@opencode-ai/plugin": "1.18.33"
+  },
   "pi": {
-    "extensions": ["./extensions/pi.ts"],
+    "extensions": [
+      "./extensions/pi.ts"
+    ],
     "skills": [],
     "prompts": [],
     "themes": []
   },
   "scripts": {
-    "test:pi": "node --experimental-strip-types --test tests/pi-extension.test.mjs"
+    "test:pi": "node --experimental-strip-types --test tests/pi-extension.test.mjs",
+    "test:opencode": "node --experimental-strip-types --test tests/opencode-plugin.test.mjs"
   },
-  "files": ["extensions/pi.ts", "scripts/plugin-runtime.sh", "src/awaitonal/*.py", "src/awaitonal/*.json", "src/awaitonal/*.toml", "pyproject.toml", "README.md", "LICENSE"]
+  "files": [
+    "extensions/pi.ts",
+    "extensions/opencode*.ts",
+    "scripts/plugin-runtime.sh",
+    "src/awaitonal/*.py",
+    "src/awaitonal/*.json",
+    "src/awaitonal/*.toml",
+    "pyproject.toml",
+    "README.md",
+    "LICENSE"
+  ],
+  "exports": {
+    "./opencode": "./extensions/opencode.ts"
+  },
+  "peerDependenciesMeta": {
+    "@earendil-works/pi-coding-agent": {
+      "optional": true
+    },
+    "@opencode-ai/plugin": {
+      "optional": true
+    }
+  }
 }

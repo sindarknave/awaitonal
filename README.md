@@ -12,7 +12,7 @@ Each cue describes what the agent reports; it does not verify the work. Awaitona
 selects from composed phrases and keeps response text on your machine.
 
 Connect [Claude Code](#connect-claude-code), [local Codex sessions](#connect-codex),
-or [Pi](#connect-pi).
+[Pi](#connect-pi), or [OpenCode](#connect-opencode).
 
 ## Hear it
 
@@ -340,11 +340,11 @@ starts turn timing, `PermissionRequest` plays the approval cue, and
 `PreToolUse` for `request_user_input` or `request_user_input_async` plays the
 decision cue. No transcript is read. Missing final text, subagent events, and
 unsupported events are ignored. Codex has no documented `StopFailure` equivalent,
-so structured API-error notifications are available through Claude and Pi.
+so structured API-error notifications are available through Claude, Pi, and OpenCode.
 
-All three agents share the warm service, palette, and voice rotation. Codex session
+All connected agents share the warm service, palette, and voice rotation. Codex session
 IDs are namespaced to keep their turn timing and voices independent of Claude
-sessions. Mute affects **all three** when they use the same service. Remote or cloud
+sessions. Mute affects **all sessions** using the same service. Remote or cloud
 execution cannot play through your Mac's local socket without a separate bridge.
 
 ```sh
@@ -363,7 +363,7 @@ The repository is also a [Pi package](https://github.com/earendil-works/pi).
 Use Pi 0.87.1 or newer and install the release:
 
 ```sh
-pi install git:github.com/sindarknave/awaitonal@v0.7.0
+pi install git:github.com/sindarknave/awaitonal@v0.8.0
 ```
 
 For local development, use `pi install /absolute/path/to/awaitonal` instead.
@@ -371,7 +371,7 @@ For local development, use `pi install /absolute/path/to/awaitonal` instead.
 Start Pi or run `/reload`, then run `/awaitonal-setup`. Setup installs the shared
 Python runtime and starts its service. `/awaitonal-status`, `/awaitonal-mute`,
 and `/awaitonal-unmute` inspect and control that service. Mute applies to Claude,
-Codex, and Pi sessions together.
+Codex, Pi, and OpenCode sessions together.
 
 The extension waits for Pi's `agent_settled` event after automatic retries,
 compaction, and queued continuations. It classifies the final assistant text,
@@ -383,6 +383,36 @@ Pi sessions get their own identities for timing and rotating voices. Pi manages
 extension registration; no Claude-style hook settings are written. See
 [Pi setup, commands, and limitations](docs/pi.md), including standalone runtime
 configuration and removal.
+
+## Connect OpenCode
+
+The native OpenCode plugin targets **OpenCode 1.18.33 (V1)**. It uses the shared
+service for classification, timing, session voices, and global mute. OpenCode V2
+uses a different plugin API and is not supported by this entrypoint.
+
+Use the v0.8.0 release checkout, then explicitly install/update the runtime and
+start the service:
+
+```sh
+sh scripts/plugin-runtime.sh setup --adapter opencode
+```
+
+Add the plugin entrypoint to your existing OpenCode configuration, preserving
+other entries:
+
+```json
+{
+  "plugin": ["file:///absolute/path/to/awaitonal/extensions/opencode.ts"]
+}
+```
+
+Restart OpenCode. Use `sh scripts/plugin-runtime.sh status --adapter opencode`
+to inspect the shared service; replace `status` with `mute` or `unmute` to control
+it. Setup does not edit OpenCode's configuration. Notifications never install
+packages or start the service.
+
+See the [OpenCode guide](docs/opencode.md) for completion/cancellation handling,
+the pinned checkout command, privacy limits, standalone configuration, and removal.
 
 ## Optional local embeddings
 
@@ -462,6 +492,7 @@ HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 .venv/bin/python -m pytest -q
 .venv/bin/awaitonal evaluate --fixtures examples/classification-v061.jsonl
 .venv/bin/python tools/benchmark.py
 node --experimental-strip-types --test tests/pi-extension.test.mjs
+node --experimental-strip-types --test tests/opencode-plugin.test.mjs
 ```
 
 Evaluation fixtures ship with the source distribution. Run from the checkout,
@@ -521,9 +552,12 @@ scheduling are uncontrolled, so these measurements are not latency guarantees.
 - **Remove standalone hooks:** run `awaitonal uninstall --apply` for Claude or
   `awaitonal uninstall --adapter codex --apply` for Codex. Remove any
   untracked, hand-pasted Awaitonal handlers manually, preserving unrelated hooks.
-- **Remove the Pi extension:** run `pi remove git:github.com/sindarknave/awaitonal@v0.7.0`,
+- **Remove the Pi extension:** run `pi remove git:github.com/sindarknave/awaitonal@v0.8.0`,
   or `pi remove /absolute/path/to/awaitonal` for a local installation, then `/reload`
   or restart Pi. Use the same source you installed; the shared service stays available.
+- **Remove the OpenCode plugin:** remove only Awaitonal's entry from OpenCode's
+  `plugin` list (or its local loader file), then restart OpenCode. The shared
+  service remains available to other integrations.
 - **Remove automatic startup:** if you enabled it, run `awaitonal service uninstall`.
   Then stop the service and remove its installed environment or checkout when no
   longer needed. Optional downloaded model weights can be removed separately.
@@ -535,6 +569,7 @@ the private socket directory; remove it only after the service has stopped.
 
 - `adapter.py`, `client.py`: event adaptation and quiet hook handoff.
 - `extensions/pi.ts`, `package.json`: Pi lifecycle extension and package registration.
+- `extensions/opencode.ts`, `extensions/opencode-core.ts`: OpenCode plugin and lifecycle bridge.
 - `text.py`, `classify.py`, `semantic.py`: prose extraction and outcome classification.
 - `delivery.py`, `handoff.py`: reported delivery and requested human participation.
 - `types.py`: classification controls and deterministic state mapping.
@@ -543,7 +578,7 @@ the private socket directory; remove it only after the service has stopped.
 - `service.py`, `cli.py`: serial worker, private socket, and commands.
 - `evaluation.py`, `tools/benchmark.py`: evaluation and timing measurements.
 
-Claude Code, local Codex, and Pi are supported through separate adapters. Awaitonal
+Claude Code, local Codex, Pi, and OpenCode are supported through separate adapters. Awaitonal
 itself needs no cloud account, API key, or GPU. Plugins and the managed service
 are installed explicitly.
 

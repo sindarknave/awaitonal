@@ -343,7 +343,7 @@ def test_codex_runtime_uninstall_does_not_remove_claude_plugin(plugin_env):
     install_fake_uv(plugin_env)
     result = script(plugin_env, "uninstall", "--adapter", "codex")
     assert result.returncode == 0, result.stderr
-    assert "both Claude and Codex" in result.stdout
+    assert all(name in result.stdout for name in ("Claude", "Codex", "Pi", "OpenCode"))
     assert "codex plugin remove" in result.stdout
     assert "claude plugin uninstall" not in result.stdout
     assert "plugin remove" not in log.read_text() and "plugin uninstall" not in log.read_text()

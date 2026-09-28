@@ -1,0 +1,37 @@
+(node:63869) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:63898) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ native loader entrypoint exports only the plugin and loading performs no model/setup calls (1.158292ms)
+✔ success waits for idle and forwards only completed final assistant text once (1.574042ms)
+✔ successive model steps discard progress text and do not create extra turn starts (0.260375ms)
+✔ later full-value exclusions and retractions cannot replay cached text (0.348125ms)
+✔ idle without authoritative terminal completion is quiet, including old history and tool calls (1.32025ms)
+✔ retry preserves the activity but requires fresh text and step completion (0.355917ms)
+✔ compaction/cancellation cannot replay an earlier successful reply (0.289458ms)
+✔ interim compaction errors are quiet and a later final message succeeds (0.13975ms)
+✔ terminal failed compaction reports generic failure from summary metadata without text (0.359958ms)
+✔ terminal errors are generic and native aborts are quiet even before cleanup (0.525666ms)
+✔ an error stored only on the final message also overrides text (0.151792ms)
+✔ new user input invalidates previous prose; each settled activity gets a fresh UUID (0.11275ms)
+✔ native permission/question requests are scoped, deduplicated and never forward details (0.266334ms)
+✔ native permission/question resolutions cancel only their unsent attention (0.103167ms)
+✔ subagents never chime, including existing child sessions discovered by read-only lookup (4.045792ms)
+✔ resumed roots use only bounded session metadata lookup; stale results cannot revive ended turns (1.51375ms)
+✔ failed or mismatched metadata lookup remains quiet and never falls back to transcript access (0.586917ms)
+✔ oversized/invalid final text closes the turn quietly; JSON escaping counts toward the cap (1.011792ms)
+✔ excess parts, removal, and malformed native envelopes fail quiet (0.290458ms)
+✔ session deletion, eviction, expiration and disposal close activities quietly (1.261416ms)
+✔ a rejected start is never retried mid-turn or followed by attention/settlement (0.087083ms)
+✔ executable resolution respects explicit absolute overrides (3.246375ms)
+✔ real transport sends bounded JSON in order with safe argv and no shell (240.961375ms)
+✔ transport reserves settlements and cancels unsent attention under queue pressure (1505.94125ms)
+✔ missing executable/service stays nonblocking and close is bounded (2.887125ms)
+ℹ tests 25
+ℹ suites 0
+ℹ pass 25
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1950.831083

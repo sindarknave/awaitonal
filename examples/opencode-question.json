@@ -1,0 +1,6 @@
+{
+  "hook_event_name": "question_asked",
+  "session_id": "example-session",
+  "turn_id": "483427d2-fbde-42e5-a844-698a676968b7",
+  "request_id": "8490b860-4555-4de5-98c6-6828722cf9b5"
+}

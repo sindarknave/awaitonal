@@ -1,7 +1,7 @@
 # Pi integration
 
-Awaitonal's Pi package lives in this repository alongside its Claude Code and
-Codex integrations. It uses the same local Python service, classifier, palette,
+Awaitonal's Pi package lives in this repository alongside its Claude Code, Codex,
+and OpenCode integrations. It uses the same local Python service, classifier, palette,
 global mute, and optional rotating session voices. Playback currently uses macOS
 `afplay`; Linux can classify and render WAVs but has no built-in audio player.
 
@@ -11,7 +11,7 @@ Use Pi 0.87.1 or newer, Python 3.11+, and [uv](https://docs.astral.sh/uv/).
 Install the release from GitHub:
 
 ```sh
-pi install git:github.com/sindarknave/awaitonal@v0.7.0
+pi install git:github.com/sindarknave/awaitonal@v0.8.0
 ```
 
 For local development, use `pi install /absolute/path/to/awaitonal` instead.
@@ -24,8 +24,8 @@ Start Pi or run `/reload`, then:
 ```
 
 Setup explicitly installs Awaitonal into its stable user runtime and starts the
-service. Updating that runtime also updates the code used by Claude and Codex.
-Setup does not register or remove hooks for either app. If a different Awaitonal
+service. Updating that runtime also updates the code used by Claude, Codex, and
+OpenCode. Setup does not change those apps' registrations. If a different Awaitonal
 installation owns the socket, stop it with its own CLI before switching.
 
 The Pi package manifest loads only `extensions/pi.ts`. It does not automatically
@@ -33,7 +33,7 @@ load the Claude/Codex setup skills. Pi owns package registration and settings;
 Awaitonal's `init`, `uninstall`, and `hook-config` commands are for Claude/Codex
 hook files, not Pi packages.
 
-The release install is pinned to v0.7.0. When installing a newer release, use its
+The release install is pinned to v0.8.0. When installing a newer release, use its
 tag, then `/reload` and rerun `/awaitonal-setup` to update the Python runtime.
 For a local installation, run those same commands after changing the checkout.
 Keep that checkout at its installed path, or reinstall it from its new location.
@@ -130,7 +130,7 @@ service. Remote Pi sessions need a separate local bridge to reach your Mac.
 Remove the package using the same source used for installation:
 
 ```sh
-pi remove git:github.com/sindarknave/awaitonal@v0.7.0
+pi remove git:github.com/sindarknave/awaitonal@v0.8.0
 ```
 
 For a local installation, use `pi remove /absolute/path/to/awaitonal` instead.

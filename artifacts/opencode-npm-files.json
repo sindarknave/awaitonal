@@ -1,0 +1,191 @@
+[
+  {
+    "id": "awaitonal@0.7.0",
+    "name": "awaitonal",
+    "version": "0.7.0",
+    "size": 91688,
+    "unpackedSize": 329688,
+    "shasum": "8f86026214b74e70ea393b3f56c13dfa8732e28c",
+    "integrity": "sha512-KLOOxN7dF66V1XnEkFfaQQS2MO7WncJa9pSiZVQJUThWEagCD63IdfcDeEobFG7wuRdWN+BDOLx/7SI3YfvzTg==",
+    "filename": "awaitonal-0.7.0.tgz",
+    "files": [
+      {
+        "path": "LICENSE",
+        "size": 1068,
+        "mode": 420
+      },
+      {
+        "path": "README.md",
+        "size": 29408,
+        "mode": 420
+      },
+      {
+        "path": "extensions/opencode-core.ts",
+        "size": 18478,
+        "mode": 420
+      },
+      {
+        "path": "extensions/opencode.ts",
+        "size": 434,
+        "mode": 420
+      },
+      {
+        "path": "extensions/pi.ts",
+        "size": 13410,
+        "mode": 420
+      },
+      {
+        "path": "package.json",
+        "size": 1328,
+        "mode": 420
+      },
+      {
+        "path": "pyproject.toml",
+        "size": 804,
+        "mode": 420
+      },
+      {
+        "path": "scripts/plugin-runtime.sh",
+        "size": 7281,
+        "mode": 420
+      },
+      {
+        "path": "src/awaitonal/__init__.py",
+        "size": 96,
+        "mode": 420
+      },
+      {
+        "path": "src/awaitonal/__main__.py",
+        "size": 48,
+        "mode": 420
+      },
+      {
+        "path": "src/awaitonal/activity.py",
+        "size": 5086,
+        "mode": 420
+      },
+      {
+        "path": "src/awaitonal/adapter.py",
+        "size": 21443,
+        "mode": 420
+      },
+      {
+        "path": "src/awaitonal/anchors.json",
+        "size": 2812,
+        "mode": 420
+      },
+      {
+        "path": "src/awaitonal/audition.py",
+        "size": 2791,
+        "mode": 420
+      },
+      {
+        "path": "src/awaitonal/classify.py",
+        "size": 14970,
+        "mode": 420
+      },
+      {
+        "path": "src/awaitonal/cli.py",
+        "size": 18842,
+        "mode": 420
+      },
+      {
+        "path": "src/awaitonal/client.py",
+        "size": 5329,
+        "mode": 420
+      },
+      {
+        "path": "src/awaitonal/config.py",
+        "size": 2166,
+        "mode": 420
+      },
+      {
+        "path": "src/awaitonal/delivery.py",
+        "size": 20553,
+        "mode": 420
+      },
+      {
+        "path": "src/awaitonal/diagnostics.py",
+        "size": 5428,
+        "mode": 420
+      },
+      {
+        "path": "src/awaitonal/evaluation.py",
+        "size": 4826,
+        "mode": 420
+      },
+      {
+        "path": "src/awaitonal/handoff.py",
+        "size": 20607,
+        "mode": 420
+      },
+      {
+        "path": "src/awaitonal/hook_events.py",
+        "size": 552,
+        "mode": 420
+      },
+      {
+        "path": "src/awaitonal/lifecycle.py",
+        "size": 23128,
+        "mode": 420
+      },
+      {
+        "path": "src/awaitonal/palette.toml",
+        "size": 16455,
+        "mode": 420
+      },
+      {
+        "path": "src/awaitonal/playback.py",
+        "size": 2458,
+        "mode": 420
+      },
+      {
+        "path": "src/awaitonal/semantic.py",
+        "size": 8864,
+        "mode": 420
+      },
+      {
+        "path": "src/awaitonal/semantic.toml",
+        "size": 588,
+        "mode": 420
+      },
+      {
+        "path": "src/awaitonal/service.py",
+        "size": 28559,
+        "mode": 420
+      },
+      {
+        "path": "src/awaitonal/setup.py",
+        "size": 8960,
+        "mode": 420
+      },
+      {
+        "path": "src/awaitonal/synth.py",
+        "size": 19597,
+        "mode": 420
+      },
+      {
+        "path": "src/awaitonal/text.py",
+        "size": 7980,
+        "mode": 420
+      },
+      {
+        "path": "src/awaitonal/types.py",
+        "size": 5428,
+        "mode": 420
+      },
+      {
+        "path": "src/awaitonal/variations.py",
+        "size": 6342,
+        "mode": 420
+      },
+      {
+        "path": "src/awaitonal/voices.py",
+        "size": 3569,
+        "mode": 420
+      }
+    ],
+    "entryCount": 35,
+    "bundled": []
+  }
+]

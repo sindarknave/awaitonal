@@ -1,0 +1,314 @@
+{
+  "schema_version": 1,
+  "validated_at_utc": "2026-09-28T07:16:38.200275+00:00",
+  "scope": "OpenCode V1 integration, unpublished development build",
+  "versions": {
+    "opencode_ai": "1.18.33",
+    "opencode_plugin": "1.18.33",
+    "opencode_sdk": "1.18.33",
+    "typescript": "5.9.3",
+    "node_typecheck_host": "23.5.0",
+    "python": "3.13.1",
+    "platform": "Darwin",
+    "machine": "arm64",
+    "awaitonal_wheel": "0.7.0"
+  },
+  "awaitonal_source_sha256": {
+    "extensions/opencode.ts": "6e14835d79cbd40eec3f86d90b11b0c2251cb34a9e9fa10353c5b467a2072967",
+    "extensions/opencode-core.ts": "2384363fb953509448cd2d06a632d5a1394495c2ca20d37a87d7c47be1fb9327"
+  },
+  "wheel": {
+    "sha256": "2a850989fca40e11b6b2a1ddc7c93a73175456ef31a54e65fc6bea5d5d408b1a",
+    "installed_archive_frozen_before_final_smoke": true,
+    "installed_package_payload_files_matching_current_wheel": 27,
+    "installed_metadata_matches_current_wheel": true
+  },
+  "official_dependency_provenance": {
+    "packages": {
+      "opencode-ai": {
+        "version": "1.18.33",
+        "resolved": "https://registry.npmjs.org/opencode-ai/-/opencode-ai-1.18.33.tgz",
+        "integrity": "sha512-58P1ffLRXiAY4QeoABqUjqf6DEzm1ihpovvn9Ad+oOLbLiwK/rf88wruT9IATJ7AtNjmi8iA7pC8tN4o5y799Q=="
+      },
+      "@opencode-ai/plugin": {
+        "version": "1.18.33",
+        "resolved": "https://registry.npmjs.org/@opencode-ai/plugin/-/plugin-1.18.33.tgz",
+        "integrity": "sha512-fmhqCBJvNt+Vfbx6ckKP19S3xwMBhUXLCBQaK92R4wnv3wsWTZYkJQwYf2egiWfJNOl47jhs3vP7uQkl0mvHQw=="
+      },
+      "@opencode-ai/sdk": {
+        "version": "1.18.33",
+        "resolved": "https://registry.npmjs.org/@opencode-ai/sdk/-/sdk-1.18.33.tgz",
+        "integrity": "sha512-Nyurky9+AA2tvZ6my8UtO5pxPoXxrNypqjeEqMshBGiR542glOy+KE1Y+3lwWU+Z6HC/hSmrdXNbX81+qiuTzg=="
+      },
+      "typescript": {
+        "version": "5.9.3",
+        "resolved": "https://registry.npmjs.org/typescript/-/typescript-5.9.3.tgz",
+        "integrity": "sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw=="
+      },
+      "@types/node": {
+        "version": "22.20.4",
+        "resolved": "https://registry.npmjs.org/@types/node/-/node-22.20.4.tgz",
+        "integrity": "sha512-zJRE40jpHtKqE/C4fgHrAKQLJuSpzEnP9ff9Y7YtoR3Wd2pwqzlekDeEuUQXjRd+QCYnVnNwuJYmhdk9XV8gvA=="
+      }
+    },
+    "native_executable_sha256": "139ddeb6a46ba276827bb8f79c7b28208621746e4fd6914d9ae71cc1a0a57524",
+    "sdk_v1_types_sha256": "1fdbed5b58ed5882b411cc9b1b03fdfe2fb131b0be39a0fd2622d12ab6f50f0f",
+    "plugin_types_sha256": "f3ec1a150d1354be3c9d93928fa130edc118c63fb468533ebb01eb3d6ed77f92",
+    "node": "23.5.0",
+    "source_tag": "v1.18.33"
+  },
+  "typecheck": {
+    "passed": true,
+    "strict": true,
+    "target": "ES2022",
+    "module_resolution": "Bundler",
+    "dependency_library_check_skipped": true,
+    "source_errors": 0
+  },
+  "native_loader_and_real_lifecycle": {
+    "native_cli_version": "1.18.33",
+    "actual_plugin_initialized_and_disposed": true,
+    "hooks": [
+      "event",
+      "experimental.session.compacting",
+      "dispose"
+    ],
+    "real_loopback_lifecycle": {
+      "version": "1.18.33",
+      "root_created": true,
+      "child_created": true,
+      "child_parent_matches": true,
+      "empty_root_abort": true,
+      "empty_child_abort": true,
+      "fixture_sessions_deleted": true,
+      "models_called": false
+    },
+    "no_hook_subprocess_for_root_or_child_empty_abort": true,
+    "native_server_stopped": true,
+    "observed_real_event_counts": {
+      "session.created": 2,
+      "session.status": 2,
+      "session.idle": 2,
+      "session.deleted": 2
+    }
+  },
+  "synthetic_native_to_wheel_service": {
+    "method": "Synthetic event fixtures run inside actual OpenCode V1 native plugin loader, through installed-wheel hook subprocess, private Unix socket, resident rules service and PCM WAV synthesis. No live provider turn, audio device onset, or TUI prompt interaction was tested.",
+    "case_count": 10,
+    "passed": true,
+    "cases": {
+      "completion": {
+        "expected_gestures": [
+          "done"
+        ],
+        "observed_gestures": [
+          "done"
+        ],
+        "passed": true
+      },
+      "permission": {
+        "expected_gestures": [
+          "needs-you"
+        ],
+        "observed_gestures": [
+          "needs-you"
+        ],
+        "passed": true
+      },
+      "question": {
+        "expected_gestures": [
+          "decision"
+        ],
+        "observed_gestures": [
+          "decision"
+        ],
+        "passed": true
+      },
+      "error": {
+        "expected_gestures": [
+          "failed"
+        ],
+        "observed_gestures": [
+          "failed"
+        ],
+        "passed": true
+      },
+      "aborted": {
+        "expected_gestures": [],
+        "observed_gestures": [],
+        "passed": true
+      },
+      "child": {
+        "expected_gestures": [],
+        "observed_gestures": [],
+        "passed": true
+      },
+      "retry_recovered": {
+        "expected_gestures": [
+          "done"
+        ],
+        "observed_gestures": [
+          "done"
+        ],
+        "passed": true
+      },
+      "retry_cancel": {
+        "expected_gestures": [],
+        "observed_gestures": [],
+        "passed": true
+      },
+      "compaction_failed": {
+        "expected_gestures": [
+          "failed"
+        ],
+        "observed_gestures": [
+          "failed"
+        ],
+        "passed": true
+      },
+      "muted": {
+        "expected_gestures": [],
+        "observed_gestures": [],
+        "passed": true
+      }
+    },
+    "wav_count": 6,
+    "captured_wav_metadata": [
+      {
+        "gesture": "done",
+        "voice": "marimba",
+        "variation": 0,
+        "frames": 37680,
+        "wav_sha256": "8abacbdc9d0a489fb421cd0f20a0a283f55376a82c4f3a4b0a06a684b77884ba"
+      },
+      {
+        "gesture": "needs-you",
+        "voice": "powersaw",
+        "variation": 0,
+        "frames": 82800,
+        "wav_sha256": "81bc9e9197dc065484b2f53c9eef5af21340c5b58f06cb7ae2f99978a90edf4a"
+      },
+      {
+        "gesture": "decision",
+        "voice": "harp",
+        "variation": 0,
+        "frames": 52560,
+        "wav_sha256": "9466f93b6038dfcd3b9fbfccee7ec187338134f0f73b1bbda966568ea9adf1b1"
+      },
+      {
+        "gesture": "failed",
+        "voice": "clarinet",
+        "variation": 0,
+        "frames": 46320,
+        "wav_sha256": "f52ab24a37c8af358674b57922ad3d08be274339b49d2fef78d2b4c228246162"
+      },
+      {
+        "gesture": "done",
+        "voice": "flute",
+        "variation": 0,
+        "frames": 37680,
+        "wav_sha256": "83e951c2183a1d65994357110443449bedfa9a89b38b9ced2b0518c4a6b8f2be"
+      },
+      {
+        "gesture": "failed",
+        "voice": "powersaw",
+        "variation": 0,
+        "frames": 46320,
+        "wav_sha256": "cdd0eb17ffae3f433de567aab8472e1bcf5d61b56a3e62406bd9756a83a38cf6"
+      }
+    ],
+    "sample_rate": 48000,
+    "channels": 1,
+    "pcm_bits": 16,
+    "private_metadata_absent_from_service_logs": true
+  },
+  "source_review": {
+    "source_tag": "v1.18.33",
+    "confirmed": [
+      "V1 plugins load local TypeScript and receive event callbacks without the dispatcher awaiting them.",
+      "Idle is emitted for both completion and cancellation, including aborting an already idle session.",
+      "Automatic retry reuses an assistant message ID; step boundaries are needed to reject stale completion metadata.",
+      "Compaction summaries must not become final reply text; a terminal summary error can be the only terminal failure metadata.",
+      "Current runtime permission/question event names and requestID fields are newer than the bundled V1 SDK Event union.",
+      "Root/child relation is carried by session parentID; request tool metadata can correlate the originating assistant.",
+      "Permission/question reply events can cancel still-unsent attention; cancellation cleanup can remove a request without a reply event."
+    ],
+    "sources": [
+      {
+        "path": "packages/opencode/src/plugin/loader.ts",
+        "url": "https://raw.githubusercontent.com/anomalyco/opencode/v1.18.33/packages/opencode/src/plugin/loader.ts",
+        "sha256": "a7eba2d328a36a2486b50245ad98ef0daa769d4109c9e50470d8493b0936c4c0"
+      },
+      {
+        "path": "packages/opencode/src/session/compaction.ts",
+        "url": "https://raw.githubusercontent.com/anomalyco/opencode/v1.18.33/packages/opencode/src/session/compaction.ts",
+        "sha256": "8d478570a7e4ad32b746030d4f86a1c673949b1e2259bd716b3885d99283289a"
+      },
+      {
+        "path": "packages/opencode/src/permission/index.ts",
+        "url": "https://raw.githubusercontent.com/anomalyco/opencode/v1.18.33/packages/opencode/src/permission/index.ts",
+        "sha256": "5b9e4aa65290a39363722b9fae4c68080188d8ed76896afa0d96cd9dbfd2821d"
+      },
+      {
+        "path": "packages/opencode/src/plugin/index.ts",
+        "url": "https://raw.githubusercontent.com/anomalyco/opencode/v1.18.33/packages/opencode/src/plugin/index.ts",
+        "sha256": "47c62b7cfae891d268e6b239edb0f1c46df5cb35eb11ccfd8bd4186c156024e9"
+      },
+      {
+        "path": "packages/opencode/src/session/processor.ts",
+        "url": "https://raw.githubusercontent.com/anomalyco/opencode/v1.18.33/packages/opencode/src/session/processor.ts",
+        "sha256": "0b31e207beda56bd9a4b9b88c9e42d89a0651dd011773748c8e2938dfc3dcb74"
+      },
+      {
+        "path": "packages/opencode/src/session/prompt.ts",
+        "url": "https://raw.githubusercontent.com/anomalyco/opencode/v1.18.33/packages/opencode/src/session/prompt.ts",
+        "sha256": "f0c5bc64c0f0e966693d4a57f7ede1e9d6e188b396152f04b55303dc75b9b768"
+      },
+      {
+        "path": "packages/opencode/src/session/run-state.ts",
+        "url": "https://raw.githubusercontent.com/anomalyco/opencode/v1.18.33/packages/opencode/src/session/run-state.ts",
+        "sha256": "75ed3e7f02474f4ff8ac88b5f24b75ffa7cdb9829770377e7c33d248df43936e"
+      },
+      {
+        "path": "packages/opencode/src/session/status.ts",
+        "url": "https://raw.githubusercontent.com/anomalyco/opencode/v1.18.33/packages/opencode/src/session/status.ts",
+        "sha256": "dbbbdee83c292379c1665a1d482b810a13754b6ae2143169b24c75ced5841b42"
+      },
+      {
+        "path": "packages/opencode/src/question/index.ts",
+        "url": "https://raw.githubusercontent.com/anomalyco/opencode/v1.18.33/packages/opencode/src/question/index.ts",
+        "sha256": "7f1aa951067be95f020c508b5f8cf61446047019f8ffd31c2372eb551cc22f52"
+      },
+      {
+        "path": "packages/schema/src/v1/question.ts",
+        "url": "https://raw.githubusercontent.com/anomalyco/opencode/v1.18.33/packages/schema/src/v1/question.ts",
+        "sha256": "81a5b85e2576a9ca441d4813160721075efdcb8ced71c57a9e834b698e72f1b7"
+      },
+      {
+        "path": "packages/schema/src/v1/permission.ts",
+        "url": "https://raw.githubusercontent.com/anomalyco/opencode/v1.18.33/packages/schema/src/v1/permission.ts",
+        "sha256": "eaa6c288030c691429e9fd63db59b0609e55337c63d6fa932b30b3c1c6956d89"
+      }
+    ]
+  },
+  "isolation_and_limits": {
+    "all_normal_user_config_unchanged": true,
+    "scoped_home_and_xdg_directories": true,
+    "isolated_scratch_git_project": true,
+    "upward_project_configuration_disabled": true,
+    "no_provider_credentials_supplied": true,
+    "no_model_calls": true,
+    "no_audio_playback": true,
+    "native_fixture_sessions_deleted": true,
+    "private_service_socket_removed": true,
+    "native_server_stopped": true,
+    "no_publication": true,
+    "not_tested": [
+      "Live provider/model-generated turns",
+      "Actual TUI permission or question interaction",
+      "Audio device onset or subjective sound quality",
+      "OpenCode V2 integrations",
+      "Other operating systems"
+    ]
+  }
+}

@@ -8,7 +8,7 @@ if [ "$#" -gt 0 ]; then
     [ "$#" -eq 2 ] && [ "$1" = --adapter ] || exit 0
     adapter="$2"
 fi
-case "$adapter" in claude|codex|pi) ;; *) exit 0 ;; esac
+case "$adapter" in claude|codex|pi|opencode) ;; *) exit 0 ;; esac
 runtime="${AWAITONAL_PLUGIN_RUNTIME:-${XDG_DATA_HOME:-$HOME/.local/share}/awaitonal/plugin}"
 case "$runtime" in /*) ;; *) exit 0 ;; esac
 if [ -x "$runtime/bin/awaitonal" ]; then

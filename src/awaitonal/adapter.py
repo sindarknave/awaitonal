@@ -251,6 +251,56 @@ def adapt_pi(payload: object) -> Event | None:
     return None
 
 
+def adapt_opencode(payload: object) -> Event | None:
+    """Accept only the native plugin's small, normalized lifecycle protocol.
+
+    The plugin generates turn/request UUIDs and filters provider events before
+    invoking this hook. No prompt, transcript, tool arguments, permission title,
+    error prose or background registry is part of this boundary.
+    """
+    if not isinstance(payload, dict):
+        return None
+    session = payload.get("session_id")
+    turn = _request_uuid(payload.get("turn_id"))
+    if not _bounded_string(session, 256) or turn is None:
+        return None
+    session = "opencode:" + (session if len(session.encode("utf-8")) <= 247 else digest(session))
+    name = payload.get("hook_event_name")
+    base = {"hook_event_name", "session_id", "turn_id"}
+    if name == "agent_start":
+        if set(payload) != base:
+            return None
+        return Event(session, "start:" + turn, evidence_source="opencode:agent_start",
+                     turn_id=turn, kind="turn-start")
+    if name == "agent_settled":
+        outcome = payload.get("outcome")
+        if outcome not in ("completed", "error", "aborted"):
+            return None
+        allowed = base | {"outcome"} | ({"last_assistant_message"} if outcome == "completed" else set())
+        if set(payload) - allowed:
+            return None
+        if outcome == "error":
+            return Event(session, "failure:" + turn, explicit_state="failed",
+                         evidence_source="opencode:agent_error", turn_id=turn, failure_code="unknown")
+        message = payload.get("last_assistant_message")
+        if message is not None and not _bounded_string(message, MAX_INPUT, empty=True):
+            return None
+        if outcome == "aborted" or message is None or isinstance(message, str) and not message.strip():
+            return Event(session, "end:" + turn, evidence_source="opencode:agent_quiet",
+                         turn_id=turn, kind="turn-end")
+        if not _bounded_string(message, MAX_INPUT):
+            return None
+        return Event(session, "stop:" + turn, message, evidence_source="opencode:agent_settled", turn_id=turn)
+    if name in ("permission_asked", "question_asked"):
+        request = _request_uuid(payload.get("request_id"))
+        if request is None or set(payload) != base | {"request_id"}:
+            return None
+        prefix = "question:" if name == "question_asked" else "permission:"
+        return Event(session, prefix + request, explicit_state="needs-you",
+                     evidence_source="opencode:" + name, turn_id=turn, dedup_key="request:" + request)
+    return None
+
+
 def event_from_wire(payload: object) -> Event | None:
     """Reject malformed events instead of manufacturing a success sound."""
     if not isinstance(payload, dict):
@@ -274,6 +324,37 @@ def event_from_wire(payload: object) -> Event | None:
     if code is not None and (not isinstance(code, str) or code not in FAILURE_CODES):
         return None
     source = payload.get("evidence_source", "")
+    if source.startswith("opencode:"):
+        turn = _request_uuid(payload.get("turn_id"))
+        if (not payload["session_id"].startswith("opencode:")
+                or not _bounded_string(payload["session_id"][9:], 247)
+                or turn is None or payload.get("turn_id") != turn
+                or "background_tasks" in payload or "session_crons" in payload):
+            return None
+        if source == "opencode:agent_settled":
+            if (kind != "notification" or payload.get("explicit_state") is not None or code is not None
+                    or payload.get("dedup_key", "") or payload["event_id"] != "stop:" + turn):
+                return None
+        elif source == "opencode:agent_start":
+            if kind != "turn-start" or payload["event_id"] != "start:" + turn:
+                return None
+        elif source == "opencode:agent_quiet":
+            if kind != "turn-end" or payload["event_id"] != "end:" + turn:
+                return None
+        elif source == "opencode:agent_error":
+            if (kind != "notification" or payload.get("explicit_state") != "failed" or code != "unknown"
+                    or payload.get("text", "") or payload.get("dedup_key", "")
+                    or payload["event_id"] != "failure:" + turn):
+                return None
+        elif source in ("opencode:question_asked", "opencode:permission_asked"):
+            prefix = "question:" if source == "opencode:question_asked" else "permission:"
+            request = _request_uuid(payload["event_id"].removeprefix(prefix))
+            if (kind != "notification" or payload.get("explicit_state") != "needs-you"
+                    or payload.get("text", "") or code is not None or request is None
+                    or payload["event_id"] != prefix + request or payload.get("dedup_key") != "request:" + request):
+                return None
+        else:
+            return None
     if source.startswith("pi:"):
         if (not payload["session_id"].startswith("pi:")
                 or not _bounded_string(payload["session_id"][3:], 253)):
@@ -324,8 +405,8 @@ def event_from_wire(payload: object) -> Event | None:
         ):
             return None
     if kind in ("turn-start", "turn-end"):
-        lifecycle_sources = (("claude:UserPromptSubmit", "codex:UserPromptSubmit", "pi:agent_start")
-                             if kind == "turn-start" else ("pi:agent_quiet",))
+        lifecycle_sources = (("claude:UserPromptSubmit", "codex:UserPromptSubmit", "pi:agent_start", "opencode:agent_start")
+                             if kind == "turn-start" else ("pi:agent_quiet", "opencode:agent_quiet"))
         if (payload.get("text", "") or payload.get("explicit_state") is not None or code is not None
                 or payload.get("dedup_key", "")
                 or source not in lifecycle_sources):
@@ -337,9 +418,9 @@ def event_from_wire(payload: object) -> Event | None:
     if code is not None:
         expected = "needs-you" if code in ACTION_FAILURE_CODES else "failed"
         if (payload.get("explicit_state") != expected or payload.get("text", "")
-                or source not in ("claude:StopFailure", "pi:agent_error")):
+                or source not in ("claude:StopFailure", "pi:agent_error", "opencode:agent_error")):
             return None
-    elif payload.get("explicit_state") == "failed" or source in ("claude:StopFailure", "pi:agent_error"):
+    elif payload.get("explicit_state") == "failed" or source in ("claude:StopFailure", "pi:agent_error", "opencode:agent_error"):
         return None
     if payload.get("explicit_state") is None and not payload.get("text", "").strip():
         return None

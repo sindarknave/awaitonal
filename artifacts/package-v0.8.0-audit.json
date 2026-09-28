@@ -1,0 +1,63 @@
+{
+  "version": "0.8.0",
+  "versions": {
+    "package.json": "0.8.0",
+    "plugin.json": "0.8.0",
+    ".claude-plugin/plugin.json": "0.8.0",
+    ".codex-plugin/plugin.json": "0.8.0",
+    "pyproject.toml": "0.8.0",
+    "python_package": "0.8.0"
+  },
+  "wheel_payload_files_verified": 27,
+  "package_files": [
+    "LICENSE",
+    "README.md",
+    "extensions/opencode-core.ts",
+    "extensions/opencode.ts",
+    "extensions/pi.ts",
+    "package.json",
+    "pyproject.toml",
+    "scripts/plugin-runtime.sh",
+    "src/awaitonal/__init__.py",
+    "src/awaitonal/__main__.py",
+    "src/awaitonal/activity.py",
+    "src/awaitonal/adapter.py",
+    "src/awaitonal/anchors.json",
+    "src/awaitonal/audition.py",
+    "src/awaitonal/classify.py",
+    "src/awaitonal/cli.py",
+    "src/awaitonal/client.py",
+    "src/awaitonal/config.py",
+    "src/awaitonal/delivery.py",
+    "src/awaitonal/diagnostics.py",
+    "src/awaitonal/evaluation.py",
+    "src/awaitonal/handoff.py",
+    "src/awaitonal/hook_events.py",
+    "src/awaitonal/lifecycle.py",
+    "src/awaitonal/palette.toml",
+    "src/awaitonal/playback.py",
+    "src/awaitonal/semantic.py",
+    "src/awaitonal/semantic.toml",
+    "src/awaitonal/service.py",
+    "src/awaitonal/setup.py",
+    "src/awaitonal/synth.py",
+    "src/awaitonal/text.py",
+    "src/awaitonal/types.py",
+    "src/awaitonal/variations.py",
+    "src/awaitonal/voices.py"
+  ],
+  "optional_host_peers": {
+    "@earendil-works/pi-coding-agent": {
+      "optional": true
+    },
+    "@opencode-ai/plugin": {
+      "optional": true
+    }
+  },
+  "asset_sha256": {
+    "awaitonal-0.8.0-listening-preview.zip": "2d8558e560989a43bf8670e6af9eff989c113edd68b58063af61ed2435c444eb",
+    "awaitonal-0.8.0-py3-none-any.whl": "758d9a5d7cb7fd0a5a39d956cddc805d4de4cfac30e0207c913b8ad0e2a2b02a",
+    "awaitonal-0.8.0.tgz": "ef91d2ee948d8475b03ad438bbb6a758fea64c9dfb70b3cae3f6744e924f9e22"
+  },
+  "listening_preview_unchanged_from_v070": true
+}

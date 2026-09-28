@@ -1,16 +1,23 @@
-# Claude Code, Codex, and Pi packages
+# Coding-agent integrations
 
-All three app integrations and the marketplace live in this repository. They use the
+All app integrations and the marketplace live in this repository. They use the
 same Python package, local service, and stable runtime. There is no second
 classifier or synthesizer.
 
 Pi uses an extension package with `/awaitonal-setup`, `/awaitonal-status`,
 `/awaitonal-mute`, and `/awaitonal-unmute` commands. Install it with
-`pi install git:github.com/sindarknave/awaitonal@v0.7.0`, or use
+`pi install git:github.com/sindarknave/awaitonal@v0.8.0`, or use
 `pi install /absolute/path/to/awaitonal` for a local checkout. Remove it with
 `pi remove` followed by that same source. See the [Pi guide](pi.md) for setup and
 updates. Pi owns extension registration; setup only installs/updates the shared
 Python runtime and starts the service.
+
+OpenCode 1.18.33 uses a native V1 plugin entrypoint at `extensions/opencode.ts`
+in the v0.8.0 release checkout.
+Register that file in OpenCode's `plugin` configuration and run
+`sh scripts/plugin-runtime.sh setup --adapter opencode` explicitly from this
+checkout. Registration remains owned by OpenCode. See the [OpenCode guide](opencode.md);
+this entrypoint does not support OpenCode V2.
 
 ## Install in Codex from this checkout
 
@@ -153,7 +160,7 @@ choose an existing private socket location.
 To temporarily silence notifications, use `/awaitonal:mute`. Resume them with
 `/awaitonal:unmute`; `/awaitonal:status` shows the current mute state.
 
-These controls apply to all Claude, Codex, and Pi sessions sharing the service. The process and model
+These controls apply to all Claude, Codex, Pi, and OpenCode sessions sharing the service. The process and model
 stay loaded, queued notifications are discarded, and sounds received while muted
 are not replayed later. A cue already starting or playing may finish. Mute lasts until an
 explicit unmute or service restart. The commands require a running, up-to-date
@@ -184,7 +191,7 @@ file. Detach removes only Awaitonal's tracked Codex hooks and leaves the shared
 runtime and Claude integration working. Removing or disabling the Codex plugin
 alone leaves its setup-managed user hooks active.
 
-Removing the shared runtime and automatic startup stops notifications in all three
+Removing the shared runtime and automatic startup stops notifications in all connected
 apps. Request runtime removal explicitly through the Awaitonal uninstall skill,
 or run `sh scripts/plugin-runtime.sh uninstall --adapter codex` from a checkout.
 The Codex runtime-uninstall command first removes its tracked hooks from the

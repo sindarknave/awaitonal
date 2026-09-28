@@ -1,0 +1,6 @@
+{
+  "hook_event_name": "agent_settled",
+  "session_id": "example-session",
+  "turn_id": "483427d2-fbde-42e5-a844-698a676968b7",
+  "outcome": "error"
+}

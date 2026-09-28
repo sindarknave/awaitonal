@@ -11,9 +11,11 @@ from . import __version__
 def diagnose(settings_path=None, socket_path=None, *, adapter="claude"):
     from .lifecycle import service_status
     from .setup import default_settings, hook_inventory
-    if adapter == "pi":
+    if adapter in ("pi", "opencode"):
         if settings_path is not None:
-            raise ValueError("Pi manages its extensions; use pi list instead of --settings")
+            if adapter == "pi":
+                raise ValueError("Pi manages its extensions; use pi list instead of --settings")
+            raise ValueError("OpenCode manages its plugins; inspect its plugin configuration instead of --settings")
     else:
         settings_path = settings_path or default_settings(adapter)
     checks = []
@@ -47,6 +49,9 @@ def diagnose(settings_path=None, socket_path=None, *, adapter="claude"):
     if adapter == "pi":
         checks.append({"name": "extension", "status": "unknown", "message":
                        "Pi owns extension registration. Use pi list and /awaitonal-status in Pi; active extensions were not inspected"})
+    elif adapter == "opencode":
+        checks.append({"name": "plugin", "status": "unknown", "message":
+                       "OpenCode owns plugin registration. Check its plugin configuration and startup log; active plugin instances were not inspected"})
     else:
         try:
             inventory = hook_inventory(settings_path, adapter=adapter)

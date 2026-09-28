@@ -1,0 +1,163 @@
+{
+  "schema_version": 1,
+  "release": "v0.8.0",
+  "validated_at_utc": "2026-09-28T07:22:37.829519+00:00",
+  "wheel_filename": "awaitonal-0.8.0-py3-none-any.whl",
+  "native_cli_version": "1.18.33",
+  "wheel_version": "0.8.0",
+  "python": "3.13.1",
+  "platform": "Darwin",
+  "machine": "arm64",
+  "wheel_sha256": "758d9a5d7cb7fd0a5a39d956cddc805d4de4cfac30e0207c913b8ad0e2a2b02a",
+  "exact_installed_package_files_verified": 27,
+  "installed_metadata_matches_wheel": true,
+  "cli_classify_passed": true,
+  "cli_opencode_hook_dry_run_passed": true,
+  "source_sha256": {
+    "opencode.ts": "6e14835d79cbd40eec3f86d90b11b0c2251cb34a9e9fa10353c5b467a2072967",
+    "opencode-core.ts": "2384363fb953509448cd2d06a632d5a1394495c2ca20d37a87d7c47be1fb9327"
+  },
+  "cases": {
+    "completion": {
+      "expected_gestures": [
+        "done"
+      ],
+      "observed_gestures": [
+        "done"
+      ],
+      "passed": true
+    },
+    "permission": {
+      "expected_gestures": [
+        "needs-you"
+      ],
+      "observed_gestures": [
+        "needs-you"
+      ],
+      "passed": true
+    },
+    "question": {
+      "expected_gestures": [
+        "decision"
+      ],
+      "observed_gestures": [
+        "decision"
+      ],
+      "passed": true
+    },
+    "error": {
+      "expected_gestures": [
+        "failed"
+      ],
+      "observed_gestures": [
+        "failed"
+      ],
+      "passed": true
+    },
+    "aborted": {
+      "expected_gestures": [],
+      "observed_gestures": [],
+      "passed": true
+    },
+    "child": {
+      "expected_gestures": [],
+      "observed_gestures": [],
+      "passed": true
+    },
+    "retry_recovered": {
+      "expected_gestures": [
+        "done"
+      ],
+      "observed_gestures": [
+        "done"
+      ],
+      "passed": true
+    },
+    "retry_cancel": {
+      "expected_gestures": [],
+      "observed_gestures": [],
+      "passed": true
+    },
+    "compaction_failed": {
+      "expected_gestures": [
+        "failed"
+      ],
+      "observed_gestures": [
+        "failed"
+      ],
+      "passed": true
+    },
+    "muted": {
+      "expected_gestures": [],
+      "observed_gestures": [],
+      "passed": true
+    }
+  },
+  "captured_wavs": [
+    {
+      "gesture": "done",
+      "voice": "marimba",
+      "variation": 0,
+      "frames": 37680,
+      "wav_sha256": "8abacbdc9d0a489fb421cd0f20a0a283f55376a82c4f3a4b0a06a684b77884ba"
+    },
+    {
+      "gesture": "needs-you",
+      "voice": "powersaw",
+      "variation": 0,
+      "frames": 82800,
+      "wav_sha256": "81bc9e9197dc065484b2f53c9eef5af21340c5b58f06cb7ae2f99978a90edf4a"
+    },
+    {
+      "gesture": "decision",
+      "voice": "harp",
+      "variation": 0,
+      "frames": 52560,
+      "wav_sha256": "9466f93b6038dfcd3b9fbfccee7ec187338134f0f73b1bbda966568ea9adf1b1"
+    },
+    {
+      "gesture": "failed",
+      "voice": "clarinet",
+      "variation": 0,
+      "frames": 46320,
+      "wav_sha256": "f52ab24a37c8af358674b57922ad3d08be274339b49d2fef78d2b4c228246162"
+    },
+    {
+      "gesture": "done",
+      "voice": "flute",
+      "variation": 0,
+      "frames": 37680,
+      "wav_sha256": "83e951c2183a1d65994357110443449bedfa9a89b38b9ced2b0518c4a6b8f2be"
+    },
+    {
+      "gesture": "failed",
+      "voice": "powersaw",
+      "variation": 0,
+      "frames": 46320,
+      "wav_sha256": "cdd0eb17ffae3f433de567aab8472e1bcf5d61b56a3e62406bd9756a83a38cf6"
+    }
+  ],
+  "private_metadata_absent_from_service_logs": true,
+  "no_audio_playback": true,
+  "no_model_calls": true,
+  "normal_user_config_unchanged": true,
+  "method": "Synthetic event fixtures run inside actual OpenCode V1 native plugin loader, through installed-wheel hook subprocess, private Unix socket, resident rules service and PCM WAV synthesis. No live provider turn, audio device onset, or TUI prompt interaction was tested.",
+  "typecheck": {
+    "passed": true,
+    "strict": true,
+    "typescript": "5.9.3",
+    "opencode_plugin_sdk_version": "1.18.33",
+    "skip_dependency_library_check": true
+  },
+  "cleanup": {
+    "private_service_stopped": true,
+    "private_socket_removed": true,
+    "native_cli_processes_exited": true,
+    "scoped_fixture_configuration_restored": true
+  },
+  "limitations": [
+    "OpenCode V1 1.18.33 on macOS arm64 only.",
+    "Synthetic final-message and attention fixtures; no live provider/model turn or TUI prompt interaction.",
+    "WAV synthesis verified without audio playback or device onset measurement."
+  ]
+}

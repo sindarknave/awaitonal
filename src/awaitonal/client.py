@@ -9,7 +9,7 @@ import struct
 import sys
 import time
 
-from .adapter import MAX_INPUT, MAX_WIRE, adapt_claude, adapt_codex, adapt_pi
+from .adapter import MAX_INPUT, MAX_WIRE, adapt_claude, adapt_codex, adapt_opencode, adapt_pi
 from .types import Event
 
 
@@ -96,7 +96,7 @@ def read_hook_input(timeout: float = 0.15) -> bytes:
 def run_hook(socket_path=None, dry_run: bool = False, *, adapter: str = "claude") -> int:
     """Never return a decision, feedback, or failure to a coding agent."""
     try:
-        adapt = {"claude": adapt_claude, "codex": adapt_codex, "pi": adapt_pi}.get(adapter)
+        adapt = {"claude": adapt_claude, "codex": adapt_codex, "pi": adapt_pi, "opencode": adapt_opencode}.get(adapter)
         event = adapt(json.loads(read_hook_input())) if adapt is not None else None
         if dry_run:
             if event is None:

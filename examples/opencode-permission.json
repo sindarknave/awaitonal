@@ -1,0 +1,6 @@
+{
+  "hook_event_name": "permission_asked",
+  "session_id": "example-session",
+  "turn_id": "483427d2-fbde-42e5-a844-698a676968b7",
+  "request_id": "f0e388f7-c4c5-47a7-b9fa-1e17896e966e"
+}

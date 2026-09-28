@@ -1,5 +1,54 @@
 # Observed validation
 
+## v0.8.0 release checks
+
+The [full Python suite](artifacts/tests-opencode-core.txt) reports **2,259 passed,
+2 optional-model skips**. All [25 OpenCode plugin tests](artifacts/tests-opencode-plugin.txt)
+and [23 Pi regression tests](artifacts/tests-opencode-pi-regression.txt) pass.
+The plugin targets OpenCode **1.18.33 (V1)**; V2 compatibility is not claimed.
+
+After synchronizing all package and plugin versions to 0.8.0,
+[149 packaging, setup, lifecycle, diagnostics, and CLI checks passed with one
+optional-model skip](artifacts/tests-v0.8.0-packaging.txt). The
+[release package audit](artifacts/package-v0.8.0-audit.json) verifies matching
+versions, all 27 wheel runtime payload files, both OpenCode modules, the Pi
+entrypoint, optional host dependencies, and package hashes. The listening preview
+is byte-for-byte identical to v0.7.0 and contains the same 61 WAVs.
+
+The [exact v0.8.0 wheel smoke check](artifacts/opencode-v0.8.0-smoke.json) installs
+the release artifact into a fresh Python environment, verifies all runtime and
+metadata bytes, and passes CLI classification, hook dry runs, strict SDK checking,
+and the ten native OpenCode-to-service scenarios described below. Six WAVs pass
+format and finite-sample checks. The temporary service and native processes exit,
+and the private socket is removed. No user configuration, live model, or audio
+device is used.
+
+The [native integration check](artifacts/opencode-native-validation.json) loads
+the actual entrypoint through OpenCode 1.18.33 and checks it against that release's
+SDK types. Ten synthetic lifecycle scenarios pass through the native plugin,
+real hook subprocesses, and a private service installed from a fresh wheel with
+NumPy only. Six WAVs are rendered for completion, permission, question, failure,
+retry recovery, and terminal compaction failure. Abort, child-session,
+cancelled-retry, and muted scenarios produce no WAV. This checks event wiring and
+synthesis; no live model conversation or audible playback was exercised.
+
+Checks cover final-only text, retries, compaction recovery/failure, quiet aborts,
+subagent suppression, bounded queues and metadata lookups, permission/question
+attention, rejected or withdrawn text, shared mute, session voices, turn duration,
+and cancellation before playback admission. Root metadata verified after activity
+starts yields unknown timing instead of a shortened duration. Request resolution
+removes unsent plugin attention; attention already handed to the service remains
+subject to its ordinary queue and turn-settlement behavior.
+
+All six normalized OpenCode example payloads pass the CLI's no-audio dry run.
+Shell syntax and whitespace checks pass. The source distribution includes the
+entrypoint, helper module, guide, tests, and example payloads. The
+[npm package file list](artifacts/opencode-npm-files.json) includes both OpenCode
+modules and the existing Pi entrypoint, with no Python caches. Every Python/data
+module in the built wheel matches the checkout byte for byte. The initial native
+integration report and npm file list describe the development build, which still
+used version 0.7.0; that published release did not contain this integration.
+
 ## v0.7.0 release checks
 
 The implementation suite reports [2,069 Python tests passed, with two optional-model
