@@ -25,23 +25,100 @@ _DOCUMENT_RESUME = re.compile(
 _DOCUMENT_LOCATION = re.compile(
     r"\s*(?:<?(?:https?://|sandbox:/)|\[[^\]\n]{1,200}\]\(\s*(?:(?:https?://|sandbox:/)|$)|"
     r"awaitonal(?:pr|artifact|reference)link\b)", re.I)
+_ATTENTION_DOCUMENT_INTRO = re.compile(
+    r"^\s*(?:\#{1,6}\s*)?(?P<intro>(?:"
+    r"(?:draft|review|reply|response|email|message|document)\b[^:\n]{0,120}\b(?:below|follows)\b[^:\n]{0,60}|"
+    r"(?:i|we)(?:'ve| have)?\s+(?:prepared|drafted|wrote|written|assembled)\s+[^:\n]{1,140}\b(?:below|follows)\b[^:\n]{0,60}|"
+    r"(?:here(?:'s| is)|below is)\s+[^:\n]{0,100}\b(?:draft|review)\b[^:\n]{0,60}"
+    r")\s*[:.]?)\s*$", re.I)
+# Matching at an offset avoids repeatedly copying long suffixes while finding
+# an explicitly presented document after a response-status sentence.
+_ATTENTION_EMBEDDED_DOCUMENT_INTRO = re.compile(_DOCUMENT_INTRO.pattern[1:], re.I)
+_ATTENTION_PREPARED = re.compile(
+    r"\b(?:i|we)(?:'ve| have)?\s+(?:prepared|drafted|wrote|written|assembled)\b|"
+    r"\b(?:draft|review|reply|response|email|message|document)\b[^.!?\n]{0,100}"
+    r"\b(?:ready|prepared|written|drafted|below|not (?:yet )?(?:posted|sent|published))\b|"
+    r"\b(?:here(?:'s| is)|below is)\s+[^.!?\n]{0,60}\bdraft\b", re.I)
+_ATTENTION_EXECUTION = r"(?:post|publish|send|submit|commit|apply|save|merge|push|deploy|release)"
+_ATTENTION_EXECUTION_ING = r"(?:posting|publishing|sending|submitting|committing|applying|saving|merging|pushing|deploying|releasing)"
+# An assistant permission question can name arbitrary prepared work. Require a
+# referential object rather than a catalogue of deliverable nouns.
+_ATTENTION_OBJECT = r"(?:it|this|that|these|those|(?:the|my|our)\s+[a-z][\w'-]*(?:\s+[a-z][\w'-]*){0,8})\b"
+_ATTENTION_PERMISSION_TAIL = re.compile(
+    r"^\s*(?:"
+    r"(?:(?:should|shall|may|can|could)\s+(?:i|we)|"
+    r"(?:do you want|would you (?:like|prefer))\s+(?:me|us)\s+to)\s+"
+    r"(?:go ahead and\s+)?" + _ATTENTION_EXECUTION + r"\s+" + _ATTENTION_OBJECT + r"[^\n]{0,180}\?"
+    r"|(?:do|can)\s+(?:i|we)\s+have\s+(?:(?:your|the)\s+)?"
+    r"(?:permission|approval|consent|go[- ]?ahead)\s+to\s+"
+    + _ATTENTION_EXECUTION + r"\s+" + _ATTENTION_OBJECT + r"[^\n]{0,180}\?"
+    r"|do you\s+(?:approve(?:\s+of)?|authorize|consent to)\s+(?:"
+    r"(?:me|us)\s+to\s+" + _ATTENTION_EXECUTION + r"|"
+    r"(?:me|us|my|our)\s+" + _ATTENTION_EXECUTION_ING + r")\s+"
+    + _ATTENTION_OBJECT + r"[^\n]{0,180}\?"
+    r"|say the word(?:\s+and|[,;])?\s+(?:i|we)(?:'ll| will)\s+" + _ATTENTION_EXECUTION + r"\s+" + _ATTENTION_OBJECT + r"[^\n]{0,180}[.!]?"
+    r"|if you (?:agree|approve|give (?:me|us) (?:the|your) go[- ]ahead)[,;]?\s+"
+    r"(?:i|we)(?:'ll| will)\s+" + _ATTENTION_EXECUTION + r"\s+" + _ATTENTION_OBJECT + r"[^\n]{0,180}[.!]?"
+    r")\s*$", re.I)
 
 
-def response_prose(text: str) -> str:
+def _attention_permission_tail(lines: list[str]) -> tuple[int, str] | None:
+    """Find a final standalone assistant execution-permission paragraph.
+
+    A blank line and preceding document content are still required by the
+    caller. This does not infer arbitrary ends to an unmarked document body.
+    """
+    end = len(lines)
+    while end and not lines[end - 1].strip():
+        end -= 1
+    start = end
+    while start and lines[start - 1].strip():
+        start -= 1
+    if not start or not 1 <= end - start <= 3:
+        return None
+    if any(re.match(r"^(?: {4}|\t)|^\s*(?:>|[-*+]\s|\d+[.)]\s)", line) for line in lines[start:end]):
+        return None
+    tail = "\n".join(line.strip() for line in lines[start:end])
+    if len(tail) > 400:
+        return None
+    normalized = tail.replace("’", "'")
+    # Remove paired emphasis only. A list bullet, quotation, or inline-code
+    # wrapper must not turn document text into a response permission request.
+    for _ in range(2):
+        normalized = re.sub(r"(?<!\w)(\*\*|__|\*|_)(?=\S)(.+?)(?<=\S)\1(?!\w)",
+                            r"\2", normalized, flags=re.S)
+    return (start, normalized) if _ATTENTION_PERMISSION_TAIL.fullmatch(normalized.replace("\n", " ")) else None
+
+
+def _prepared_document_wrapper(line: str) -> bool:
+    """Preparation must be asserted by current response framing, not a body."""
+    return (bool(_ATTENTION_PREPARED.search(line))
+            and not re.search(r"\b(?:if|would|will|yesterday|previously|last (?:week|month|time))\b", line, re.I)
+            and not re.search(r"\b(?:not|never|isn't|aren't|hasn't been|haven't been)\s+"
+                              r"(?:ready|prepared|written|drafted|assembled)\b", line, re.I))
+
+
+def response_prose(text: str, *, attention: bool = False) -> str:
     """Keep response framing separate from explicitly presented document text.
 
     Plain document bodies have no implicit end at a blank line or a generic
     "Next steps" heading. Only an explicit return to the conversation ends
     that scope. Quoted/fenced bodies have their own unambiguous boundaries.
-    This helper accepts raw Markdown or already-extracted prose; it does not
-    interpret quoted content as instructions or judgments by the assistant.
+    The attention-only view can retain a final assistant execution-permission
+    paragraph after current prepared-draft framing. Other consumers keep the
+    stricter document boundary. Quoted content is never response evidence.
     """
     if not isinstance(text, str) or len(text) > MAX_PROSE_CHARS:
         return ""
     kept = []
     body = None
     fence = None
-    for line in text.splitlines():
+    lines = text.splitlines()
+    tail = _attention_permission_tail(lines) if attention else None
+    prepared_wrapper = False
+    document_body_seen = False
+    dialogue_body = False
+    for index, line in enumerate(lines):
         mark = re.match(r"^\s{0,3}(`{3,}|~{3,})", line)
         if fence:
             if body is None:
@@ -70,9 +147,14 @@ def response_prose(text: str) -> str:
             elif body == "plain" and mark:
                 fence = mark[1]
                 continue
+            elif (attention and body == "plain" and tail and index == tail[0]
+                  and prepared_wrapper and document_body_seen and not dialogue_body):
+                kept.append(tail[1])
+                break
             elif _DOCUMENT_RESUME.match(re.sub(r"[*_]", "", line)):
                 body = None
             else:
+                document_body_seen = True
                 continue
         if mark:
             fence = mark[1]
@@ -83,17 +165,38 @@ def response_prose(text: str) -> str:
             continue
         normalized = re.sub(r"[*_]", "", line).replace("’", "'")
         intro = _DOCUMENT_INTRO.match(normalized)
+        intro_prefix = ""
+        if attention and not intro:
+            intro = _ATTENTION_DOCUMENT_INTRO.match(normalized)
+        if attention and not intro:
+            for boundary in re.finditer(r"(?<=[.!?])\s+(?=(?:here(?:'s| is| are)|below (?:is|are))\b)", normalized, re.I):
+                intro = _ATTENTION_EMBEDDED_DOCUMENT_INTRO.match(normalized, boundary.end())
+                if intro:
+                    intro_prefix = normalized[:boundary.start()]
+                    break
+        intro_body = intro.groupdict().get("body", "") if intro else ""
         noun = _DOCUMENT_NOUN.search(intro["intro"]) if intro else None
-        location = bool(intro and _DOCUMENT_LOCATION.match(intro["body"]))
+        if (attention and intro and not noun
+                and re.search(r"\bdraft\b|\bnot (?:yet )?(?:posted|published|sent)\b|"
+                              r"\b(?:prepared|drafted|wrote|written|assembled)\b", intro["intro"], re.I)):
+            noun = re.search(r"\breview\b", intro["intro"], re.I)
+        location = bool(intro and _DOCUMENT_LOCATION.match(intro_body))
         # A helper that writes a report is implementation prose, not the report
         # itself. Require the document to be the presented/direct object.
         if (noun and not location
                 and not re.search(r"\b(?:https?|sandbox):", intro["intro"], re.I)
                 and not re.search(r"\b(?:to|that|which|about)\b", intro["intro"][:noun.start()], re.I)):
+            if intro_prefix:
+                kept.append(intro_prefix)
+                prepared_wrapper |= _prepared_document_wrapper(intro_prefix)
             kept.append(intro["intro"])
-            body = "plain" if intro["body"].strip() else "pending"
+            body = "plain" if intro_body.strip() else "pending"
+            document_body_seen = bool(intro_body.strip())
+            dialogue_body = bool(re.search(r"\b(?:dialogue|script|transcript|conversation)\b", intro["intro"], re.I))
+            prepared_wrapper |= attention and _prepared_document_wrapper(intro["intro"])
         else:
             kept.append(line)
+            prepared_wrapper |= attention and _prepared_document_wrapper(normalized)
     return "\n".join(kept)
 
 
@@ -185,26 +288,38 @@ def _strip_link_destinations(text: str, link_types: bool = False) -> str:
     return "".join(parts)
 
 
-def assistant_prose(text: str, *, link_types: bool = False, typed_code: bool = False) -> str:
+def assistant_prose(text: str, *, link_types: bool = False, typed_code: bool = False,
+                    attention: bool = False) -> str:
     """Discard code and quoted material, returning empty for invalid/oversize input.
 
     This is deliberately not a Markdown parser. An unclosed fence consumes the
     remaining text, so copied code cannot accidentally become attention evidence.
+    The attention-only view preserves the existence of a closed fenced ``!``
+    command as an opaque marker, never its instructions or other code contents.
     """
     if not isinstance(text, str) or len(text) > MAX_PROSE_CHARS or not text.strip():
         return ""
+    if attention:
+        text = re.sub(r"\bawaitonalcommand\b", " ", text, flags=re.I)
     lines = []
     fence = None
+    fenced_command = False
     for line in text.splitlines():
         mark = re.match(r"^\s{0,3}(`{3,}|~{3,})", line)
         if mark:
             token = mark.group(1)
             if fence is None:
                 fence = token
+                fenced_command = False
             elif token[0] == fence[0] and len(token) >= len(fence):
                 fence = None
+                if attention and fenced_command:
+                    lines.append("awaitonalcommand")
             continue
-        if fence or re.match(r"^\s*>|^(?: {4}|\t)", line):
+        if fence:
+            fenced_command |= bool(attention and re.match(r"^\s*!\s*\S", line))
+            continue
+        if re.match(r"^\s*>|^(?: {4}|\t)", line):
             continue
         lines.append(line)
     prose = "\n".join(lines)
@@ -224,8 +339,10 @@ def assistant_prose(text: str, *, link_types: bool = False, typed_code: bool = F
         # fragments must never become outcome or handoff evidence.
         prose = re.sub(r"(?:https?://|sandbox:/)[^\s<>]+", lambda m: _link_marker(m[0].rstrip(".,;!?)]")), prose)
     prose = prose.replace("’", "'")
-    if typed_code and not re.sub(
-            r"\bawaitonal(?:file|code|literal)\b", " ", prose, flags=re.I).strip():
+    content = re.sub(r"\bawaitonal(?:file|code|literal)\b", " ", prose, flags=re.I) if typed_code else prose
+    if attention:
+        content = re.sub(r"\bawaitonalcommand\b", " ", content, flags=re.I)
+    if (typed_code or attention) and not content.strip():
         return ""
     return re.sub(r"[ \t]+", " ", prose).strip()
 

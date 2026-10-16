@@ -207,7 +207,11 @@ class RulesClassifier:
         prose = assistant_prose(response_prose(event.text), link_types=True, typed_code=True)
         if not prose:
             return None
-        handoff = analyze_handoff(prose, response_scoped=True)
+        # Handoffs can resume after a presented draft or refer to a supplied
+        # command. Keep that framing separate from result/activity extraction.
+        handoff_prose = assistant_prose(response_prose(event.text, attention=True),
+                                        link_types=True, typed_code=True, attention=True)
+        handoff = analyze_handoff(handoff_prose, response_scoped=True)
         delivery = detect_delivery(prose, response_scoped=True)
         assessment = detect_assessment(prose, response_scoped=True)
         activity, activity_source = detect_activity(prose, event.background_tasks, event.session_crons)

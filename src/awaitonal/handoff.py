@@ -141,7 +141,8 @@ _PREPARED = _rx(
     r"\b(?:ready|complete|completed|prepared|written|committed|rendered|saved)\b|"
     r"\b(?:i |we )?(?:prepared|wrote|rendered|saved|committed)\b[^.!?\n]{0,45}"
     r"\b(?:draft|patch|branch|changes?|preview|release|email|message|report|review|video|package)\b|"
-    r"\b(?:the |my |our )?draft (?:reply|response|message|email) (?:is |appears )?(?:above|below|attached)\b|"
+    r"\b(?:the |my |our )?(?:draft(?: (?:reply|response|message|email))?|review) "
+    r"(?:is |appears )?(?:above|below|attached)\b|"
     r"\b(?:config(?:uration)? rules?|config(?:uration)? changes?|patch|changes?)\b[^.!?\n]{0,35}"
     r"\b(?:is |are )?(?:listed|shown|provided) (?:above|below|here)\b"
 )
@@ -186,7 +187,8 @@ _PERMISSION_QUESTION = _rx(
     r"(?:is (?:it|that)|would (?:it|that) be)\s+(?:ok(?:ay)?|all right|acceptable)\b|"
     r"are you\s+(?:happy|comfortable|content|okay)\s+(?:for|with)\s+(?:me|us)(?:\s+to)?\b|"
     r"(?:ok(?:ay)?|permission|your go[- ]ahead)\s+(?:to|for me to|for us to)\b|"
-    r"(?:do|can)\s+(?:i|we)\s+have\s+your\s+(?:permission|approval|go[- ]ahead)\b)"
+    r"(?:do|can)\s+(?:i|we)\s+have\s+(?:(?:your|the)\s+)?(?:permission|approval|go[- ]ahead|consent)\b|"
+    r"do you\s+(?:approve|authorize|consent to)\s+(?:my|our|me|us)\b)"
     r"[^.!?\n]{0,140}\b" + _OUTWARD_ACTIONS + r"\b"
 )
 _APPROVAL_CONDITION = _rx(
@@ -208,13 +210,13 @@ _USER_ACTION = _rx(
     r"(?P<verb>[a-z][a-z-]*)\b"
 )
 _BARE_ACTION = _rx(r"^\s*(?:[-*]\s*|\d+[.)]\s*)?(?:(?:first|next),?\s+)?(?P<verb>[a-z][a-z-]*)\b\s+(?P<rest>\S.*)")
-_CAUSATIVE_ACTION = _rx(r"^\s*(?:please\s+)?(?P<verb>have|get)\s+(?:the|your|this|that|these|those)\s+[^.!?\n]{1,70}\s+[a-z]+ed\b")
+_CAUSATIVE_ACTION = _rx(r"^\s*(?:please\s+)?(?P<verb>have|get|keep|leave)\s+(?:the|your|this|that|these|those)\s+[^.!?\n]{1,70}\s+[a-z]+ed\b")
 _NON_IMPERATIVE = frozenset(
     "i we you he she it they the a an this that these those there here my our your their "
     "all everything nothing anything no yes done then now after before once when until if please "
     "should shall may can could will would is are was were has have had not don't do "
     "to for from of with as in on at because during unless whether while though although "
-    "another other some any which what how why where who and but however yet or waiting awaiting pending blocked need needs require requires awaitonalcode awaitonalfile awaitonalliteral".split()
+    "another other some any which what how why where who and but however yet or waiting awaiting pending blocked need needs require requires awaitonalcode awaitonalfile awaitonalliteral awaitonalcommand".split()
 )
 _ASSISTANT_DEPENDENCY = _rx(
     r"\b(?:i|we)(?:'ll| will| can| cannot| can't| am unable to| are unable to| am waiting| are waiting)\b|"
@@ -233,6 +235,10 @@ _ADVISORY = _rx(
 _READER_VERIFICATION = _rx(
     r"\b(?:confirm|check|verify)\b[^.!?\n]{0,90}"
     r"\b(?:against|with (?:the|your|an?)|independently|yourself|on your own)\b"
+)
+_ADVICE_FRAME = _rx(
+    r"\b(?:general|generic|routine)\b[^.!?\n]{0,65}\b(?:advice|checklist|checks?|recommendations?)\b|"
+    r"\b(?:checklist|check)\s+(?:usually|generally|typically)\s+(?:covers|includes)\b"
 )
 _EXPLICIT_REQUEST = _rx(
     r"(?:^|[,;:]\s*)(?:please\s+|(?:can|could|would|will) you\s+|"
@@ -272,6 +278,17 @@ _EXPLICIT_INPUT_DESTINATION = _rx(
 _NOUN_PREDICATE_PREFIX = _rx(
     r"(?:(?!(?:that|which|who|whose|where|whether|before|after|once|when|until|and|or|so)\b)[\w'-]+\s+){0,12}"
     r"(?:is|are|was|were|has|have|had|hasn't|haven't|isn't|aren't|can't|couldn't|can|could|would|will|may|might|must)\b")
+_LIST_ITEM = _rx(r"^\s*(?:[-*]\s+|\d+[.)]\s+)")
+_COMMAND_HEADING = _rx(r"^\s*(?:(?:the )?next(?: step)? is[^.!?:\n]{0,100}|next|run(?: this| the following)?)\s*:\s*$")
+_OPAQUE_COMMAND_HEADING = _rx(r"^\s*(?:(?:the )?next(?: step)? is[^.!?:\n]{0,100}|next)\s*:\s*awaitonalcommand\s*$")
+_USER_PUBLICATION = _rx(
+    r"\b(?:for you to|you (?:can|may|should|could|will|must|need to|have to)|you'll)\s+"
+    + _OUTWARD_VERBS + r"\b|"
+    r"^\s*(?:please\s+)?(?:approve\b[^.!?\n]{0,65}\band\s+)?"
+    + _OUTWARD_VERBS + r"\b[^.!?\n]{0,100}\byourself\b")
+_APPROVAL_TARGET = _rx(
+    r"\b(?:approve|authorize|confirm)\s+(?P<direct>[^,;.!?\n]{1,80})|"
+    r"\b(?:approval|permission|consent)\s+(?:of|for)\s+(?P<noun>[^,;.!?\n]{1,80})")
 
 
 def _presents_instruction_body(clause: str) -> bool:
@@ -294,6 +311,22 @@ def _input_returns_to_assistant(request: str) -> bool:
     return not destination or bool(_CONVERSATION_DESTINATION.search(destination[0]))
 
 
+def _publication_approval(clause: str, publication_words: set[str]) -> bool:
+    """Tie a publication handback to its own approval, not other user tasks."""
+    if (_USER_PUBLICATION.search(clause)
+            or re.search(r"\b(?:before|once|after|when|until) you\s+" + _OUTWARD_VERBS + r"\b", clause)):
+        return True
+    target = _APPROVAL_TARGET.search(clause)
+    if not target:
+        return True  # Bare "your approval" inherits the handed-back draft.
+    body = target["direct"] or target["noun"]
+    body = re.split(r"\b(?:before|after|once|when|until|now|and|so)\b", body, maxsplit=1)[0].strip()
+    if re.match(r"^(?:it|this|that|them|these|those)\b", body):
+        return True
+    words = set(re.findall(r"\b[a-z]{3,}\b", body)) - _NON_IMPERATIVE
+    return bool(words & publication_words)
+
+
 def _split_parts(prose: str) -> list[str]:
     """Separate independent requests without detaching their conditions.
 
@@ -303,6 +336,16 @@ def _split_parts(prose: str) -> list[str]:
     """
     parts: list[str] = []
     for part in _PARTS.split(prose):
+        if parts and re.fullmatch(r"\s*\d+\.\s*", parts[-1]):
+            parts[-1] += " " + part
+            continue
+        # A command's contents stay opaque. Keep its structural marker with
+        # the introducing heading, so removing the fence does not sever a
+        # following dependency or manufacture an imperative from the marker.
+        if (part.strip().lower() == "awaitonalcommand" and parts
+                and _COMMAND_HEADING.fullmatch(parts[-1])):
+            parts[-1] += " " + part.strip()
+            continue
         if parts and (re.fullmatch(
                 r"\s*if (?:you (?:want|wish|would like)|you'd like|useful|helpful|needed)\b[^.!?;\n]{0,100}",
                 parts[-1], re.I) or (
@@ -346,6 +389,8 @@ def _structural_action(clause: str) -> tuple[int, str] | None:
             break
         offset += wrapper.end()
         clause = clause[wrapper.end():]
+    if _OPAQUE_COMMAND_HEADING.fullmatch(clause):
+        return offset, "run"  # Still requires a linked assistant dependency.
     direct = _USER_ACTION.search(clause)
     if direct and direct["verb"] not in _NON_IMPERATIVE | _NON_ACTION:
         return offset + direct.start(), direct["verb"]
@@ -357,7 +402,18 @@ def _structural_action(clause: str) -> tuple[int, str] | None:
     # command. Declaration guards inspect the leading head; dependency and
     # resolution checks retain the complete request.
     declaration_head = re.split(r"\bwhile\b", clause, maxsplit=1)[0]
+    # Elliptical result reports retain their past predicate even without an
+    # "I" or "is": "Restarted the worker" / "Background worker restarted".
+    # These are not addressed commands merely because a report-back follows.
+    past_head = bool(bare and re.fullmatch(r"[a-z]{4,}ed", bare["verb"])
+                     and not bare["verb"].endswith("eed"))
+    nominal_result = bool(
+        bare and bare["verb"] not in _INPUT_TRANSFER
+        and not _DIRECT.match(clause)
+        and re.fullmatch(r"\s*[a-z][\w-]*(?:\s+[a-z][\w-]*){0,4}\s+[a-z]{4,}ed[.!]?\s*",
+                         declaration_head))
     if (bare and bare["verb"] not in _NON_IMPERATIVE | _NON_ACTION
+            and not past_head and not nominal_result
             and not current_process_status(declaration_head)
             and not any(pattern.search(clause) for pattern in _RESOLUTIONS.values())
             and not re.fullmatch(r"[a-z]+ed[.!?]?", bare["rest"])
@@ -449,6 +505,72 @@ def _linked_dependency(parts: list[str], index: int) -> bool:
     return False
 
 
+def _command_dependencies(parts: list[str]) -> set[int]:
+    """Link user-command framing to its returned input across an opaque block.
+
+    At most four surrounding clauses on either side belong to this local
+    wrapper. A marker never supplies an actor, command contents, or a need by
+    itself: the prose must address a current action and say the assistant will
+    use its result or is waiting for that input. Each marker has a fixed scan
+    window, preserving bounded work even on repeated blocks.
+    """
+    linked: set[int] = set()
+
+    def scope_boundary(clause: str) -> bool:
+        return bool(re.match(r"\s*#{1,6}\s", clause) or _DOC.search(clause)
+                    or re.search(r"\b(?:example|sample|command syntax)\b", clause))
+
+    def eligible(clause: str) -> bool:
+        return not any(pattern.search(clause) for pattern in (
+            _HISTORICAL, _FUTURE, _OPTIONAL, _NEGATED))
+
+    def completed_introduction(clause: str) -> bool:
+        return bool(current_process_status(clause) or re.search(
+            r"\b(?:was|were|had)\b|"
+            r"\b(?:has|have|is|are)\s+(?:(?:already|now|fully)\s+){0,2}"
+            r"(?:been\s+)?(?:[a-z]{4,}ed|done|run)\b|"
+            r"^\s*(?:already\s+)?[a-z]{4,}ed\b", clause))
+
+    for marker_index, raw in enumerate(parts):
+        if "awaitonalcommand" not in raw.lower():
+            continue
+        requests: list[int] = []
+        for request_index in range(marker_index, max(-1, marker_index - 5), -1):
+            request = parts[request_index].strip().lower()
+            if (request_index != marker_index and "awaitonalcommand" in request
+                    or scope_boundary(request)):
+                break
+            action = _structural_action(request)
+            if not action and completed_introduction(request):
+                break
+            # The backward window belongs to the supplied execution request,
+            # not arbitrary preceding imperatives such as keeping a backup.
+            introduces_execution = bool(action and (
+                action[1] in {"run", "execute"}
+                or _OPAQUE_COMMAND_HEADING.fullmatch(request)))
+            if eligible(request) and introduces_execution:
+                requests.append(request_index)
+        if not requests:
+            continue
+        for result_index in range(marker_index + 1, min(len(parts), marker_index + 5)):
+            result = parts[result_index].strip().lower()
+            if "awaitonalcommand" in result or scope_boundary(result):
+                break
+            if not eligible(result):
+                continue
+            consumes = _consumes_input(result)
+            current_need = bool(re.search(_ASSISTANT_NEED, result) or re.search(
+                r"\b(?:i am|we are|i'm|we're)\s+(?:still\s+)?(?:waiting|blocked|paused)\b", result))
+            if not consumes and not current_need:
+                continue
+            for request_index in requests:
+                request = parts[request_index].strip().lower()
+                if (_input_returns_to_assistant(request)
+                        and (consumes or _linked_dependency([request, result], 0))):
+                    linked.add(request_index)
+    return linked
+
+
 def _user_gate(clause: str, kind: str, source: str, matched: str,
                linked_dependency: bool, verdict: bool) -> bool:
     """Require a current user-owned request on every textual entry route.
@@ -523,6 +645,8 @@ def _new_execution_object(clause: str, prepared_parts: list[str]) -> bool:
     tail = clause[outward.end():outward.end() + 90]
     if re.match(r"\s+(?:you|me|us)\b", tail):
         return True  # e.g. "save you time", not saving the prepared result.
+    if re.match(r"\s+(?:(?:a|an)\s+)?new\s+", tail):
+        return True  # New work as the action object, rather than a destination.
     fresh = re.match(r"\s+(?:a|an)\s+(?P<noun>[a-z-]+)", tail)
     return bool(fresh and not any(re.search(r"\b" + re.escape(fresh["noun"]) + r"\b", part)
                                          for part in prepared_parts))
@@ -608,19 +732,27 @@ def analyze_handoff(prose: str, *, response_scoped: bool = False) -> Handoff:
     if not isinstance(prose, str) or not prose.strip() or len(prose) > MAX_PROSE_CHARS:
         return Handoff()
     if not response_scoped:
-        prose = response_prose(prose)
+        prose = response_prose(prose, attention=True)
     pending: dict[str, Expectancy] = {}
     prepared = False
     preparation_denied = False
     prepared_parts: list[str] = []
     generic_action: str | None = None
     review_approval_coupled = False
+    publication_handed_to_user = False
+    publication_words: set[str] = set()
     in_instructions = False
     prose = prose.replace("’", "'")
     verdict = detect_assessment(prose, response_scoped=True) == "verdict"
     # Preserve explicit line boundaries but join common soft-wrapped phrases.
     prose = re.sub(r"\b(have|has|had|your|the|been|is|are|was|were|need|needs|require|requires|for|to)\s*\n\s*", r"\1 ", prose, flags=re.I)
     parts = _split_parts(prose)
+    command_dependencies = _command_dependencies(parts)
+    # List formatting communicates parallel instructions, not a paused agent
+    # task by itself. Individual items can still establish current ownership
+    # through a real assistant dependency or an explicit current requirement.
+    instruction_list = sum(bool(_LIST_ITEM.match(part)) for part in parts) >= 2
+    general_advice = bool(_ADVICE_FRAME.search(prose))
     for index, part in enumerate(parts):
         clause = part.strip().lower()
         if not clause:
@@ -644,9 +776,16 @@ def analyze_handoff(prose: str, *, response_scoped: bool = False) -> Handoff:
             prepared = preparation
             preparation_denied = not preparation
             prepared_parts = [clause] if preparation else []
+            publication_handed_to_user = False
+            publication_words.clear()
         elif (not preparation_denied and _OUTSTANDING_EXECUTION.search(clause)
               and not _OPTIONAL.search(clause)):
             prepared = True
+        if _USER_PUBLICATION.search(clause):
+            publication_handed_to_user = True
+            publication_words = (set(re.findall(r"\b[a-z]{3,}\b", clause))
+                                 - _NON_IMPERATIVE - set(_OUTWARD_BASES)
+                                 - {"ready", "prepared", "complete", "written", "drafted"})
         # The preparation assertion may follow the permission question, as in
         # "May I save it? Everything is ready locally." Keep this local.
         adjacent_prepared = (index + 1 < len(parts)
@@ -661,7 +800,7 @@ def analyze_handoff(prose: str, *, response_scoped: bool = False) -> Handoff:
             if staged_offer and _new_execution_object(clause, preparation_context):
                 staged_offer = None
         condition = re.search(r"\bif\b", clause)
-        if (re.search(r"\b(?:optional|can also|happy to|next time|another|separate|new)\b", clause)
+        if (re.search(r"\b(?:optional|can also|happy to|next time|another|separate)\b", clause)
                 or (condition and not _APPROVAL_CONDITION.search(clause)
                     and (not staged_offer or condition.start() < staged_offer.start()))):
             staged_offer = None
@@ -671,7 +810,9 @@ def analyze_handoff(prose: str, *, response_scoped: bool = False) -> Handoff:
         if not _UNRESOLVED.search(clause):
             for kind, pattern in _RESOLUTIONS.items():
                 events.extend((match.start(), 1, kind, None)
-                              for match in pattern.finditer(clause))
+                              for match in pattern.finditer(clause)
+                              if not (kind == "approval" and staged_offer
+                                      and staged_offer.start() <= match.start() < staged_offer.end()))
             if generic_action and _completed_action(clause, generic_action):
                 events.append((0, 1, "action", None))
                 generic_action = None
@@ -709,7 +850,7 @@ def analyze_handoff(prose: str, *, response_scoped: bool = False) -> Handoff:
             ("diagnostic", _DIAGNOSTIC), ("review-object", _REVIEW_OBJECT),
             ("review-answer", _REVIEW_ANSWER), ("confirm-choice", _CONFIRM_CHOICE),
         ) if pattern.search(clause)}
-        linked_dependency = _linked_dependency(parts, index)
+        linked_dependency = index in command_dependencies or _linked_dependency(parts, index)
         if linked_dependency:
             signals.add("dependency")
         # A new comma-delimited request may follow a soft invitation. Only an
@@ -724,8 +865,26 @@ def analyze_handoff(prose: str, *, response_scoped: bool = False) -> Handoff:
             # adversarial repetition linear rather than rescanning per match.
             key = (kind, source, bool(re.search(r"\byour\b", matched)))
             if key not in gate_cache:
-                gate_cache[key] = (not (soft_context and not linked_dependency
-                                       and kind != "review" and source != "permission")
+                list_advice = (instruction_list and _LIST_ITEM.match(part)
+                               and source in {"direct", "structural"}
+                               and kind != "review" and not linked_dependency
+                               and not _CURRENT.search(clause)
+                               and not re.search(r"\bnow\b", clause)
+                               and not _USER_NECESSITY.search(clause))
+                prose_advice = (general_advice and source in {"direct", "structural"}
+                                and kind != "review" and not linked_dependency
+                                and not _EXPLICIT_REQUEST.search(clause)
+                                and not _USER_NECESSITY.search(clause)
+                                and not _CURRENT.search(clause)
+                                and not re.search(r"\bnow\b", clause))
+                user_owned_approval = (publication_handed_to_user
+                                       and kind == "approval"
+                                       and source != "permission"
+                                       and not linked_dependency
+                                       and _publication_approval(clause, publication_words))
+                gate_cache[key] = (not list_advice and not prose_advice and not user_owned_approval
+                                   and not (soft_context and not linked_dependency
+                                            and kind != "review" and source != "permission")
                                    and _user_gate(clause, kind, source, matched,
                                                   linked_dependency, verdict))
             return gate_cache[key]
@@ -781,7 +940,12 @@ def analyze_handoff(prose: str, *, response_scoped: bool = False) -> Handoff:
             # already available", which does not ask for that answer.
             first_need_end = needs[0].end()
             for match in _COORDINATED_NEED.finditer(clause):
-                if match.start() >= first_need_end and not _NOUN_PREDICATE.match(clause, match.end()):
+                # A shared predicate also shares user ownership, but each
+                # coordinated object must still pass the current-user gate.
+                governed = needs[0][0] + " " + match[0]
+                if (match.start() >= first_need_end
+                        and not _NOUN_PREDICATE.match(clause, match.end())
+                        and current_gate(_need_kind(match["object"]), "need", governed)):
                     candidates.append((match.start(), _need_kind(match["object"])))
         for pattern, kind in ((_FEEDBACK, "review"), (_CHOICE, "choice"), (_PERMISSION, "approval")):
             for match in pattern.finditer(clause):

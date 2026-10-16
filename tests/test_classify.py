@@ -332,3 +332,64 @@ def test_process_status_without_a_current_user_gate_keeps_its_precision_guards(t
     answer = RulesClassifier().classify(Event("synthetic", "no-current-command", text))
     assert answer.expectancy != "required-handoff"
     assert not answer.attention
+
+
+@pytest.mark.parametrize("body", [
+    "The revised query preserves the public interface.\nPlease approve the budget in a separate review.",
+    "> The revised query preserves the public interface.\n> Please approve the budget in a separate review.",
+    "```text\nThe revised query preserves the public interface.\nPlease approve the budget in a separate review.\n```",
+])
+@pytest.mark.parametrize("permission", [
+    "Should I post this as a reply to the issue?",
+    "Say the word and I'll post it.",
+])
+def test_prepared_draft_permission_survives_the_document_body(body, permission):
+    text = ("I have prepared the review. I have not posted it.\n\nDraft reply:\n"
+            + body + "\n\n" + permission)
+    answer = RulesClassifier().classify(Event("synthetic", "permission-after-body", text))
+    assert (answer.state, answer.expectancy, answer.gesture) == (
+        "needs-you", "required-handoff", "authorization")
+
+
+@pytest.mark.parametrize("intro", ["Run this:", "Next is:"])
+def test_fenced_command_keeps_the_dependent_assistant_step(intro):
+    text = (intro + "\n```bash\n!samplectl collect manifests\n```\n"
+            "Once they're in, I'll check the manifest counts and finish the comparison.")
+    answer = RulesClassifier().classify(Event("synthetic", "fenced-user-action", text))
+    assert (answer.state, answer.expectancy, answer.gesture) == (
+        "needs-you", "required-handoff", "needs-you")
+
+
+@pytest.mark.parametrize("text", [
+    "The review is complete. Here's a draft for you to post:\n"
+    "Please approve the revised schedule and grant the request.\n\n"
+    "You can post this after the owner signs off.",
+    "The review is complete. General advice:\n"
+    "1. Restart the worker if it is slow.\n2. Sign in to your dashboard.\n"
+    "3. Run the diagnostics for your own records.",
+    "The background job was relaunched and is running. I'll report findings when it lands.",
+    "An example of the command syntax:\n```bash\n!samplectl collect manifests\n```\n"
+    "The requested answer is complete.",
+    "Next is:\n```bash\n!samplectl collect manifests\n```\n"
+    "If useful, I can explain the result in a separate task.",
+])
+def test_attention_context_does_not_turn_deliveries_advice_or_jobs_into_handoffs(text):
+    answer = RulesClassifier().classify(Event("synthetic", "non-blocking-context", text))
+    assert answer.expectancy != "required-handoff"
+    assert not answer.attention
+
+
+@pytest.mark.parametrize("permission", [
+    "Do I have permission to save this revised note in the handbook?",
+    "Do I have your go-ahead to apply this prepared revision?",
+    "Do you approve my publishing this prepared note to the bulletin?",
+])
+def test_prepared_permission_questions_are_not_receipts_of_approval(permission):
+    text = ("I have prepared the revised note. I have not saved or published it.\n\n"
+            "Draft note:\n"
+            "The north entrance opens at seven. Check the booking before entering.\n\n"
+            "Leave borrowed equipment at the reception desk when the visit ends.\n\n"
+            + permission)
+    answer = RulesClassifier().classify(Event("synthetic", "permission-not-receipt", text))
+    assert (answer.expectancy, answer.handoff_kind, answer.gesture) == (
+        "required-handoff", "authorization", "authorization")

@@ -41,6 +41,32 @@ cue even when activity is in-flight, and retain process-declaration, advice,
 optional, quoted, and resolved-action exclusions. Private re-scoring is still
 needed to confirm the reported lost handoff is recovered.
 
+A separate user-reported check used 100 new replies from 48 sessions absent
+from the earlier sets, labeled blind before scoring. Gesture matches were
+22/100 for installed v0.6.0, 32/100 for `2dbe6b4`, and 33/100 for `6afdb71`.
+The last candidate caught 11/49 verdicts, 2/4 in-flight replies and 2/9 artifacts.
+Attention remained weak: 6 cues played, 2 correct, and 2/12 handoffs caught.
+Six of seven posting-authorization cases were missed, often with draft content
+between preparation and the closing permission question. Three of four action
+handoffs were missed, often involving fenced commands. Reported false attention
+included drafts for the user to post, advice lists, and a relaunched job with a
+promised report. These are aggregate reports, not private examples in this repo.
+The sample skews toward shorter sessions and posting; the remaining disjoint
+pool is nearly exhausted. Its described misses are now development guidance,
+so the next independent private check needs new sessions.
+
+The next pass changes attention extraction only. It preserves a closing
+assistant permission request after an explicitly introduced prepared draft,
+while excluding requests inside the draft. A closed fenced shell command can
+supply an opaque command marker to the handoff detector; its contents do not
+supply action names or assertions. The surrounding user directive and a
+dependent assistant step must establish the handoff. User-owned publication,
+general advice, and reports of a relaunched process do not establish that gate.
+The default prose view, delivery, assessment, activity, and cue priorities keep
+their existing rules. Removing a false handoff exposes whichever cue those
+existing rules select; a past relaunch and a future promise alone still do not
+assert that a process is currently running.
+
 The classifier combines grammatical evidence instead of complete example
 phrases:
 
@@ -143,6 +169,16 @@ execution without a definite pending follow-up. These remain English heuristics
 with limited reference resolution and adjacent-clause context, not a general
 semantic parser. Unmarked document bodies and context-dependent advice remain
 ambiguous; no private false-alarm reduction is established by these tests.
+
+For the attention-only pass, a separate 32-case synthetic set initially scored
+22/32 on both the priority-fix baseline and the first attention edits. Its
+misses were then inspected and used for diagnosis, so it is development data.
+The revised rules match 29/32 specified expectations: all 16 authorization/action
+positives and no attention on all 16 negatives. The three remaining differences
+are soft-review metadata on advice, outside this pass's attention scope.
+This does not establish private-data precision or independent generalization.
+Default extraction views and delivery/assessment/activity detector results also
+match the priority-fix baseline on 884 synthetic fixture and test strings.
 
 The supplied `inflight-after-push` case expected a `done` outcome while checks
 were still running. The regression preserves the existing `unknown` outcome

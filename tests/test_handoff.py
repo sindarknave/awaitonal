@@ -6,7 +6,7 @@ import sys
 import pytest
 
 from awaitonal.handoff import Handoff, analyze_handoff, detect_handoff, handoff_kind
-from awaitonal.text import assistant_prose
+from awaitonal.text import assistant_prose, response_prose
 
 
 def test_nested_address_headings_do_not_recurse_or_become_requests():
@@ -865,3 +865,230 @@ def test_passive_needs_do_not_make_advice_optional_or_non_user_events_blocking(t
 def test_only_asserted_current_passive_needs_establish_a_new_gate(assertion):
     text = "The report is delivered. Review the export before relying on it. " + assertion
     assert analyze_handoff(text).expectancy != "required-handoff"
+
+
+def _attention_handoff(text):
+    return analyze_handoff(assistant_prose(response_prose(text, attention=True), attention=True),
+                           response_scoped=True)
+
+
+@pytest.mark.parametrize("closing", [
+    "Should I post this as a reply to the discussion?",
+    "Say the word and I'll post it.",
+    "Would you like me to submit it as the review?",
+])
+def test_closing_assistant_permission_uses_preparation_across_a_draft_body(closing):
+    text = ("Draft below, not posted:\n\n"
+            "The proposed update explains the observed behavior.\n"
+            "Please choose an account in this example document.\n\n" + closing)
+    assert _attention_handoff(text) == Handoff("required-handoff", "authorization")
+
+
+@pytest.mark.parametrize("text", [
+    "The review is complete. The draft is ready for you to post. Please approve it before posting.",
+    "The review is written. You can post the draft after approval. Once you approve it, post it yourself.",
+    "The draft is ready for you to submit. I need your approval before you send it to the team.",
+    "The review is complete. Please approve and post the draft yourself.",
+])
+def test_draft_handed_to_the_user_to_publish_is_not_an_assistant_gate(text):
+    assert analyze_handoff(text).expectancy != "required-handoff"
+
+
+@pytest.mark.parametrize("closing", [
+    "Should I post it instead?",
+    "Please approve it before I can post the final version.",
+    "Could you attach the source before I can verify the review?",
+])
+def test_user_publication_context_does_not_hide_a_separate_assistant_gate(closing):
+    text = "The draft is ready for you to post. " + closing
+    assert analyze_handoff(text).expectancy == "required-handoff"
+
+
+@pytest.mark.parametrize("heading", ["Run this:", "Next is:", "Next step is:"])
+@pytest.mark.parametrize("followup", [
+    "Once they're in, I'll check the imported records.",
+    "After that, I can compare the totals.",
+])
+def test_user_command_keeps_its_dependency_across_an_opaque_fence(heading, followup):
+    text = heading + "\n```sh\n! samplectl import records\n```\n" + followup
+    assert _attention_handoff(text) == Handoff("required-handoff", "action")
+
+
+@pytest.mark.parametrize("text", [
+    "Next is:\n```sh\n! samplectl import records\n```\nThe requested instructions are complete.",
+    "Next is:\n```sh\nprint('please sign in')\n```\nOnce they're in, I'll check the totals.",
+    "If useful, run this:\n```sh\n! samplectl import extras\n```\nOnce they're in, I'll check them.",
+    "```sh\n! samplectl import records\n```\nOnce they're in, I'll check the totals.",
+])
+def test_fenced_commands_without_a_current_user_gate_do_not_raise_attention(text):
+    assert _attention_handoff(text).expectancy != "required-handoff"
+
+
+@pytest.mark.parametrize("prefix", ["", "The answer is complete. Here are some practical next steps:\n"])
+def test_parallel_advice_imperatives_do_not_claim_a_paused_assistant_task(prefix):
+    text = (prefix + "1. Sign in to the dashboard.\n"
+            "2. Run the diagnostic locally.\n"
+            "3. Approve only the requests you recognize.\n"
+            "4. Choose the plan that suits your budget.")
+    assert analyze_handoff(text).expectancy != "required-handoff"
+
+
+@pytest.mark.parametrize("text", [
+    "1. Run the collection command.\n2. Paste the output here.\nOnce I have it, I'll finish the diagnosis.",
+    "The worker is running.\n1. Please sign in now.\n2. Check the activity panel when convenient.",
+    "1. I need you to unlock the workspace for this run.\n2. Open the status panel.",
+])
+def test_current_user_gates_remain_required_inside_parallel_steps(text):
+    assert analyze_handoff(text).expectancy == "required-handoff"
+
+
+@pytest.mark.parametrize("status", [
+    "Relaunched the background worker.",
+    "Restarted the background worker.",
+    "Background worker relaunched.",
+    "Background worker restarted.",
+])
+def test_elliptical_background_results_are_not_user_imperatives(status):
+    assert analyze_handoff(status + " I'll report findings when it lands.").expectancy != "required-handoff"
+
+
+def test_current_user_command_remains_required_beside_a_background_result():
+    text = ("Background worker relaunched. It is running now. "
+            "Please restart the local agent now. Once you restart it, I'll inspect the connection.")
+    assert analyze_handoff(text) == Handoff("required-handoff", "action")
+
+
+@pytest.mark.parametrize("review_word", ["feedback", "review"])
+def test_coordinated_approval_keeps_the_user_publication_scope(review_word):
+    text = ("The draft is ready for you to post. I need your " + review_word
+            + " and approval before you send it.")
+    assert analyze_handoff(text).expectancy != "required-handoff"
+
+
+@pytest.mark.parametrize("review_word", ["feedback", "review"])
+def test_coordinated_approval_remains_required_for_an_assistant_dependency(review_word):
+    text = "I need your " + review_word + " and approval before I can deploy the prepared release."
+    assert analyze_handoff(text).expectancy == "required-handoff"
+
+
+@pytest.mark.parametrize("text", [
+    "Keep the terminal connected. Once it is connected, I can verify the result.",
+    "Leave the workspace unlocked. Once it is unlocked, I can finish the check.",
+])
+def test_causative_state_commands_are_not_elliptical_completed_results(text):
+    assert analyze_handoff(text) == Handoff("required-handoff", "action")
+
+
+@pytest.mark.parametrize("request_text", [
+    "Please approve the deployment now.",
+    "Please authorize the environment access now.",
+    "I need your approval for the separate deployment.",
+])
+def test_publication_handback_does_not_mask_an_unrelated_approval(request_text):
+    text = "The draft is ready for you to post. " + request_text
+    assert analyze_handoff(text).expectancy == "required-handoff"
+
+
+def test_approval_of_the_handed_back_draft_remains_nonblocking_when_current():
+    assert analyze_handoff("The draft is ready for you to post. Please approve it now before posting.").expectancy != "required-handoff"
+
+
+@pytest.mark.parametrize("text", [
+    "I cannot perform this check in your environment. Please execute the supplied command and return its final status.\n"
+    "```sh\n! samplectl inspect\n```\n"
+    "I will use that result to choose the remaining correction.",
+    "Please run the local preview rebuild. Then tell me whether the new page has the corrected title.\n"
+    "```sh\n! samplectl preview\n```\n"
+    "Your result determines my remaining edit. I am waiting for that check before making the change.",
+    "Run this diagnostic in the active notebook, then copy the version lines into your reply:\n"
+    "```sh\n! samplectl versions\n```\n"
+    "I will use those exact versions to assemble the final configuration. I need your result before I can finish.",
+])
+def test_explicit_user_command_keeps_its_returned_input_dependency_across_wrapper_sentences(text):
+    assert _attention_handoff(text) == Handoff("required-handoff", "action")
+
+
+@pytest.mark.parametrize("heading", [
+    "Next is a local environment check:",
+    "The next step is a quick preview rebuild:",
+])
+def test_descriptive_next_command_heading_requires_an_assistant_use_of_its_result(heading):
+    text = (heading + "\n```sh\n! samplectl inspect\n```\n"
+            "I will use that result to finish the comparison.")
+    assert _attention_handoff(text) == Handoff("required-handoff", "action")
+
+
+@pytest.mark.parametrize("text", [
+    "If useful, please execute the supplied command and return its final status.\n"
+    "```sh\n! samplectl inspect\n```\nI will use that result to make a separate comparison.",
+    "I ran the local check.\n```sh\n! samplectl inspect\n```\nI will use that result to finish.",
+    "Please run the supplied command.\n```sh\n! samplectl inspect\n```\n"
+    "The background job is running. I'll report findings when it lands.",
+    "Next is an example command:\n```sh\n! samplectl inspect\n```\n"
+    "I will use that result during the tutorial.",
+    "```sh\n! samplectl inspect\n```\nI will use that result to finish the comparison.",
+])
+def test_command_block_does_not_create_a_gate_from_optional_past_example_or_unrelated_work(text):
+    assert _attention_handoff(text).expectancy != "required-handoff"
+
+
+@pytest.mark.parametrize("question", [
+    "Do I have your go-ahead to apply this replacement copy to the help page?",
+    "Do I have permission to post this prepared response to the issue?",
+    "Do you approve my applying this replacement section to the guide now?",
+    "Do you authorize me to publish this replacement section?",
+    "Can we have the consent to publish this replacement section?",
+])
+def test_current_prepared_permission_question_is_not_an_asserted_approval_receipt(question):
+    text = "The replacement section and response are drafted and ready. " + question
+    assert analyze_handoff(text) == Handoff("required-handoff", "authorization")
+
+
+@pytest.mark.parametrize("text", [
+    "The draft is ready. Do I have your go-ahead to post it? I received your approval.",
+    "The draft is ready. Should I post it? I have your go-ahead.",
+    "Nothing is drafted. Do I have permission to post a response?",
+    "The section is prepared. Do you approve your publishing it?",
+])
+def test_approval_receipts_still_resolve_and_assistant_actor_stays_required(text):
+    assert analyze_handoff(text).expectancy != "required-handoff"
+
+
+def test_new_destination_does_not_turn_prepared_execution_into_fresh_work():
+    assert analyze_handoff("The procedure is drafted. May I save this prepared procedure as the new handbook entry?") == Handoff("required-handoff", "authorization")
+    assert analyze_handoff("The procedure is drafted. May I save a new procedure?").expectancy != "required-handoff"
+
+
+def test_prose_advice_checklist_does_not_turn_confirm_into_a_workflow_gate():
+    text = ("A routine documentation check usually covers titles, links and examples. "
+            "Start with the title and navigation. Read the headings in sequence. "
+            "Confirm that the example names are consistent. Check that the screenshot is legible. "
+            "The general checklist above is the full answer.")
+    assert analyze_handoff(text).expectancy != "required-handoff"
+
+
+@pytest.mark.parametrize("current_request", [
+    "Please approve the deployment.",
+    "Confirm the account now.",
+    "Attach the missing records. Once they arrive, I will finish the comparison.",
+])
+def test_general_advice_frame_preserves_a_separate_current_user_gate(current_request):
+    assert analyze_handoff("This general checklist covers the usual checks. " + current_request).expectancy == "required-handoff"
+
+
+@pytest.mark.parametrize("introduction", [
+    "The last command was:",
+    "The following command has already finished:",
+    "",
+])
+def test_command_bridge_does_not_borrow_unrelated_backup_advice(introduction):
+    text = ("The draft is attached. Keep a backup of the old configuration. " + introduction
+            + "\n```sh\n! samplectl validate\n```\nI will revise it tomorrow.")
+    assert _attention_handoff(text).expectancy != "required-handoff"
+
+
+def test_current_execution_request_can_describe_a_previously_supplied_command():
+    text = ("Please execute the command that was supplied and return its final status.\n"
+            "```sh\n! samplectl validate\n```\n"
+            "I will use that result to finish the comparison.")
+    assert _attention_handoff(text) == Handoff("required-handoff", "action")
