@@ -232,6 +232,11 @@ def test_summary_headings_quotes_and_conditional_advice_are_not_verdicts(text):
     "## **Review verdict:** the migration preserves existing records.",
     "This isn't a blocker; I wouldn't delay the release for it.",
     "Safe to ship. The patch is reversible and the checks cover the changed behavior.",
+    "Yes, ship it.",
+    "Yes, ship it. I will inspect the patch tomorrow.",
+    "Yes, keep the smaller deployment.",
+    "Safe to ship.",
+    "Unsafe to deploy.",
 ])
 def test_explicit_current_recommendations_deliver_an_assessment(text):
     prose = assistant_prose(text, link_types=True)
@@ -242,8 +247,6 @@ def test_explicit_current_recommendations_deliver_an_assessment(text):
 @pytest.mark.parametrize("text", [
     "Yes, the output directory contains the requested files.",
     "Ship it after the next review.",
-    "Yes, ship it.",
-    "Yes, ship it. I will inspect the patch tomorrow.",
     "Yes, ship it if the next check passes. The patch is reversible.",
     "Safe to ship if the missing check passes. The branch is reversible.",
     "My call: if the next check passes, enable the new path.",
@@ -271,6 +274,89 @@ def test_recommendation_mentions_promises_and_conditions_are_not_assessments(tex
 
 
 @pytest.mark.parametrize("text", [
+    "I recommend the smaller of the two options because it is easier to reverse.",
+    "We favor the existing design over another layer of coordination.",
+    "Personally, I prefer the second vendor: its failure behavior is predictable.",
+    "I'd choose the staged rollout rather than moving every account together.",
+    "Overall, I would keep the current arrangement for this release.",
+    "I wouldn't build another index; the current lookup already meets the limit.",
+    "My recommendation is the incremental route rather than a clean replacement.",
+    "Our preference: retain the smaller configuration and retire the extra layer.",
+    "The current choice is the hosted version because maintenance matters most.",
+    "I suggest keeping the original mapping, which matches every supported client.",
+    "I'd stick with the simpler alternative because it is reversible.",
+    "We recommend that you keep the old endpoint during the transition.",
+    "The proposed allocation is too risky for this workload.",
+    "This arrangement looks sensible given the measured traffic.",
+    "The replacement remains unnecessary: the existing worker clears the queue.",
+    "A second cache is overkill for the volume we measured.",
+    "That tradeoff seems reasonable for a short migration.",
+    "The first supplier is the better choice on reliability.",
+    "This design is not safe to deploy because retries can duplicate writes.",
+    "The fallback is sufficient for the current constraints.",
+    "This is worth doing because the reduction in error rate is measurable.",
+    "The revised build is ready to ship with the existing checks.",
+    "I do not recommend a second index for this workload.",
+    "I would not deploy this version: the retry loop duplicates writes.",
+    "The safer alternative is to keep the old route.",
+    "This patch makes sense for the current workload.",
+    "Option two is my recommendation.",
+    "I think the rewrite is worth considering.",
+    "I recommend the extra queue because the service loses messages when traffic spikes.",
+    "I prefer the documentation over the examples for this audience.",
+    "My recommendation is to keep the smaller worker pool.",
+    "After measuring both configurations, I recommend the simpler layout.",
+    "Given the current constraints, I'd choose the slower but safer route.",
+    "The better choice for the upcoming trial: a single regional worker.",
+    "For this migration, retain the existing mapping; it preserves every supported client.",
+    "Go ahead with the smaller trial. The measured error rate is within the agreed limit.",
+    "On balance, I would not deploy the rewrite because it loses cancellation.",
+])
+def test_current_stances_and_evaluated_subjects_do_not_require_literal_verdict_framing(text):
+    assert detect_assessment(assistant_prose(text, link_types=True)) == "verdict"
+
+
+@pytest.mark.parametrize("text", [
+    "I recommend adding instrumentation before we investigate the latency.",
+    "I suggest reviewing the database logs next.",
+    "I'll choose the smaller option after inspecting the traces.",
+    "We will assess whether the new approach is safe.",
+    "I don't know whether this design is correct.",
+    "I cannot determine which option is better without the measurements.",
+    "My recommendation is pending the load test.",
+    "Our preference is unavailable until the review is complete.",
+    "The recommendation is to investigate the remaining reports.",
+    "We discussed whether this choice is appropriate.",
+    "I would prefer the second vendor if it supported the current format.",
+    "The fallback is sufficient when all workers share a region.",
+    "Assuming the cache is warm, this arrangement is safe.",
+    "Yesterday I recommended the staged rollout.",
+    "The documentation says the replacement is unnecessary.",
+    "The example describes which option is better.",
+    "Is this configuration safe to deploy?",
+    'The reviewer wrote "The fallback is sufficient for the current constraints."',
+    "> I recommend the smaller of the two options.",
+    "The question is which choice is better for the target workload.",
+    "I have not made a recommendation because the measurements are incomplete.",
+    "The cursor is right now positioned at the first record.",
+    "The deployment is ready to test locally.",
+    "It is worth noting that the deployment has three replicas.",
+    "The documentation recommends the old route over the new one.",
+    "The reviewer thinks this implementation is correct.",
+    "Ada believes this version is safe.",
+    "The compliance bot thinks this design is sound.",
+    "Several operators recommend the larger instance.",
+    "The best option is not available yet.",
+    "The safer approach is not ready for use.",
+    "After measuring both configurations, I'll recommend a layout next week.",
+    "For this migration, retain the mapping if the old clients cannot be updated.",
+    "A safer choice: pending the next load measurement.",
+])
+def test_structural_verdict_rules_require_asserted_current_advice_or_judgment(text):
+    assert detect_assessment(assistant_prose(text, link_types=True)) == "none"
+
+
+@pytest.mark.parametrize("text", [
     "I saved the summary to findings.md, including the table and the open questions.",
     "Saved the comparison as output/comparison.txt.",
     "I wrote the summary to /tmp/findings.md.",
@@ -280,6 +366,76 @@ def test_recommendation_mentions_promises_and_conditions_are_not_assessments(tex
 ])
 def test_saved_files_and_explicit_paste_ready_drafts_are_artifacts(text):
     assert detect_delivery(assistant_prose(text, link_types=True)) == "artifact"
+
+
+@pytest.mark.parametrize("text", [
+    "I assembled the requested notes in a single document.",
+    "I've drafted a reply for the discussion below.",
+    "We composed the email with the requested explanation.",
+    "Saved the comparison to output/weekly-results.json.",
+    "I wrote the findings to /tmp/review-summary.rst.",
+    "I prepared a checklist covering each remaining decision.",
+    "The draft has been assembled for your review.",
+    "The memo is written and ready for you to read.",
+    "I saved awaitonalfile containing the complete comparison.",
+    "We generated the complete comparison at awaitonalfile.",
+    "I assembled the result as awaitonalfile.",
+    "The awaitonalfile has been saved for download.",
+    "I saved the write-up as HANDOFF.",
+    "I saved the file as NOTES.",
+    "The draft has been put in the shared folder.",
+    "The file was placed in the review directory.",
+    "The write-up has been stored in the shared folder.",
+    "I've written the complete brief and saved a copy in the shared folder.",
+    "I finished the requested draft for the onboarding discussion.",
+    "The comparison is assembled and saved in awaitonalfile.",
+    "I've assembled an audit packet with the source notes and the timeline.",
+    "We created a comparison table containing the relevant tradeoffs.",
+])
+def test_completed_artifact_reports_support_drafts_generic_paths_and_opaque_file_markers(text):
+    # File markers represent already-sanitized prose; raw marker text is never
+    # trusted by the caller's extractor.
+    assert detect_delivery(text) == "artifact"
+
+
+@pytest.mark.parametrize("text,expected", [
+    ("I will assemble a draft for the discussion.", "unknown"),
+    ("I haven't saved awaitonalfile yet.", "unknown"),
+    ("The memo is not written yet.", "unknown"),
+    ("The draft has not been assembled.", "unknown"),
+    ("Yesterday I assembled the requested notes.", "unknown"),
+    ("If I saved awaitonalfile, the tool would load it.", "unknown"),
+    ("The documentation says I saved awaitonalfile.", "unknown"),
+    ("Example:\nI assembled a draft for your review.", "unknown"),
+    ("I wrote a parser to load the comparison from awaitonalfile.", "change"),
+    ("I updated awaitonalfile to correct the parser.", "change"),
+    ("I created a helper that saves reports to output/results.json.", "change"),
+    ("I prepared a plan to generate the comparison file.", "plan"),
+    ("I created an implementation plan for the remaining work.", "plan"),
+    ("I wrote a comparison of the existing files.", "answer"),
+    ("I have not finished the requested draft.", "unknown"),
+    ("The comparison will be saved in awaitonalfile.", "unknown"),
+    ("The comparison was assembled in the previous session.", "unknown"),
+    ("The previous draft was assembled last week.", "unknown"),
+])
+def test_artifact_reports_preserve_future_negation_context_and_implementation_changes(text, expected):
+    assert detect_delivery(text) == expected
+
+
+@pytest.mark.parametrize("text,expected", [
+    ("I saved the summary as `quarterly findings.md`.", "artifact"),
+    ('I assembled "handover notes.txt" for your review.', "artifact"),
+    ("I wrote the comparison to [this file](sandbox:/tmp/full-comparison.txt).", "artifact"),
+    ("We have saved `/tmp/notes` for download.", "artifact"),
+    ("I wrote the parser in `src/parser.py`.", "change"),
+    ("I updated `src/parser.py` to correct the loader.", "change"),
+    ("I reviewed `src/parser.py` and found a mismatch.", "answer"),
+    ("I will save the summary as `quarterly findings.md`.", "unknown"),
+    ('The docs say "I saved handover notes.txt for your review."', "unknown"),
+])
+def test_file_delivery_uses_sanitized_shape_without_filename_contents(text, expected):
+    prose = assistant_prose(text, link_types=True, typed_code=True)
+    assert detect_delivery(prose) == expected
 
 
 @pytest.mark.parametrize("text,expected", [

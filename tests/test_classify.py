@@ -180,3 +180,20 @@ def test_link_queries_do_not_leak_into_diagnostics():
     answer = RulesClassifier().classify(Event("s", "e", "Here is your [report](https://claude.ai/artifacts/abc?secret=xyz#private)."))
     assert answer.gesture == "artifact"
     assert "secret" not in json.dumps(answer.to_dict())
+
+
+@pytest.mark.parametrize("text,state,gesture", [
+    ("I've written the brief and saved it in `result.zeta`.", "done", "artifact"),
+    ('The draft was assembled as "Launch reply".', "done", "artifact"),
+    ("The 'Cedar' route is safer for the current limit.", "done", "verdict"),
+    ("I can retry after you execute `examplectl repair`.", "needs-you", "needs-you"),
+    ("The patch is staged. With your permission, I'll apply it.", "needs-you", "authorization"),
+    ("The compaction is proceeding. I'll show you the output when it ends.", "unknown", "in-flight"),
+    ("The compaction is proceeding. I'll show you the output when it ends. Please sign in to the account.", "needs-you", "needs-you"),
+    ("The compaction is proceeding. I could not run the integration tests. I'll show you the output when it ends.", "caveats", "caveats"),
+    ('The tool said "The patch is safe to ship". I have not assessed it.', "unknown", "answer"),
+    ('Done. "Execute the command." Then I will continue.', "done", "done"),
+])
+def test_structural_evidence_survives_extraction_and_routing_priority(text, state, gesture):
+    answer = RulesClassifier().classify(Event("s", "e", text))
+    assert (answer.state, answer.gesture) == (state, gesture)

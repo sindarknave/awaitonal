@@ -8,7 +8,25 @@ MAX_PROSE_CHARS = 131_072
 SALIENCE = re.compile(r"\b(wait|await|approval|approve|permission|choose|choice|decide|answer|before|cannot|can't|refus|declin|won't|unable|fail|error|recover|fixed|resolved|unavailable|blocked|remaining|caveat)", re.I)
 
 
-def _strip_quotes(text: str) -> str:
+def _literal_marker(value: str) -> str:
+    """Keep a literal's shape, never its contents or executable instructions.
+
+    File extensions are structural, not an allowlist of artifact types. The
+    marker still needs a surrounding reported delivery before it is evidence
+    of an artifact; a filename alone says nothing about the task's outcome.
+    """
+    value = value.strip()
+    safe = (0 < len(value) <= 512
+            and re.fullmatch(r"[\w .@+~:/\\-]+", value, re.UNICODE))
+    file_shape = safe and (
+        re.search(r"\.[\w-]{1,16}$", value)
+        or re.match(r"(?:/|\.{1,2}/|~/|[a-z]:\\)", value, re.I)
+        or re.fullmatch(r"[\w.@+~-]+(?:[/\\][\w .@+~-]+)+", value)
+    )
+    return " awaitonalfile " if file_shape else " awaitonalcode "
+
+
+def _strip_quotes(text: str, *, typed_code: bool = False) -> str:
     """Remove paired quotations without rescanning unmatched opening marks."""
     closers = {'"': '"', '“': '”', '‘': '’'}
     lines = []
@@ -23,7 +41,12 @@ def _strip_quotes(text: str) -> str:
             if start < cursor or start >= last[match.group()]:
                 continue
             end = line.find(closers[match.group()], start + 1)
-            parts.extend((line[cursor:start], " "))
+            value = line[start + 1:end]
+            marker = _literal_marker(value) if typed_code else " "
+            # Preserve an opaque argument for surrounding prose ("X is the
+            # better choice"), never the assertions inside the quotation.
+            parts.extend((line[cursor:start], marker if marker == " awaitonalfile "
+                          else " awaitonalliteral " if typed_code else " "))
             cursor = end + 1
         parts.append(line[cursor:])
         lines.append("".join(parts))
@@ -73,7 +96,7 @@ def _strip_link_destinations(text: str, link_types: bool = False) -> str:
     return "".join(parts)
 
 
-def assistant_prose(text: str, *, link_types: bool = False) -> str:
+def assistant_prose(text: str, *, link_types: bool = False, typed_code: bool = False) -> str:
     """Discard code and quoted material, returning empty for invalid/oversize input.
 
     This is deliberately not a Markdown parser. An unclosed fence consumes the
@@ -96,9 +119,14 @@ def assistant_prose(text: str, *, link_types: bool = False) -> str:
             continue
         lines.append(line)
     prose = "\n".join(lines)
-    prose = re.sub(r"`+[^`]*`+", " ", prose)
-    prose = _strip_quotes(prose)
-    prose = re.sub(r"(?<!\w)'[^'\n]+'(?!\w)", " ", prose)
+    if typed_code:
+        prose = re.sub(r"\bawaitonal(?:file|code|literal)\b", " ", prose, flags=re.I)
+    prose = re.sub(r"`+[^`]*`+", lambda match: _literal_marker(match[0].strip("`"))
+                   if typed_code else " ", prose)
+    prose = _strip_quotes(prose, typed_code=typed_code)
+    prose = re.sub(r"(?<!\w)'[^'\n]+'(?!\w)", lambda match:
+                   " awaitonalfile " if typed_code and _literal_marker(match[0][1:-1]) == " awaitonalfile "
+                   else " awaitonalliteral " if typed_code else " ", prose)
     if link_types:
         prose = re.sub(r"\bawaitonal(?:pr|artifact|reference)link\b", " ", prose, flags=re.I)
     prose = _strip_link_destinations(prose, link_types)
@@ -107,6 +135,9 @@ def assistant_prose(text: str, *, link_types: bool = False) -> str:
         # fragments must never become outcome or handoff evidence.
         prose = re.sub(r"(?:https?://|sandbox:/)[^\s<>]+", lambda m: _link_marker(m[0].rstrip(".,;!?)]")), prose)
     prose = prose.replace("’", "'")
+    if typed_code and not re.sub(
+            r"\bawaitonal(?:file|code|literal)\b", " ", prose, flags=re.I).strip():
+        return ""
     return re.sub(r"[ \t]+", " ", prose).strip()
 
 

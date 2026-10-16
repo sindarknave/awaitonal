@@ -163,7 +163,7 @@ class RulesClassifier:
             return explicit_result(event, self.threshold)
         # Strip URL targets before *all* routing. Words in paths, queries, or
         # fragments are reference data, not claims about this turn's outcome.
-        prose = assistant_prose(event.text, link_types=True)
+        prose = assistant_prose(event.text, link_types=True, typed_code=True)
         if not prose:
             return None
         handoff = analyze_handoff(prose)

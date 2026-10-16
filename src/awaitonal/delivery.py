@@ -16,18 +16,20 @@ _BREAKS = re.compile(r"(?<=[.!?])\s+|[;\n]+|\b(?:but|however)\b", re.I)
 _PUBLICATION = {"published", "republished", "deployed", "released", "pushed", "uploaded", "merged", "shipped"}
 _CHANGES = {"fixed", "implemented", "updated", "changed", "refactored", "added", "removed",
             "renamed", "corrected", "rewrote", "converted", "migrated", "restored", "replaced"}
-_CREATION = {"created", "wrote", "generated", "exported", "saved", "rendered", "prepared", "built"}
+_CREATION = {"created", "wrote", "written", "generated", "exported", "saved", "rendered", "prepared", "built", "assembled", "drafted", "composed"}
 _INSPECTION = {"found", "identified", "diagnosed", "analyzed", "reviewed", "compared", "checked"}
-_ACTIONS = _PUBLICATION | _CHANGES | _CREATION | _INSPECTION | {"made", "completed", "opened", "posted", "submitted"}
+_ACTIONS = _PUBLICATION | _CHANGES | _CREATION | _INSPECTION | {"made", "completed", "finished", "opened", "posted", "submitted"}
 _MODIFIERS = {"now", "just", "also", "successfully", "already", "finally"}
 _ARTIFACTS = {"pdf", "csv", "xlsx", "docx", "png", "jpg", "svg", "mp4", "mp3",
               "spreadsheet", "workbook", "presentation", "slides", "deck",
               "video", "image", "illustration", "audio", "wav", "archive", "zip", "wheel",
               "document", "report", "file", "export", "chart", "diagram",
-              "files", "reports", "videos", "images", "documents", "artifact", "artifacts"}
+              "files", "reports", "videos", "images", "documents", "artifact", "artifacts",
+              "sheet", "table", "packet"}
 _CHANGE_OBJECTS = {"code", "patch", "fix", "feature", "implementation", "migration", "changes",
                    "change", "refactor", "refactoring", "query", "handler", "function", "helper",
-                   "component", "test", "tests", "config", "configuration", "issue", "bug"}
+                   "component", "test", "tests", "config", "configuration", "issue", "bug",
+                   "module", "script", "parser", "endpoint", "route", "schema", "adapter", "plugin"}
 _PUBLIC_OBJECTS = {"site", "website", "app", "service", "release", "version", "package", "build",
                    "deployment", "changes", "branch", "pr", "update", "function", "report"}
 _PLAN_OBJECTS = {"plan", "proposal", "roadmap", "recommendations", "strategy"}
@@ -67,11 +69,185 @@ _FILE_DESTINATION = re.compile(
     r"\b(?:to|as|at)\s+(?:\.{0,2}/|/)?[a-z0-9_-][a-z0-9_./-]{0,180}\."
     r"(?:md|markdown|txt|rst|pdf|csv|tsv|xlsx|docx|pptx|png|jpe?g|svg|mp4|mp3|wav|zip)"
     r"(?=$|[\s.,;:!?)])", re.I)
-_DRAFT_OBJECTS = {"reply", "draft", "message", "email", "response", "comment", "comments"}
+_FILE_REFERENCE = re.compile(
+    r"\b(?:to|as|at|into|in)\s+(?:(?:[a-z0-9'-]+\s+){0,4}awaitonal(?:file|artifactlink)\b|(?:\.{0,2}/|/)[a-z0-9_./~-]{1,180}"
+    r"|[a-z0-9_-][a-z0-9_./-]{0,160}\.[a-z][a-z0-9]{0,12})(?=$|[\s.,;:!?)])", re.I)
+_DRAFT_OBJECTS = {"reply", "draft", "message", "email", "response", "comment", "comments",
+                  "memo", "letter", "brief", "notes", "checklist", "outline"}
+_STORED = {"put", "placed", "stored", "left", "attached"}
 _DIAGNOSIS_PREDICATES = {"is", "are", "isn't", "aren't", "doesn't", "don't", "reads", "uses",
                          "returns", "loads", "takes", "sends", "runs", "causes", "because",
                          "instead", "means", "depends"}
 _UNAVAILABLE_VERDICT = {"pending", "unavailable", "incomplete", "unknown", "undecided", "undetermined", "deferred"}
+_EVALUATION = {
+    "correct", "incorrect", "sound", "unsound", "solid", "acceptable", "unacceptable",
+    "appropriate", "inappropriate", "reasonable", "unreasonable", "sensible", "viable",
+    "worthwhile", "sufficient", "insufficient", "safe", "unsafe", "risky", "overkill",
+    "unnecessary", "necessary", "preferable", "better", "worse", "stronger", "weaker",
+    "best", "worst", "right", "wrong", "good", "bad", "recommended", "safer", "riskier",
+    "simpler", "cleaner",
+}
+_STANCE = {"recommend", "suggest", "favor", "favour", "prefer", "choose", "pick", "advise"}
+_DECISION_ACTIONS = {"use", "keep", "retain", "stick", "choose", "pick", "select", "adopt",
+                     "wait", "hold", "drop", "skip", "avoid", "proceed", "ship", "merge",
+                     "release", "deploy", "publish", "build", "buy", "sell", "leave", "take"}
+_ASSESSMENT_CONDITIONS = {"if", "unless", "when", "once", "assuming", "suppose", "hypothetical"}
+
+
+def _current_assessment(words: list[str], part: str) -> bool:
+    """Keep the asserted proposition separate from hypothetical/reported advice."""
+    assertion = words
+    # Conditions inside a causal explanation describe the evidence, rather
+    # than necessarily making the recommendation itself contingent.
+    for index, word in enumerate(words):
+        if word in {"because", "since"}:
+            assertion = words[:index]
+            break
+    if (not words or "?" in part or _historical(assertion)
+            or _ASSESSMENT_CONDITIONS.intersection(assertion)):
+        return False
+    # A current stance may use "I would recommend"; a promised review and a
+    # reported recommendation are not the assistant's present judgment.
+    if set(assertion[:7]).intersection({"say", "says", "said", "i'll", "we'll", "will"}):
+        return False
+    if assertion[:1] in (["example"], ["examples"], ["hypothetical"]):
+        return False
+    if ({"docs", "documentation", "tutorial", "example"}.intersection(assertion[:3])
+            and {"recommend", "recommends", "describes", "states", "explains", "calls"}.intersection(assertion[:7])):
+        return False
+    for index, word in enumerate(assertion[:10]):
+        if (index and word in {"think", "thinks", "thought", "believe", "believes", "believed",
+                               "recommend", "recommends", "recommended", "suggest", "suggests",
+                               "suggested", "prefer", "prefers", "preferred", "advise", "advises"}
+                and not {"i", "we", "i've", "we've", "i'd", "we'd"}.intersection(assertion[:index])):
+            return False
+    if words[:2] in (["i", "can't"], ["i", "cannot"], ["we", "can't"], ["we", "cannot"]):
+        return False
+    return True
+
+
+def _structural_verdict(words: list[str], part: str) -> bool:
+    """Recognize a stance or an evaluated subject, independent of its name.
+
+    A preference selects an alternative; an implementation proposal merely
+    promises work. Evaluative predicates require an asserted subject rather
+    than finding an isolated judgment word anywhere in the response.
+    """
+    if not _current_assessment(words, part):
+        return False
+    # Opening adjuncts do not change the grammatical subject of the main
+    # assertion: "After comparing ..., I recommend ..." is still a stance.
+    main = re.search(r",\s*(?:\*\*|__)?(?:i|we|i'd|we'd)\b", part, re.I)
+    if main:
+        words = _WORDS.findall(part[main.start() + 1:].lower())
+    first = words[:16]
+    # An affirmative go/no-go is already a judgment. Requiring an additional
+    # rationale or a minimum reply length makes paraphrases of the same
+    # recommendation disagree. Bare yes/no remains an ordinary answer.
+    if (first[:1] == ["yes"] and len(first) >= 3
+            and first[1] in _DECISION_ACTIONS | {"do"}):
+        return True
+    if (first[:2] in (["safe", "to"], ["unsafe", "to"])
+            and first[2:3] and first[2] in _DECISION_ACTIONS):
+        return True
+    start = 0
+    while start < min(len(first), 5) and first[start] in {
+        "overall", "so", "therefore", "ultimately", "honestly", "personally", "now",
+        "my", "our", "recommendation", "judgment", "judgement", "conclusion", "is",
+    }:
+        start += 1
+    stance = first[start:]
+    if stance[:1] and stance[0] in {"i", "we", "i'd", "we'd"}:
+        stance = stance[1:]
+        while stance[:1] and stance[0] in {"would", "still", "now", "strongly", "definitely", "personally"}:
+            stance = stance[1:]
+        if stance[:1] == ["do"] and stance[1:2] == ["not"]:
+            stance = ["don't", *stance[2:]]
+        if stance[:1] == ["not"]:
+            stance = ["wouldn't", *stance[1:]]
+        if (stance[:1] in (["don't"], ["wouldn't"])
+                and stance[1:2] and stance[1] in _STANCE and len(stance) >= 4):
+            return True
+        if stance[:1] and stance[0] in _STANCE and len(stance) >= 3:
+            target = stance[1:]
+            # A bare plan to add/fix/investigate something is not an assessed
+            # choice. Selection, abstention and named alternatives are.
+            if target[0] not in {"adding", "fixing", "implementing", "investigating", "checking",
+                                 "testing", "reviewing", "creating", "writing", "building",
+                                 "to", "that"}:
+                return True
+            if target[0] == "that" and len(target) >= 4:
+                return any(word in _DECISION_ACTIONS for word in target[1:5])
+            if target[:1] == ["to"] and target[1:2] and target[1] in _DECISION_ACTIONS:
+                return True
+        if stance[:1] in (["go"], ["stick"]) and stance[1:2] == ["with"] and len(stance) >= 3:
+            return True
+        if stance[:1] and stance[0] in _DECISION_ACTIONS and len(stance) >= 3:
+            # "I use this" reports behavior; "I'd keep this" gives advice.
+            return any(word in {"i'd", "we'd", "would"} for word in first[:start + 3])
+        if stance[:1] in (["wouldn't"], ["don't"]) and stance[1:2] and stance[1] in _DECISION_ACTIONS and len(stance) >= 4:
+            return True
+    # Recommendation/choice framings can introduce any selected alternative,
+    # without requiring "My call" or a specific heading.
+    for index, word in enumerate(first[:6]):
+        if (word in {"recommendation", "preference", "choice", "pick"}
+                and set(first[:index]).issubset({"my", "our", "the", "current", "final", "preferred", "overall"})):
+            tail = first[index + 1:]
+            if tail[:1] == ["is"]:
+                tail = tail[1:]
+            if tail[:1] == ["to"] and tail[1:2] and tail[1] in _DECISION_ACTIONS:
+                return True
+            if tail and tail[0] not in _UNAVAILABLE_VERDICT | {"not", "no", "to", "will"}:
+                if len(tail) >= 2 and not {"later", "tomorrow"}.intersection(tail):
+                    return True
+    # Subject + copula + evaluative predicate. Unlike a list of domain nouns,
+    # this works equally for a migration, vendor, design or unnamed "this".
+    for index, word in enumerate(first[1:12], 1):
+        if word not in {"is", "are", "looks", "look", "seems", "seem", "remains", "remain"}:
+            continue
+        subject = first[:index]
+        if {"whether", "which", "how", "why", "tell", "know", "determine", "assess",
+            "judge", "discuss", "explain", "describe"}.intersection(subject):
+            continue
+        predicate = first[index + 1:]
+        while predicate[:1] and predicate[0] in {"a", "an", "the", "clearly", "still", "now", "not", "too", "much", "probably", "really", "quite"}:
+            predicate = predicate[1:]
+        if predicate[:1] and predicate[0] in _EVALUATION:
+            # Reporting which value was selected is not endorsing its quality.
+            if predicate[0] in {"right", "wrong"} and predicate[1:2] in (["now"], ["side"]):
+                continue
+            return True
+        if predicate[:1] == ["worth"] and len(predicate) >= 2:
+            if predicate[1] not in {"noting", "mentioning", "remembering", "emphasizing"}:
+                return True
+        if predicate[:2] == ["ready", "to"] and set(predicate[2:4]).intersection(_DECISION_ACTIONS):
+            return True
+        if (predicate[:2] in (["my", "recommendation"], ["our", "recommendation"],
+                               ["my", "preference"], ["our", "preference"])):
+            return True
+        # A ranked choice may put its evaluation in the subject: "The safer
+        # option is the staged release", rather than after the copula.
+        if ({"best", "better", "safer", "preferred", "recommended"}.intersection(subject)
+                and {"option", "choice", "approach", "alternative", "route", "path"}.intersection(subject)
+                and predicate and predicate[0] not in _UNAVAILABLE_VERDICT | {"unknown", "unclear", "available", "ready"}):
+            return True
+    for index, word in enumerate(first[1:12], 1):
+        if word in {"makes", "make"} and first[index + 1:index + 2] == ["sense"]:
+            return True
+    if ":" in part:
+        label, selected = part.split(":", 1)
+        label_words = _WORDS.findall(label.lower())
+        selection = _WORDS.findall(selected.lower())
+        if (set(label_words).intersection({"best", "better", "safer", "preferred", "recommended"})
+                and set(label_words).intersection({"option", "choice", "approach", "alternative", "route", "path"})
+                and selection and _available_verdict(selection)):
+            return True
+    return False
+
+
+def _artifact_object(words: list[str]) -> bool:
+    return (bool((_ARTIFACTS | _DRAFT_OBJECTS | {"awaitonalfile"}).intersection(words))
+            or any(words[index:index + 2] == ["write", "up"] for index in range(len(words) - 1)))
 
 
 def _available_verdict(words: list[str]) -> bool:
@@ -150,6 +326,8 @@ def _action_kind(words: list[str], position: int) -> Delivery:
     # Inspect only the immediate object, not later explanations mentioning
     # some unrelated artifact or publication. The nearest known object wins.
     objects = words[position + 1:position + 9]
+    if len(objects) >= 2 and objects[0] == "and" and objects[1] in _ACTIONS:
+        objects = objects[2:]
     if {"no", "not", "nothing", "none", "neither"}.intersection(objects[:3]):
         return "unknown"
     if verb in _PUBLICATION:
@@ -164,15 +342,35 @@ def _action_kind(words: list[str], position: int) -> Delivery:
         return "change"
     if verb in _INSPECTION:
         return "answer" if len(objects) >= 2 else "unknown"
+    if verb in _CREATION and any(objects[index:index + 2] == ["write", "up"] for index in range(len(objects) - 1)):
+        return "artifact"
+    # Compound noun phrases take their type from the head, so a "review
+    # packet" is an artifact and an "implementation plan" is a plan. Stop
+    # before descriptions of what the deliverable reads, produces or changes.
+    object_phrase = []
     for word in objects:
+        if word in {"to", "for", "of", "with", "from", "that", "which", "in", "at", "as", "and"}:
+            break
+        if (word.endswith("ing") and set(object_phrase).intersection(
+                _PLAN_OBJECTS | _CHANGE_OBJECTS | _ARTIFACTS | _DRAFT_OBJECTS | _ANSWER_OBJECTS
+                | {"awaitonalfile", "awaitonalartifactlink"})):
+            break
+        object_phrase.append(word)
+    for word in reversed(object_phrase):
         if word in _PLAN_OBJECTS:
             return "plan"
         if word in _CHANGE_OBJECTS:
             return "change"
         if word in _ARTIFACTS:
             return "artifact"
+        if word in _DRAFT_OBJECTS and verb in _CREATION | {"completed", "finished"}:
+            return "artifact"
+        if word in {"awaitonalfile", "awaitonalartifactlink"} and verb in _CREATION:
+            return "artifact"
         if word in _ANSWER_OBJECTS:
             return "answer"
+    if verb in _CREATION and set(objects).intersection({"awaitonalfile", "awaitonalartifactlink"}):
+        return "artifact"
     return "unknown"
 
 
@@ -206,7 +404,10 @@ def _passive(words: list[str]) -> Delivery:
             return "published"
         if predicate in _PUBLICATION | {"live"} and (_PUBLIC_OBJECTS.intersection(subject) or version):
             return "published"
-        if predicate in _CREATION | {"written", "ready", "available", "attached"} and _ARTIFACTS.intersection(subject):
+        if (predicate in _CREATION | _STORED | {"written", "ready", "available"}
+                and (_artifact_object(subject)
+                     or not _CHANGE_OBJECTS.intersection(subject)
+                     and {"awaitonalfile", "awaitonalartifactlink"}.intersection(words[end + 1:]))):
             return "artifact"
         if predicate in {"ready", "complete", "completed"} and _PLAN_OBJECTS.intersection(subject):
             return "plan"
@@ -353,7 +554,18 @@ def detect_assessment(prose: str) -> str:
                 example = True
             elif tuple(words) in _RESULT_HEADERS:
                 example = False
-        if example or _historical(words) or set(words[:5]).intersection({"if", "would", "will", "example", "says", "said"}):
+        if example:
+            continue
+        if _structural_verdict(words, part):
+            return "verdict"
+        if (_current_assessment(words, part)
+                and re.search(
+                    r"(?:^|,)\s*(?:yes[, ]+)?(?:(?:do not|don't)\s+)?"
+                    r"(?:choose|pick|select|keep|retain|avoid|skip|proceed|ship|merge|deploy|release|publish|go ahead)\b",
+                    part, re.I)
+                and _supported_recommendation(clauses, position)):
+            return "verdict"
+        if _historical(words) or set(words[:5]).intersection({"if", "would", "will", "example", "says", "said"}):
             continue
         if re.search(r"\b(?:review|audit|assessment) (?:is |was |has been )?(?:complete|finished)\b", part, re.I):
             completed_review = True
@@ -449,10 +661,10 @@ def detect_delivery(prose: str) -> Delivery:
             if position is not None:
                 kind = _action_kind(words, position)
                 found_it = words[position:] == ["found", "it"]
-                if (kind != "change" and words[position] in {"saved", "exported", "rendered", "wrote", "generated"}
+                if (kind != "change" and words[position] in _CREATION
                         and not {"no", "not", "nothing", "none", "neither"}.intersection(
                             words[position + 1:position + 4])
-                        and _FILE_DESTINATION.search(part)):
+                        and (_FILE_DESTINATION.search(part) or _FILE_REFERENCE.search(part))):
                     kind = "artifact"
                 if (kind == "unknown" and previous_artifact_heading
                         and words[position] in {"rendered", "generated", "exported", "saved"}

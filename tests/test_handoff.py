@@ -1,10 +1,20 @@
 """Authored behavioral contrasts, not measured classifier-evaluation data."""
 import time
+import subprocess
+import sys
 
 import pytest
 
 from awaitonal.handoff import Handoff, analyze_handoff, detect_handoff, handoff_kind
 from awaitonal.text import assistant_prose
+
+
+def test_nested_address_headings_do_not_recurse_or_become_requests():
+    subprocess.run([
+        sys.executable, "-c",
+        "from awaitonal.handoff import analyze_handoff; "
+        "assert analyze_handoff('you: ' * 20000 + 'Done.').expectancy == 'none'",
+    ], check=True, capture_output=True, text=True, timeout=5)
 
 
 @pytest.mark.parametrize("text", [
@@ -169,7 +179,8 @@ def test_handoff_flavors(text, expectancy, kind):
     ("Please sign in. Authentication has not succeeded.", "required-handoff"),
     ("Please approve it. Approval has not been received.", "required-handoff"),
     ("Please sign in. Once authentication is complete, I can continue.", "required-handoff"),
-    ("Please review it. Once your feedback is in, I can continue.", "review-requested"),
+    # Explicit cross-sentence workflow gates make the review required.
+    ("Please review it. Once your feedback is in, I can continue.", "required-handoff"),
     ("Please sign in. The implementation and tests are complete.", "required-handoff"),
     ("The tests pass, but I need your approval.", "required-handoff"),
     ("I don't need your approval, but please review the draft.", "review-requested"),
@@ -313,3 +324,137 @@ def test_coordinated_requests_keep_independent_dependencies(text, expectancy, ki
 ])
 def test_compound_actions_keep_auth_and_approval_families_separate(text, expectancy, kind):
     assert analyze_handoff(text) == Handoff(expectancy, kind)
+
+
+@pytest.mark.parametrize("text", [
+    "Unlock the workspace. I'll retry the migration after that.",
+    "I can retry the migration once you unlock the workspace.",
+    "I can't validate the integration until the account is usable. Please unlock it.",
+    "Rotate the credential; then I will rerun the connectivity check.",
+    "Please attach the sanitized measurements. Once they arrive, I can finish the comparison.",
+    "I will finish the comparison after the measurements arrive. Could you attach them?",
+    "You'll need to acknowledge the device prompt before the operation can proceed.",
+    "For this run, I need you to switch the account into its testing mode.",
+    "I can carry on after that. Restore access to the sandbox.",
+    "Refresh the session. Then I'll repeat the check.",
+])
+def test_structural_user_actions_do_not_depend_on_a_work_verb_catalogue(text):
+    assert analyze_handoff(text) == Handoff("required-handoff", "action")
+
+
+@pytest.mark.parametrize("text", [
+    "If you want, unlock the sample workspace. I'll retry the demo after that.",
+    "The tutorial explains: unlock the workspace. Then I'll describe its behavior.",
+    "Previously you needed to rotate the credential. I can now run the checks.",
+    "The workspace is unlocked. I'll retry the migration after that.",
+    "I unlocked the workspace. Then I'll retry the migration.",
+    "The measurements are attached. I can finish the comparison after lunch.",
+    "The feature is complete. Could you attach extra measurements if useful?",
+    "Rotate the credential as a monthly maintenance precaution. I'll work on the summary tomorrow.",
+    "The deploy is still running. Integration tests could not run. I'll report back once it completes.",
+])
+def test_structural_dependencies_exclude_optional_described_and_unrelated_work(text):
+    assert analyze_handoff(text).expectancy == "none"
+
+
+@pytest.mark.parametrize("handoff,resolution", [
+    ("Unlock the workspace. I'll retry after that.", "You unlocked the workspace."),
+    ("Rotate the credential. I can retry once that is done.", "The credential is now rotated."),
+    ("Please attach the measurements. I'll finish once they arrive.", "You have attached the measurements."),
+    ("Refresh the session. Then I'll reconnect.", "No need to refresh the session."),
+])
+def test_domain_action_completion_resolves_its_dependency(handoff, resolution):
+    assert analyze_handoff(handoff).expectancy == "required-handoff"
+    assert analyze_handoff(handoff + " " + resolution).expectancy == "none"
+
+
+@pytest.mark.parametrize("text", [
+    "Everything is staged locally. May I publish it now?",
+    "It is ready on my side. Is it okay if I save it?",
+    "I've assembled the response. Would you prefer that I post it or keep it here?",
+    "We have drafted the announcement. Do you want us to publish it?",
+    "The edits are complete. If you agree, I'll apply them.",
+    "I prepared the answer. I'll post it once you approve.",
+    "The material is written. With your permission, I can submit it.",
+    "Could I save it now? Everything is prepared locally.",
+    "The migration is staged. Should we apply it or leave it pending?",
+    "I haven't posted the response yet. Would you like me to post it?",
+    "The note has not been saved. Is it okay for me to save it?",
+    "The response is written, would you prefer that I send it?",
+])
+def test_compositional_prepared_execution_permission_is_authorization(text):
+    assert analyze_handoff(text) == Handoff("required-handoff", "authorization")
+
+
+@pytest.mark.parametrize("text", [
+    "Would you prefer that I draft and publish an announcement?",
+    "If everything is staged, may I publish it?",
+    "The announcement will be ready tomorrow. Do you want me to publish it?",
+    "It is not ready on my side. Is it okay if I save it?",
+    "Everything is prepared. If you want, I can also publish an example.",
+    "The edits are complete. Would you like me to post a separate explanation?",
+    "I haven't built a release yet. Would you like me to build it?",
+    "Previously everything was staged. Should I publish it now?",
+    "The guide explains: everything is staged. If you agree, I'll apply it.",
+    "The edits are complete. If you agree, I'll apply them. I applied them.",
+    "Everything is ready. Could I save it now? I've saved it.",
+    "The answer is written. Would you prefer that I post it? No approval is needed.",
+])
+def test_structural_authorization_excludes_unprepared_optional_and_resolved_work(text):
+    assert analyze_handoff(text).expectancy == "none"
+
+
+@pytest.mark.parametrize("text", [
+    "I'll inspect both sets as soon as you attach the earlier one.",
+    "Have the table exported as CSV and attach it here; with that file, I can reconcile the rows.",
+    "Before I continue, rotate the token.",
+    "Action for you: attach the revised intake form. Once I have it, I'll check the missing fields.",
+    "Please run the diagnostic. Once it finishes, I'll compare the measurements.",
+])
+def test_temporal_input_causative_and_addressed_heading_structures(text):
+    assert analyze_handoff(text) == Handoff("required-handoff", "action")
+
+
+@pytest.mark.parametrize("text", [
+    "Please enjoy the dashboard. I will check it again after lunch.",
+    "Please note the behavior. I can explain why after the investigation finishes.",
+    "You need to know that the checks pass. Done.",
+    "You must remember that this is a sample. Done.",
+    "Please hydrate while I wait for the tests. I will continue when they finish.",
+    "Please celebrate the good news. I will continue after the tests finish.",
+    "The image conversion hasn't finished yet, and I'll share the converted set once it does.",
+    "Done. awaitonalliteral Then I'll continue.",
+    "Done. awaitonalcode Then I'll continue.",
+])
+def test_temporal_coincidence_and_social_or_mental_directives_are_not_workflow_gates(text):
+    assert analyze_handoff(text).expectancy == "none"
+
+
+@pytest.mark.parametrize("text", [
+    "I've prepared the migration. If you agree with the approach, can I apply it?",
+    "Are you happy for me to publish the revised schedule? I have the final version ready.",
+    "The edits are ready. Are you comfortable with me applying them?",
+    "The response is assembled. I can post it provided you approve.",
+])
+def test_permission_questions_and_approval_conditions_compose_with_prepared_state(text):
+    assert analyze_handoff(text) == Handoff("required-handoff", "authorization")
+
+
+@pytest.mark.parametrize("text", [
+    "Nothing has been drafted. Should I post the result?",
+    "No response has been written. Should I post it?",
+    "The release is ready. Can I save you some time by writing a guide?",
+    "The application is ready. Could I publish a tutorial next week?",
+    "The application is ready. Can I publish a tutorial next week?",
+])
+def test_negative_preparation_and_fresh_work_objects_do_not_authorize_prepared_execution(text):
+    assert analyze_handoff(text).expectancy == "none"
+
+
+@pytest.mark.parametrize("handoff,resolution", [
+    ("Run the diagnostic. Then I'll compare the measurements.", "I ran it."),
+    ("Write the account identifier here. Once I have it, I'll retry.", "You wrote the account identifier."),
+])
+def test_irregular_action_completion_resolves_a_generic_dependency(handoff, resolution):
+    assert analyze_handoff(handoff).expectancy == "required-handoff"
+    assert analyze_handoff(handoff + " " + resolution).expectancy == "none"

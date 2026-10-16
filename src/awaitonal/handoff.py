@@ -40,7 +40,7 @@ _DOC = _rx(
 )
 _DOC_END = _rx(r"\b(?:instructions|guide|sheet|documentation|tutorial) (?:is|are) (?:ready|complete|finished)\b")
 _CURRENT = _rx(r"\b(?:right now|for this run|to unblock|before i can|before we can|i am waiting|i'm waiting|we are waiting)\b")
-_HISTORICAL = _rx(r"\b(?:previously|earlier|initially|at first|yesterday|last time|i had asked|we had asked)\b")
+_HISTORICAL = _rx(r"\b(?:previously|initially|at first|yesterday|last time|i had asked|we had asked)\b|\bearlier(?=\s+(?:i|we|you)\b|\s*[,;.!?]|$)")
 _FUTURE = _rx(r"\b(?:on future|for future|next time|in future|during installation|before first use|when you (?:later|eventually))\b")
 _OPTIONAL = _rx(
     r"\b(?:if (?:you (?:want|wish|would like)|you'd like|useful|helpful|needed)|in case you|"
@@ -122,8 +122,13 @@ _PREPARED = _rx(
     r"\b(?:config(?:uration)? rules?|config(?:uration)? changes?|patch|changes?)\b[^.!?\n]{0,35}"
     r"\b(?:is |are )?(?:listed|shown|provided) (?:above|below|here)\b"
 )
-_OUTWARD_VERBS = r"(?:push|publish|post|send|submit|merge|deploy|release|commit|apply)"
-_OUTWARD = _rx(r"\b" + _OUTWARD_VERBS + r"\b")
+_OUTWARD_BASES = "push publish post send submit merge deploy release commit apply save".split()
+_OUTWARD_VERBS = "(?:" + "|".join(_OUTWARD_BASES) + ")"
+_OUTWARD_ACTIONS = "(?:" + "|".join(_OUTWARD_BASES + [
+    "committing" if verb == "commit" else "submitting" if verb == "submit" else
+    verb[:-1] + "ing" if verb.endswith("e") else verb + "ing"
+    for verb in _OUTWARD_BASES]) + ")"
+_OUTWARD = _rx(r"\b" + _OUTWARD_ACTIONS + r"\b")
 _STAGED_OFFER = _rx(
     r"(?:^|[,:—]\s*|\band\s+)(?:(?:do you )?want (?:me|us) to|would you like (?:me|us) to)\s+"
     + _OUTWARD_VERBS + r"\b|"
@@ -132,11 +137,174 @@ _STAGED_OFFER = _rx(
     r"^\s*(?:(?:should|shall|may|can) (?:i|we)\s+|ok(?:ay)? to\s+)" + _OUTWARD_VERBS + r"\b[^.!?\n]{0,100}\?"
 )
 _OUTWARD_COMPLETED = _rx(
-    r"(?:^|\b(?:i|we|i've|we've) (?:have )?(?:already |just )?)(?P<verb>pushed|published|posted|sent|submitted|merged|deployed|released|committed|applied)\b|"
+    r"(?:^|\b(?:i|we|i've|we've) (?:have )?(?:already |just )?)(?P<verb>pushed|published|posted|sent|submitted|merged|deployed|released|committed|applied|saved)\b|"
     r"\b(?:pr|pull request) is (?:open|merged)\b|"
     r"\b(?:pr|pull request) is up(?=\s*(?:[.!,:;]|$|\bawaitonalprlink\b))"
 )
 _NOT_PREPARED = _rx(r"\b(?:if|would|will|no|not|never|isn't|aren't|haven't|hasn't|wasn't|weren't)\b")
+
+# Preparation is a predicate, not a catalogue of filenames or deliverable nouns.
+# The assistant may call the same item a note, response, change, or simply "it".
+_PREPARATION = _rx(
+    r"\b(?:is|are|was|were|has been|have been|hasn't been|haven't been|has not been|have not been|isn't|aren't|is not|are not)\s+"
+    r"(?:(?:already|now|fully|all|not|yet)\s+){0,3}"
+    r"(?:ready|prepared|staged|drafted|written|assembled|complete|completed)\b|"
+    r"\b(?:i|we|i've|we've)\s+(?:(?:have|already|just|now|not|haven't)\s+){0,3}"
+    r"(?:prepared|drafted|wrote|written|assembled|staged|finished|put together)\b|"
+    r"\b(?:i|we)\s+have\s+(?:the|a|our|my|this|that)\s+[^.!?\n]{1,60}\s+(?:ready|prepared|staged)\b|"
+    r"^\s*(?:ready|prepared|staged|drafted)\s+(?:on my side|for your|to go)\b"
+)
+_PREPARATION_NEGATED = _rx(r"\b(?:not|never|isn't|aren't|haven't|hasn't)\b")
+_PERMISSION_QUESTION = _rx(
+    r"(?:^|[,;:]\s*)(?:(?:so|now)\s+)?(?:"
+    r"(?:should|shall|may|can|could)\s+(?:i|we)\b|"
+    r"(?:do you want|would you (?:like|prefer))\s+(?:me|us|that i|that we)\b|"
+    r"(?:want|need)\s+(?:me|us)\s+to\b|"
+    r"(?:is (?:it|that)|would (?:it|that) be)\s+(?:ok(?:ay)?|all right|acceptable)\b|"
+    r"are you\s+(?:happy|comfortable|content|okay)\s+(?:for|with)\s+(?:me|us)(?:\s+to)?\b|"
+    r"(?:ok(?:ay)?|permission|your go[- ]ahead)\s+(?:to|for me to|for us to)\b|"
+    r"(?:do|can)\s+(?:i|we)\s+have\s+your\s+(?:permission|approval|go[- ]ahead)\b)"
+    r"[^.!?\n]{0,140}\b" + _OUTWARD_ACTIONS + r"\b"
+)
+_APPROVAL_CONDITION = _rx(
+    r"\b(?:if|once|when|provided)\s+you\s+(?:agree|approve|consent|authorize|confirm|give (?:me|us) (?:the |your )?go[- ]ahead)\b"
+    r"[^.!?\n]{0,90}\b(?:(?:i|we)(?:'ll| will| can)|(?:can|could|may|should) (?:i|we))\b[^.!?\n]{0,60}\b" + _OUTWARD_VERBS + r"\b|"
+    r"\b(?:with|subject to|pending)\s+your\s+(?:permission|approval|consent|go[- ]ahead)\b"
+    r"[^.!?\n]{0,90}\b(?:i|we)(?:'ll| will| can)\b[^.!?\n]{0,60}\b" + _OUTWARD_VERBS + r"\b|"
+    r"\b(?:i|we)(?:'ll| will| can)\b[^.!?\n]{0,60}\b" + _OUTWARD_VERBS + r"\b"
+    r"[^.!?\n]{0,90}\b(?:if|once|when|provided)\s+you\s+(?:agree|approve|consent|authorize|confirm)\b"
+)
+_USER_ACTION = _rx(
+    r"(?P<address>\bplease\s+|\b(?:can|could|would|will) you\s+|"
+    r"\b(?:i|we) (?:need|require) you to\s+|\byou(?: must| have to| need to|'ll need to| will need to)\s+|"
+    r"\b(?:once|after|when|until|before|as soon as) you(?:'ve| have)?\s+)"
+    r"(?P<verb>[a-z][a-z-]*)\b"
+)
+_BARE_ACTION = _rx(r"^\s*(?:[-*]\s*|\d+[.)]\s*)?(?:(?:first|next),?\s+)?(?P<verb>[a-z][a-z-]*)\b\s+(?P<rest>\S.*)")
+_CAUSATIVE_ACTION = _rx(r"^\s*(?:please\s+)?(?P<verb>have|get)\s+(?:the|your|this|that|these|those)\s+[^.!?\n]{1,70}\s+[a-z]+ed\b")
+_NON_IMPERATIVE = frozenset(
+    "i we you he she it they the a an this that these those there here my our your their "
+    "all everything nothing anything no yes done then now after before once when until if "
+    "should shall may can could will would is are was were has have had not don't do "
+    "another other some any which what how why where who and but however yet or awaitonalcode awaitonalfile awaitonalliteral".split()
+)
+_ASSISTANT_DEPENDENCY = _rx(
+    r"\b(?:i|we)(?:'ll| will| can| cannot| can't| am unable to| are unable to| am waiting| are waiting)\b|"
+    r"\b(?:i'm|we're)\s+(?:waiting|blocked|paused)\b|\bbefore (?:i|we)\s+[a-z]+\b"
+)
+_LINK = _rx(r"\b(?:before|after|once|when|until|then|without|waiting|blocked|paused|need|require|as soon as)\b|\bso (?:i|we)\b|\bwith (?:that|this|your|the)\b")
+_LINKED_RESULT = _rx(r"\b(?:before|after|once|when|until|as soon as)\s+(?:you|your|it|that|this|they|those|these)\b|\b(?:then|so)\s+(?:i|we)\b|\bwith (?:that|this|your)\b|\bbefore (?:i|we) can\b|\b(?:once|after|when) (?:i|we) (?:have|receive|get)\b")
+_BLOCKED_ACTOR = _rx(r"\b(?:cannot|can't|waiting|blocked|paused|unable)\b")
+_NON_ACTION = frozenset("know remember note enjoy understand realize realise".split())
+_USER_NECESSITY = _rx(r"\b(?:you(?: must| have to| need to|'ll need to| will need to)|(?:i|we) (?:need|require) you to)\b")
+_OUTSTANDING_EXECUTION = _rx(
+    r"\b(?:i|we)(?: haven't| have not)\s+(?:yet\s+)?"
+    r"(?:pushed|published|posted|sent|submitted|merged|deployed|released|committed|applied|saved)\s+"
+    r"(?:it|this|that|them|the|our|my)\b|"
+    r"\b(?:it|this|that|they|the [\w -]{1,50})\s+(?:hasn't|haven't|has not|have not)\s+been\s+"
+    r"(?:pushed|published|posted|sent|submitted|merged|deployed|released|committed|applied|saved)\b"
+)
+
+
+def _preparation_state(clause: str) -> bool | None:
+    """Return a current preparation fact, scoping negation to its predicate."""
+    clause = clause.lower()
+    if _HISTORICAL.search(clause) or _FUTURE.search(clause):
+        return None
+    match = _PREPARATION.search(clause)
+    if match:
+        prefix = clause[:match.start()]
+        if _OPTIONAL.search(prefix) or re.search(r"\b(?:if|would|will)\b", prefix):
+            return None
+        return not bool(_PREPARATION_NEGATED.search(match[0]) or re.search(r"\b(?:nothing|none|no)\b", prefix))
+    # Displayed drafts and completed local commits remain supported evidence.
+    match = _PREPARED.search(clause)
+    if match:
+        return not bool(_NOT_PREPARED.search(clause[:match.end()]))
+    return None
+
+
+def _structural_action(clause: str) -> tuple[int, str] | None:
+    """Recognize address and verb position without a work-specific verb list."""
+    offset = 0
+    # Ordinary prose may wrap a request in a heading and a leading gate.
+    # Peel at most those two wrappers instead of recursively re-parsing an
+    # arbitrary number of attacker-controlled "you:" prefixes.
+    for _ in range(2):
+        wrapper = (re.match(r"^[^:.!?\n]{0,45}\byou\b[^:.!?\n]{0,15}:\s*", clause)
+                   or re.match(r"^\s*(?:before|until) (?:i|we)\b[^,.!?\n]{1,60},\s*", clause))
+        if not wrapper:
+            break
+        offset += wrapper.end()
+        clause = clause[wrapper.end():]
+    direct = _USER_ACTION.search(clause)
+    if direct and direct["verb"] not in _NON_IMPERATIVE | _NON_ACTION:
+        return offset + direct.start(), direct["verb"]
+    causative = _CAUSATIVE_ACTION.match(clause)
+    if causative:
+        return offset + causative.start(), causative["verb"]
+    bare = _BARE_ACTION.match(clause)
+    if (bare and bare["verb"] not in _NON_IMPERATIVE | _NON_ACTION
+            and not any(pattern.search(clause) for pattern in _RESOLUTIONS.values())
+            and not re.fullmatch(r"[a-z]+ed[.!?]?", bare["rest"])
+            and not re.match(r"(?:\w+\s+){0,2}(?:is|are|was|were|has|have|had|hasn't|haven't|isn't|aren't|can't|couldn't|can|could|would|will|may|might|must)\b", bare["rest"])):
+        return offset + bare.start(), bare["verb"]
+    return None
+
+
+def _linked_dependency(parts: list[str], index: int) -> bool:
+    """An adjacent assistant step depends on this user action, in either order.
+
+    Keep the window small and require both an assistant actor and a dependency
+    relation. Merely promising unrelated future work is not a workflow gate.
+    """
+    target = parts[index].lower()
+    direct = _USER_ACTION.search(target)
+    request = target[direct.start("verb"):] if direct else target
+    request = re.split(r"[,;]|\b(?:while|once|after|before|until|when|so|and i|and we)\b", request, maxsplit=1)[0]
+    target_words = set(re.findall(r"\b[a-z]{3,}\b", request.lower())) - _NON_IMPERATIVE - _NON_ACTION - {"please", "could", "would", "will", "have", "need", "must", "once", "after", "then", "can"}
+    object_reference = bool(re.search(r"\b(?:it|them|this|that|these|those)\b", request))
+    has_object = len(re.findall(r"\b[a-z]+\b", request)) > (2 if request.strip().startswith("please ") else 1)
+    for neighbor in parts[max(0, index - 1):index + 2]:
+        neighbor = neighbor.lower()
+        if (_DOC.search(neighbor) or _HISTORICAL.search(neighbor)
+                or _FUTURE.search(neighbor) or _OPTIONAL.search(neighbor)):
+            continue
+        if _ASSISTANT_DEPENDENCY.search(neighbor) and _LINK.search(neighbor):
+            if ((_LINKED_RESULT.search(neighbor) and has_object)
+                    or (_BLOCKED_ACTOR.search(neighbor) and object_reference)
+                    or re.search(r"\b(?:before (?:i|we)|(?:once|after|when|until|as soon as) you)\b", neighbor)):
+                return True
+            # A repeated prerequisite noun also links sentences, without
+            # requiring it to be called a log, file, credential, or report.
+            for relation in re.finditer(r"\b(?:after|once|when|until|without|with)\s+([^,.!?\n]{1,90})", neighbor):
+                words = set(re.findall(r"\b[a-z]{3,}\b", relation[1].lower())) - _NON_IMPERATIVE
+                if target_words & words or object_reference:
+                    return True
+    return False
+
+
+def _completed_action(clause: str, verb: str) -> bool:
+    """Resolve an ordinary domain verb only under an asserted completion."""
+    # These are grammatical verb forms, shared across subject matter.
+    irregular = {"run": "ran|run", "write": "wrote|written", "send": "sent", "give": "gave|given", "choose": "chose|chosen", "set": "set", "put": "put", "read": "read"}
+    past = irregular.get(verb, verb + "d" if verb.endswith("e") else verb[:-1] + "ied" if verb.endswith("y") else verb + "ed")
+    return bool(re.search(
+        r"\b(?:(?:i|we|you)(?:'ve| have)?\s+(?:(?:already|now|just)\s+){0,2}|"
+        r"(?:is|are|was|were|has been|have been)\s+(?:now\s+)?)(?:" + past + r")\b", clause))
+
+
+def _new_execution_object(clause: str, prepared_parts: list[str]) -> bool:
+    """Reject a fresh work offer or an idiom that only resembles execution."""
+    outward = _OUTWARD.search(clause)
+    if not outward:
+        return False
+    tail = clause[outward.end():outward.end() + 90]
+    if re.match(r"\s+(?:you|me|us)\b", tail):
+        return True  # e.g. "save you time", not saving the prepared result.
+    fresh = re.match(r"\s+(?:a|an)\s+(?P<noun>[a-z-]+)", tail)
+    return bool(fresh and not any(re.search(r"\b" + re.escape(fresh["noun"]) + r"\b", part)
+                                         for part in prepared_parts))
 
 
 def _staged_authorization(prose: str) -> bool:
@@ -155,8 +323,7 @@ def _staged_authorization(prose: str) -> bool:
         if (_HISTORICAL.search(part) or _FUTURE.search(part) or _OPTIONAL.search(part)
                 or re.search(r"\b(?:can also|happy to|say the word|want me to)\b", part, re.I)):
             continue
-        if not re.search(r"\b(?:if|would|will|no|not|never|isn't|is not)\b", part, re.I):
-            prepared |= bool(_PREPARED.search(part))
+        prepared |= _preparation_state(part) is True
         outward |= bool(_OUTWARD.search(part))
     return prepared and outward
 
@@ -221,6 +388,9 @@ def analyze_handoff(prose: str) -> Handoff:
         return Handoff()
     pending: dict[str, Expectancy] = {}
     prepared = False
+    preparation_denied = False
+    prepared_parts: list[str] = []
+    generic_action: str | None = None
     review_approval_coupled = False
     in_instructions = False
     prose = prose.replace("’", "'")
@@ -246,12 +416,31 @@ def analyze_handoff(prose: str) -> Handoff:
         # A concrete prepared deliverable makes an outward-action confirmation
         # a handoff. An unprepared offer of more work remains optional. Track
         # these in order so later permission or publication can resolve them.
-        prepared_match = _PREPARED.search(clause)
-        if prepared_match:
-            preparation = clause[:prepared_match.end()]
-            prepared = not bool(_NOT_PREPARED.search(preparation) or _OPTIONAL.search(preparation))
-        staged_offer = _STAGED_OFFER.search(clause) if prepared else None
-        if re.search(r"\b(?:if|optional|can also|happy to|next time)\b", clause):
+        preparation = _preparation_state(clause)
+        if preparation is not None:
+            prepared = preparation
+            preparation_denied = not preparation
+            prepared_parts = [clause] if preparation else []
+        elif (not preparation_denied and _OUTSTANDING_EXECUTION.search(clause)
+              and not _OPTIONAL.search(clause)):
+            prepared = True
+        # The preparation assertion may follow the permission question, as in
+        # "May I save it? Everything is ready locally." Keep this local.
+        adjacent_prepared = (index + 1 < len(parts)
+                             and not _DOC.search(parts[index + 1])
+                             and _preparation_state(parts[index + 1]) is True)
+        staged_offer = None
+        if prepared or adjacent_prepared:
+            staged_offer = (_STAGED_OFFER.search(clause)
+                            or _PERMISSION_QUESTION.search(clause)
+                            or _APPROVAL_CONDITION.search(clause))
+            preparation_context = prepared_parts + ([parts[index + 1].lower()] if adjacent_prepared else [])
+            if staged_offer and _new_execution_object(clause, preparation_context):
+                staged_offer = None
+        condition = re.search(r"\bif\b", clause)
+        if (re.search(r"\b(?:optional|can also|happy to|next time|another|separate|new)\b", clause)
+                or (condition and not _APPROVAL_CONDITION.search(clause)
+                    and (not staged_offer or condition.start() < staged_offer.start()))):
             staged_offer = None
         # Keep resolution positions: an answer can arrive later in the same
         # clause as a previously stated request.
@@ -260,12 +449,15 @@ def analyze_handoff(prose: str) -> Handoff:
             for kind, pattern in _RESOLUTIONS.items():
                 events.extend((match.start(), 1, kind, None)
                               for match in pattern.finditer(clause))
+            if generic_action and _completed_action(clause, generic_action):
+                events.append((0, 1, "action", None))
+                generic_action = None
             completed = list(_OUTWARD_COMPLETED.finditer(clause))
             if completed:
                 events.extend((match.start(), 1, "staged-approval", None) for match in completed)
                 # Completing a local preparation step resolves its permission
                 # request while leaving the result ready for publication.
-                if any(match["verb"] not in {"committed", "applied"} for match in completed):
+                if any(match["verb"] not in {"committed", "applied", "saved"} for match in completed):
                     prepared = False
         if _NEGATED.search(clause):
             if re.search(r"\bno need to " + _OUTWARD_VERBS + r"\b", clause):
@@ -279,6 +471,9 @@ def analyze_handoff(prose: str) -> Handoff:
                     pending.pop(kind, None)
                     if kind == "approval":
                         pending.pop("staged-approval", None)
+            if generic_action and re.search(r"\b" + re.escape(generic_action) + r"\b", clause):
+                pending.pop("action", None)
+                generic_action = None
             continue
         if _OPTIONAL.search(clause) and not staged_offer:
             if re.search(r"\bno (?:response|reply|action) (?:is )?(?:needed|required)\b", clause):
@@ -297,7 +492,11 @@ def analyze_handoff(prose: str) -> Handoff:
         # code. Only the adjacent continuation supplies this evidence.
         if index + 1 < len(parts) and _NEXT_STEP.search(parts[index + 1]):
             signals.add("dependency")
+        linked_dependency = _linked_dependency(parts, index)
+        if linked_dependency:
+            signals.add("dependency")
         candidates: list[tuple[int, str]] = []
+        recognized_direct = False
         if staged_offer:
             candidates.append((staged_offer.start(), "staged-approval"))
         for match in _DIRECT.finditer(clause):
@@ -312,6 +511,18 @@ def analyze_handoff(prose: str) -> Handoff:
             kind = _direct_kind(match["verb"], signals, _auth_object(clause, match.end("verb")))
             if kind:
                 candidates.append((match.start(), kind))
+                recognized_direct = True
+                if kind == "action" and " " not in match["verb"]:
+                    generic_action = match["verb"]
+        # A workflow gate supplies the meaning of a user verb even when the
+        # operation is domain-specific (rotate, unlock, attach, acknowledge...).
+        # Explicit necessity also establishes that the action belongs to the
+        # user, without treating every question or bare noun as a request.
+        action = _structural_action(clause)
+        if (action and not staged_offer and not recognized_direct
+                and (linked_dependency or _USER_NECESSITY.search(clause))):
+            candidates.append((action[0], "action"))
+            generic_action = action[1]
         # A compound imperative carries the same address to the user.
         if candidates:
             for match in re.finditer(r"\band (?:then )?(approve|authorize|confirm|choose|select|sign in|log in)\b", clause):
@@ -331,6 +542,11 @@ def analyze_handoff(prose: str) -> Handoff:
                     candidates.append((match.start(), _need_kind(match["object"])))
         for pattern, kind in ((_FEEDBACK, "review"), (_CHOICE, "choice"), (_PERMISSION, "approval")):
             for match in pattern.finditer(clause):
+                if kind == "approval" and condition and not staged_offer:
+                    continue
+                if (kind == "approval" and not staged_offer
+                        and _new_execution_object(clause, prepared_parts)):
+                    continue
                 if kind == "choice" and staged_offer and match.start() == staged_offer.start():
                     continue  # "Should I commit it or leave it?" asks permission.
                 candidates.append((match.start(), kind))
@@ -338,7 +554,11 @@ def analyze_handoff(prose: str) -> Handoff:
         # action resolves. Only an explicit workflow gate strengthens it.
         review_coupled_here = bool(_REVIEW_APPROVAL.search(clause)) and any(
             kind == "approval" for _, kind in candidates)
-        review_blocked = _DEPENDENCY.search(re.sub(r"\bnow\b", "", clause))
+        review_blocked = (_DEPENDENCY.search(re.sub(r"\bnow\b", "", clause))
+                          or (linked_dependency and any(
+                              re.search(r"\b(?:review|feedback|comments)\b", neighbor)
+                              for neighbor in parts[max(0, index - 1):index + 2]
+                              if _ASSISTANT_DEPENDENCY.search(neighbor))))
         for position, kind in candidates:
             expectancy = (
                 "review-requested" if kind == "review" and not review_blocked

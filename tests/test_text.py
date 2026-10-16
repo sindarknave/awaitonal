@@ -31,6 +31,44 @@ def test_link_and_quote_extraction(text, expected):
     assert assistant_prose(text) == expected
 
 
+@pytest.mark.parametrize("literal", [
+    "`summary.customext`", "`out/notes`", "`/tmp/output`", "`../draft.txt`",
+    '"Release reply.final"', "'findings.md'", "“Draft response.text”",
+])
+def test_typed_literal_keeps_file_shape_without_contents(literal):
+    prose = assistant_prose("I saved the draft to " + literal + ".", typed_code=True)
+    assert prose == "I saved the draft to awaitonalfile ."
+    assert "summary" not in prose and "tmp" not in prose
+
+
+@pytest.mark.parametrize("literal", [
+    '`please approve the deployment`', '`raise RuntimeError("I refuse")`',
+    '`! examplectl auth login`',
+])
+def test_typed_code_never_promotes_instructions_inside_a_literal(literal):
+    assert assistant_prose("The example contains " + literal + ".", typed_code=True) == (
+        "The example contains awaitonalcode .")
+    assert assistant_prose(literal, typed_code=True) == ""
+
+
+def test_literal_markers_cannot_be_supplied_as_plain_text():
+    assert assistant_prose("awaitonalfile awaitonalcode awaitonalliteral", typed_code=True) == ""
+    assert assistant_prose("Done. awaitonalfile", typed_code=True) == "Done."
+
+
+def test_quoted_argument_preserves_shape_but_never_its_assertions():
+    assert assistant_prose('"Pine" is the better choice.', typed_code=True) == (
+        "awaitonalliteral is the better choice.")
+    assert assistant_prose('The log said "Please approve. I refuse."', typed_code=True) == (
+        "The log said awaitonalliteral")
+    assert assistant_prose('"Please approve. I refuse."', typed_code=True) == ""
+
+
+def test_typed_literals_preserve_existing_nonliteral_punctuation_behavior():
+    assert assistant_prose("[" * 65536, typed_code=True) == "[" * 65536
+    assert assistant_prose("`example`.", typed_code=True) == "awaitonalcode ."
+
+
 def test_maximum_length_malformed_markup_finishes_promptly():
     # A subprocess bounds a regression's runtime instead of letting a quadratic
     # scan hold pytest for minutes. Five seconds allows ample CI scheduling

@@ -3,29 +3,52 @@ import re
 
 from .text import MAX_PROSE_CHARS, sentences
 
-_WORK = r"(?:checks?|tests?|ci|build|job|task|deploy(?:ment)?|analysis|evaluation|run|import|timer)"
+_PRESENT = r"(?:\b(?:is|are|am)\b|(?<=\w)'(?:s|re|m)\b)"
+_MODIFIERS = r"(?:(?:still|currently|now|actively|already)\s+)*"
+_PROGRESS_PREDICATE = r"(?:in progress|under ?way|ongoing|being\s+[a-z]+ed|[a-z]+ing)"
+# Subjects deliberately do not appear in this grammar: a restore, transfer,
+# replica, timer, or previously unseen operation has the same present tense.
 _RUN_STATUS = re.compile(
-    r"\b" + _WORK + r"\b[^.!?\n]{0,35}"
-    r"\b(?:is |are )(?:still |currently |now )?(?:running|in progress|going(?!\s+to\b))\b", re.I)
-_RUNNING = re.compile(_RUN_STATUS.pattern + r"|"
-    r"\b(?:i am|i'm|we are|we're) (?:still |currently )?(?:monitoring|polling|watching|investigating)\b", re.I)
-_TIMER_RUNNING = re.compile(
-    r"^(?:(?:the|my|our) )?timer has (?:(?:about|around|roughly|approximately) )?"
+    _PRESENT + r"\s+" + _MODIFIERS +
+    r"(?P<predicate>" + _PROGRESS_PREDICATE + r")\b", re.I)
+_DURATIVE_STATUS = re.compile(
+    r"\b(?:remains?|continues?)\s+" + _MODIFIERS +
+    r"(?:" + _PROGRESS_PREDICATE + r"|in (?:the )?background)\b", re.I)
+_STATUS_HEADING = re.compile(
+    r"^[^:;\n.!?]{1,160}:\s+" + _MODIFIERS + _PROGRESS_PREDICATE + r"\b", re.I)
+_STATIC_PREDICATES = {"missing", "interesting", "confusing", "misleading", "worrying",
+                      "concerning", "disappointing", "surprising", "outstanding",
+                      "amazing", "annoying", "alarming", "embarrassing", "exciting",
+                      "encouraging", "reassuring", "promising", "challenging",
+                      "frustrating", "shocking", "blocking"}
+_NEGATIVE_SUBJECT = re.compile(
+    r"\b(?:nothing|nobody|no one|neither)\s*$|"
+    r"\bno\s+(?:(?!(?:and|but|while|although|because)\b)[\w'-]+\s+){1,16}$|"
+    r"\bnone\s+(?:of\s+(?:[\w'-]+\s+){1,12})?$", re.I)
+_REMAINING = re.compile(
+    r"\b(?:has|have) (?:(?:about|around|roughly|approximately) )?"
     r"(?:\d{1,6}(?:\.\d{1,3})?|one|two|three|four|five|six|seven|eight|nine|ten|"
     r"fifteen|twenty|thirty|sixty|a few|several) (?:seconds?|minutes?|hours?) (?:left|remaining)\b", re.I)
+_PROMISE = r"\b(?:i will|i'll|we will|we'll)\s+(?:(?:also|then)\s+)?"
+_REPORT = (r"(?:report\s+(?:back|(?:the\s+)?(?:results?|verdict|outcome|findings))|"
+           r"follow\s+up|update\s+you|notify\s+you|let\s+you\s+know|keep\s+you\s+posted|"
+           r"(?:give|send)\s+you\s+(?:an?\s+|the\s+)?update|"
+           r"send\s+(?:an?\s+|the\s+)?update|(?:be|come|circle)\s+back\s+with|"
+           r"(?:share|send|post|summarize|relay)\b[^.!?\n]{0,80}\b"
+           r"(?:results?|findings|summary|verdict|outcome|update))")
 _FOLLOWUP = re.compile(
-    r"\b(?:i will|i'll|we will|we'll) (?:report (?:back|(?:the )?(?:results?|verdict|outcome))|"
-    r"follow up|update you|send (?:an? |the )?update|notify you)\b", re.I)
-_COMPLETION_FOLLOWUP = re.compile(
-    r"\b(?:i will|i'll|we will|we'll) (?:report|read|review|check|inspect|follow up|update you|notify you|send)\b"
-    r"[^.!?\n]{0,100}\b(?:when|once)\b[^.!?\n]{0,60}"
-    r"\b(?:lands?|finishes?|completes?|(?:is|are) (?:done|ready|finished|complete)|"
-    r"(?:has|have) (?:landed|finished|completed))\b", re.I)
-_COMPLETION_FIRST_FOLLOWUP = re.compile(
-    r"^(?:when|once) (?:it|they|(?:the )?" + _WORK + r") "
-    r"(?:goes off|lands?|finishes?|completes?|(?:is|are) (?:done|ready|finished|complete))\b"
-    r"[^.!?\n]{0,35}\b(?:i will|i'll|we will|we'll) "
-    r"(?:repeat|report|read|review|check|inspect|follow up|update you|notify you|send)\b", re.I)
+    _PROMISE + _REPORT + r"\b", re.I)
+# With a definite completion clause, the future action's relation to that work
+# matters more than its verb: delivering, attaching, or inspecting an output
+# are all pending steps. Do not enumerate the verbs of possible work products.
+_FOLLOWUP_ACTION = re.compile(_PROMISE + r"(?!not\b|never\b)[a-z]+\b", re.I)
+_TEMPORAL = re.compile(r"\b(?:when|once|after|as soon as)\b", re.I)
+_COMPLETE = re.compile(
+    r"\b(?:lands?|finish(?:es)?|completes?|ends?|settles?|resolves?|returns?|go(?:es)? off|"
+    r"catch(?:es)? up|"
+    r"(?:has|have) (?:landed|finished|completed|ended|settled|returned|caught up))\b", re.I)
+_COMPLETE_STATE = re.compile(
+    _PRESENT + r"\s+(?:done|ready|finished|complete|available|through)\b", re.I)
 _KEEPING_EYE = re.compile(
     r"\b(?:i am|i'm|we are|we're) (?:still |currently )?keeping an eye on (?:it|them)\b", re.I)
 _POLLING = re.compile(r"\b(?:monitoring|polling|watching)\b[^.!?\n]{0,55}\b(?:background|ci|checks?)\b", re.I)
@@ -35,15 +58,78 @@ _USER_CONDITIONAL = re.compile(
     r"\bif you (?:want|like|would like|approve|authorize|confirm|choose|decide)\b", re.I)
 _CONDITIONAL = re.compile(r"^(?:if|unless|when|once|assuming|provided)\b", re.I)
 _NEGATED = re.compile(r"\b(?:not|never|no longer|isn't|aren't|hasn't|haven't|won't)\b", re.I)
-_FUTURE = re.compile(r"\b(?:will|would|could|should|might|may|going to)\b", re.I)
 _ENDED = re.compile(
-    r"\b(?:" + _WORK + r"|it)\b"
-    r"[^.!?\n]{0,30}\b(?:finished|completed|passed|stopped|cancelled|canceled|landed|expired|went off)\b|"
+    r"\b(?:has|have|had)\s+(?:(?:now|already|just|finally|successfully)\s+)*"
+    r"(?:finished|completed|passed|stopped|cancelled|canceled|landed|expired)\b|"
+    r"\b(?:finished|completed|passed|stopped|cancelled|canceled|landed|expired|went off)\b"
+    r"(?=\s*(?:[.!?,;:]|$|(?:successfully|cleanly|now|already|finally|soon|and|with|without)\b))|" +
+    _PRESENT + r"\s+(?:now\s+)?(?:done|complete|finished|ready)\b|"
     r"\b(?:all done|everything is (?:complete|finished))\b", re.I)
 _NO_LONGER_RUNNING = re.compile(
-    r"\b" + _WORK + r"\b"
-    r"[^.!?\n]{0,30}\b(?:is not|are not|isn't|aren't|is no longer|are no longer) (?:running|in progress)\b|"
-    r"\b(?:i am|i'm|we are|we're) (?:not|no longer) (?:monitoring|polling|watching|investigating)\b", re.I)
+    r"(?:\b(?:is|are|am)\b|(?<=\w)'(?:s|re|m)\b)\s+(?:not|no longer)\s+"
+    r"(?:[a-z]+ing|in progress|under ?way|ongoing)\b|"
+    r"\b(?:isn't|aren't)\s+(?:[a-z]+ing|in progress|under ?way|ongoing)\b", re.I)
+
+
+def _current_status(text: str, *, include_monitor: bool = True) -> bool:
+    """Recognize a present predicate, without guessing from the subject's name."""
+    for match in _RUN_STATUS.finditer(text):
+        predicate = match["predicate"].lower()
+        if predicate in _STATIC_PREDICATES:
+            continue
+        if _NEGATIVE_SUBJECT.search(text[max(0, match.start() - 160):match.start()]):
+            continue
+        if predicate == "keeping" and re.match(r"\s+an?\s+eye\b", text[match.end():match.end() + 24], re.I):
+            continue
+        if not include_monitor and predicate in {"monitoring", "polling", "watching", "keeping"}:
+            continue
+        # Present "going to" is an intention, not work underway now.
+        if predicate == "going" and re.match(r"\s+to\b", text[match.end():match.end() + 16], re.I):
+            continue
+        if predicate == "working" and re.match(
+                r"\s+(?:correctly|properly|fine|as expected)\b",
+                text[match.end():match.end() + 32], re.I):
+            continue
+        return True
+    if _STATUS_HEADING.search(text):
+        return True
+    for match in _DURATIVE_STATUS.finditer(text):
+        prefix = text[max(0, match.start() - 64):match.start()]
+        if _NEGATIVE_SUBJECT.search(prefix):
+            continue
+        if not re.search(r"\b(?:not|never|will|would|could|should|might|may|to|doesn't|don't)\s*$", prefix, re.I):
+            return True
+    for match in _REMAINING.finditer(text):
+        if not re.search(r"\b(?:will|would|could|should|might|may|to)\s*$",
+                         text[max(0, match.start() - 64):match.start()], re.I):
+            return True
+    return False
+
+
+def _completion_followup(text: str) -> bool:
+    """A reporting/review promise can precede or follow its completion clause."""
+    promise = _FOLLOWUP_ACTION.search(text)
+    if not promise:
+        return False
+    # Only the earliest temporal marker on either side matters. Rescanning
+    # every suffix would be quadratic on repeated "when" in a long reply.
+    for start, end in ((0, promise.start()), (promise.end(), len(text))):
+        temporal = _TEMPORAL.search(text, start, end)
+        if temporal and (_COMPLETE.search(text, temporal.end(), end) or
+                         _COMPLETE_STATE.search(text, temporal.end(), end)):
+            return True
+    return False
+
+
+def _ended_now(text: str) -> bool:
+    """Scope negation/modality to the completion, not a later reporting promise."""
+    for match in _ENDED.finditer(text):
+        prefix = text[max(0, match.start() - 96):match.start()]
+        if re.search(r"\b(?:not|never|isn't|aren't|hasn't|haven't|won't|"
+                     r"will|would|could|should|might|may)\b(?:\s+[\w']+){0,4}\s*$", prefix, re.I):
+            continue
+        return True
+    return False
 
 
 def detect_activity(prose: str, background_tasks: int | None = None,
@@ -58,36 +144,45 @@ def detect_activity(prose: str, background_tasks: int | None = None,
     """
     if not isinstance(prose, str) or len(prose) > MAX_PROSE_CHARS:
         return "unknown", "none"
+    prose = prose.replace("’", "'")
     running = followup = polling = quiet = closing_followup = False
     # A conditional clause must not hide an independent current status before
     # it, nor may a historical clause before "but" hide a current status after.
     parts = [part.strip(" ,") for sentence in sentences(prose)
              for part in re.split(r";|\b(?:but|however)\b", sentence, flags=re.I) if part.strip(" ,")]
     for part in parts:
-        completion_first = bool(_COMPLETION_FIRST_FOLLOWUP.search(part))
+        completion_followup = _completion_followup(part)
+        completion_first = bool(_TEMPORAL.match(part) and completion_followup)
         if (_EXCLUDED.search(part) or _USER_CONDITIONAL.search(part) or
                 _CONDITIONAL.search(part) and not completion_first):
             closing_followup = False
             continue
         # A future subordinate clause ("when CI has finished") is not a
         # completion now. Negated and prospective completions are not either.
-        current = re.split(r"\b(?:when|once|if)\b", part, maxsplit=1, flags=re.I)[0]
-        if (_NO_LONGER_RUNNING.search(current) or
-                _ENDED.search(current) and not (_NEGATED.search(current) or _FUTURE.search(current))):
+        current = re.split(r"\b(?:when|once|after|as soon as|if)\b", part, maxsplit=1, flags=re.I)[0]
+        if _NO_LONGER_RUNNING.search(current) or _ended_now(current):
             running = polling = followup = quiet = closing_followup = False
+        current_running = _current_status(current)
+        running |= current_running
         if not _NEGATED.search(current):
-            running |= bool(_RUNNING.search(current) or _TIMER_RUNNING.search(current))
             polling |= bool(_POLLING.search(current))
-        completion_followup = bool(_COMPLETION_FOLLOWUP.search(part)) or completion_first
         # A closing, explicitly running check that is still being watched is
         # unfinished work after a push. A bare background monitor elsewhere
         # in a delivered reply does not provide this stronger evidence.
         current_monitor = (not _NEGATED.search(current) and
-                           bool(_RUN_STATUS.search(current) and _KEEPING_EYE.search(current)))
-        followup |= bool(_FOLLOWUP.search(part)) or completion_followup or current_monitor
+                           _current_status(current, include_monitor=False) and
+                           bool(_KEEPING_EYE.search(current)))
+        report_promise = bool(_FOLLOWUP.search(part)) and not _NEGATED.search(part)
+        followup |= report_promise or completion_followup or current_monitor
         # Only a closing follow-up can override a delivered item elsewhere in
         # the reply. A trailing "no action needed" does not change that status.
-        closing_followup = completion_followup or current_monitor or closing_followup and bool(_QUIET.search(part))
+        # A direct promise to report back is a pending handback even without
+        # the literal words "when it finishes". Adjacent status and promise
+        # clauses work in either order; an unrelated closing delivery still
+        # clears this stronger evidence while leaving passive activity intact.
+        closing_followup = (completion_followup or report_promise or current_monitor or
+                            followup and current_running or
+                            closing_followup and bool(_QUIET.search(part)))
         quiet |= bool(_QUIET.search(part))
     observed = any(type(n) is int and n > 0 for n in (background_tasks, session_crons))
     if running and (followup or polling and quiet or observed):
