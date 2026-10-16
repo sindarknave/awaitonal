@@ -497,3 +497,133 @@ def test_adversarial_input_finishes_promptly(prose, expected):
         input=prose, capture_output=True, text=True, timeout=5, check=True,
     )
     assert process.stdout.strip() == expected
+
+
+@pytest.mark.parametrize("text", [
+    "I lean toward the regional rollout: it limits the recovery cost.",
+    "I'm leaning towards the smaller design because it has fewer failure modes.",
+    "I'd lean to the existing worker rather than add coordination.",
+    "We vote for the hosted alternative because maintenance is the main constraint.",
+    "My vote goes to the gradual migration, which preserves rollback.",
+    "The staged alternative gets my vote on reversibility.",
+    "I'd rank the incremental option first on reliability.",
+    "I would place the existing approach above the replacement.",
+    "The local option comes first on both latency and recovery cost.",
+    "The second alternative outperforms the first on every relevant constraint.",
+    "No-go for this deployment: it silently drops writes.",
+    "I don't see a case to replace the worker while it meets the target.",
+    "We don't see a reason to ship this version with the known data loss.",
+    "The smaller pool is our pick for this release.",
+    "Don't ship this.",
+    "Do not merge this patch.",
+])
+def test_current_selection_and_withheld_endorsement_generalize_across_wording(text):
+    assert detect_assessment(assistant_prose(text, link_types=True)) == "verdict"
+
+
+@pytest.mark.parametrize("text", [
+    "The analysis is complete. I recommend you verify the totals with the owner.",
+    "The comparison has one limitation. I suggest someone check the live setting.",
+    "The result depends on the local configuration. I advise asking the maintainer.",
+    "The audit found two gaps. My recommendation is to inspect the logs next.",
+    "The cause is the cache key. It is sensible to ask the operator to verify the setting.",
+    "You should verify that the fallback is sufficient for the current constraints.",
+    "Check that the chosen supplier is the best option for the region.",
+    "I recommend confirming which configuration is safer before changing anything.",
+    "The comment says the first option gets my vote on reliability.",
+    "Yesterday I leaned toward the regional rollout because rollback was simpler.",
+    "I'd rank the incremental option first if the old format were still supported.",
+    "My vote goes to investigating the missing records next.",
+    "If the retry loop loses writes, this deployment is a no-go.",
+    "The competitor's model outperforms the previous release on the published benchmark.",
+    "The first record comes first in the sorted result.",
+    "I will place the existing approach above the replacement after inspecting both.",
+    "The election report says the regional option gets my vote.",
+    "Go ahead and verify the configuration with the owner.",
+    "My call: keep the existing route if the client format cannot be changed.",
+    "**Verdict:** the alternative is safer if the legacy client is still supported.",
+    "Safe to ship if the next check passes. The patch is reversible.",
+])
+def test_procedural_advice_and_reported_comparisons_are_not_current_verdicts(text):
+    assert detect_assessment(assistant_prose(text, link_types=True)) == "none"
+
+
+@pytest.mark.parametrize("text", [
+    "Here is the draft:",
+    "Here's my reply.",
+    "Here is the assembled document:",
+    "Here are the requested notes.",
+])
+def test_presented_document_wrapper_is_an_artifact_without_its_body(text):
+    assert detect_delivery(assistant_prose(text, link_types=True)) == "artifact"
+
+
+@pytest.mark.parametrize("text", [
+    "Here is the drafted email:\nThe smaller plan is the best option. I recommend it to the team.",
+    "I assembled the report below:\n## Recommendation\nThe safer alternative is to keep the old route.",
+    "I assembled the memo below:\n## Next steps\nDo not publish this version. It is unsafe.",
+    "Here is the draft: I would rank the incremental option first on reliability.",
+    "I wrote the requested letter:\nMy vote goes to the local candidate, who has my full backing.",
+])
+def test_evaluative_sentences_in_presented_documents_are_not_response_verdicts(text):
+    assert detect_assessment(assistant_prose(text, link_types=True)) == "none"
+    assert detect_delivery(assistant_prose(text, link_types=True)) == "artifact"
+
+
+@pytest.mark.parametrize("text", [
+    "Here is the draft:\nThe incumbent is our strongest choice.\n\nOutside the draft, I would choose the shorter version because it explains the risk clearly.",
+    "I saved the email. My vote goes to the shorter version because its request is clearer.",
+    "My assessment: the staged option is preferable because rollback is simpler.",
+    "## Analysis\nThe incremental option is my recommendation for this release.",
+])
+def test_response_assessments_remain_available_around_delivered_documents(text):
+    assert detect_assessment(assistant_prose(text, link_types=True)) == "verdict"
+
+
+def test_already_scoped_prose_preserves_the_wrapper_after_a_quoted_document():
+    from awaitonal.text import response_prose
+
+    text = "Here is the draft:\n> The incumbent has my full backing.\nMy vote goes to the shorter version because it is clearer."
+    scoped = assistant_prose(response_prose(text), link_types=True)
+    assert detect_assessment(scoped, response_scoped=True) == "verdict"
+    assert detect_delivery(scoped, response_scoped=True) == "artifact"
+
+
+@pytest.mark.parametrize("text", [
+    "Here is your report:",
+    "Here is your report: awaitonalreferencelink",
+    "Here is your report: https://claude.ai.evil.example/artifacts/report-123",
+    "Here is your report: awaitonalartifactlink",
+])
+def test_bare_report_wrapper_without_a_valid_destination_does_not_report_a_file(text):
+    assert detect_delivery(assistant_prose(text, link_types=True)) == "unknown"
+
+
+@pytest.mark.parametrize("text", [
+    "On balance, this looks like a reasonable approach. The fallback covers the failure case.",
+    "The staged option seems like the safer alternative for this workload.",
+    "Our assessment of the proposed design: I lean toward keeping it because recovery is simpler.",
+    "My judgment on the competing routes: I'd place the regional option first.",
+])
+def test_evaluative_similes_and_personal_assessment_frames_preserve_the_main_assertion(text):
+    assert detect_assessment(assistant_prose(text, link_types=True)) == "verdict"
+
+
+@pytest.mark.parametrize("text", [
+    "On balance, this looks like a reasonable approach if the missing fallback is implemented.",
+    "The record seems like the first row in the sorted result.",
+    "My assessment of the design: I'll recommend a route after checking the measurements.",
+    "Our judgment of the routes: I lean toward the second one if the old client remains supported.",
+    "My earlier assessment of the design: I lean toward keeping it.",
+])
+def test_assessment_frame_does_not_override_future_conditional_or_historical_scope(text):
+    assert detect_assessment(assistant_prose(text, link_types=True)) == "none"
+
+
+def test_personal_assessment_after_a_quoted_draft_is_a_response_level_judgment():
+    from awaitonal.text import response_prose
+
+    raw = ("Here is the draft reply:\n> Thanks for explaining the available options.\n"
+           "My assessment of your proposed plan: I lean toward accepting it, because the risk is small.")
+    prose = assistant_prose(response_prose(raw), link_types=True)
+    assert detect_assessment(prose, response_scoped=True) == "verdict"

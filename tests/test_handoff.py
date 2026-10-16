@@ -458,3 +458,102 @@ def test_negative_preparation_and_fresh_work_objects_do_not_authorize_prepared_e
 def test_irregular_action_completion_resolves_a_generic_dependency(handoff, resolution):
     assert analyze_handoff(handoff).expectancy == "required-handoff"
     assert analyze_handoff(handoff + " " + resolution).expectancy == "none"
+
+
+@pytest.mark.parametrize("text", [
+    "The answer is complete. You should choose the smallest tier for a personal project.",
+    "My advice is to ask the owner to check the numbers. Nothing else is pending.",
+    "I recommend that you check the console output before adopting this approach.",
+    "Check again later for the final results. I have answered the question.",
+    "Choose a plan with enough storage. That is my recommendation.",
+    "The analysis is complete with the stated data limits. Someone should verify the figures. If you want, I can build a separate model.",
+    "The report is delivered. You need to check the output against the source; I can also prepare another report if useful.",
+    "I am waiting for the output from the background job. Once it arrives, I'll compare the results.",
+    "Waiting on the logs from the running job. I'll report back when the job completes.",
+    "The scheduled job requires the output from the earlier job. I'll check once both finish.",
+    "The timer is still counting down. I need the output before I can calculate the result.",
+    "Please check the results as general advice. I will resume when the unrelated timer expires.",
+    "Ask the administrator which plan to pick. I'll finish the unrelated summary tomorrow.",
+])
+def test_advice_and_non_user_prerequisites_do_not_play_attention(text):
+    assert analyze_handoff(text).expectancy != "required-handoff"
+
+
+@pytest.mark.parametrize("text", [
+    "Please choose the target account. Once you do, I'll configure the connection.",
+    "I recommend the smaller tier, but I need your choice before I can provision it.",
+    "The figures are provisional. Could you paste the source output? Once I have it, I'll verify the totals.",
+    "I can't compare the results without the source figures. Please attach those figures.",
+    "Please run the local check and send me its output. Then I'll finish the diagnosis.",
+    "Ask the administrator for access. Once you have it, I can complete the remaining checks.",
+    "I can complete the analysis once you verify the missing count. Please check it against the source.",
+])
+def test_real_user_prerequisite_preserves_attention_across_advisory_context(text):
+    assert analyze_handoff(text).expectancy == "required-handoff"
+
+
+@pytest.mark.parametrize("text", [
+    "Do I target the shared environment or the isolated one?",
+    "Would we use the temporary account or the permanent account?",
+    "Do you prefer the regional instance or the shared instance?",
+    "Would you rather use the compact layout or the detailed layout?",
+    "Which destination should we use? I can publish once you choose it.",
+])
+def test_current_actor_scoped_decision_paraphrases(text):
+    assert analyze_handoff(text) == Handoff("required-handoff", "decision")
+
+
+@pytest.mark.parametrize("text", [
+    "The answer explains which account you should use.",
+    "The guide asks: do you prefer the regional instance or the shared instance?",
+    "Would you prefer that I draft a separate report?",
+    "Do you want me to create another comparison?",
+    "The paragraph considers which destination should we use as a rhetorical question.",
+])
+def test_described_questions_and_offers_do_not_create_decisions(text):
+    assert analyze_handoff(text).expectancy != "required-handoff"
+
+
+@pytest.mark.parametrize("text", [
+    "I'm waiting for the timer to expire; please review the answer while it runs.",
+    "The deployment is still running, and please review the preview if useful.",
+    "I am waiting for the job output, and I'd appreciate your feedback on the document.",
+])
+def test_process_wait_does_not_promote_a_soft_review_to_required(text):
+    assert analyze_handoff(text).expectancy != "required-handoff"
+
+
+def test_review_needed_for_a_specific_assistant_step_remains_required():
+    assert analyze_handoff("I need your review to continue the deployment.").expectancy == "required-handoff"
+
+
+@pytest.mark.parametrize("text", [
+    "Both devices satisfy the requirement. Choose the smaller one for travel or the cheaper one for your desk.",
+    "Either provider will work. Pick the local provider if latency is your priority.",
+    "The two plans are suitable. Select the annual plan if you expect to keep using it.",
+    "The analysis is complete. Please confirm the source count with its owner before relying on the results.",
+    "Please check the measurements against an independent source before using them. The requested answer is above.",
+    "The summary is delivered. Please verify the estimates yourself before acting on the recommendation.",
+])
+def test_selection_and_reader_verification_advice_are_not_current_gates(text):
+    assert analyze_handoff(text).expectancy != "required-handoff"
+
+
+@pytest.mark.parametrize("text", [
+    "Before I can calculate the total, choose whether to include the first period or the second period.",
+    "Pick either the compact or the accessible format. I cannot finalize the diagram until you make that choice.",
+    "Select a reporting interval. Once you select it, I can produce the chart.",
+    "Please pick the destination account.",
+    "Please select the environment to use.",
+])
+def test_structural_selection_gate_keeps_the_decision_kind(text):
+    assert analyze_handoff(text) == Handoff("required-handoff", "decision")
+
+
+@pytest.mark.parametrize("text", [
+    "Please confirm the source count with the owner. I cannot complete the comparison until you confirm it.",
+    "Please check the measurements against the reference. Then I'll calculate the result from those measurements.",
+    "Verify the estimates yourself. Once you verify them, I can finish the report.",
+])
+def test_verification_advice_becomes_required_when_it_unblocks_assistant_work(text):
+    assert analyze_handoff(text).expectancy == "required-handoff"

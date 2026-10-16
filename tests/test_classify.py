@@ -197,3 +197,31 @@ def test_link_queries_do_not_leak_into_diagnostics():
 def test_structural_evidence_survives_extraction_and_routing_priority(text, state, gesture):
     answer = RulesClassifier().classify(Event("s", "e", text))
     assert (answer.state, answer.gesture) == (state, gesture)
+
+
+@pytest.mark.parametrize("status", [
+    "The task is still pending.", "The calculation remains pending.",
+    "The conversion hasn't finished yet.", "The conversion is not complete yet.",
+])
+def test_current_process_completion_wait_is_in_flight(status):
+    text = status + " I'll show you the results once it completes."
+    answer = RulesClassifier().classify(Event("s", "e", text))
+    assert (answer.state, answer.gesture, answer.expectancy) == ("unknown", "in-flight", "none")
+
+
+@pytest.mark.parametrize("limitation", [
+    "I haven't verified the new behavior.", "Integration tests could not run.",
+    "The validation remains unverified.", "Caveat: the access check is unavailable.",
+])
+def test_independent_verification_limits_survive_a_process_wait(limitation):
+    text = "The task is still pending. " + limitation + " I'll show you the results once it completes."
+    answer = RulesClassifier().classify(Event("s", "e", text))
+    assert (answer.state, answer.gesture, answer.expectancy) == ("caveats", "caveats", "none")
+
+
+@pytest.mark.parametrize("separator", [". ", "; ", " and "])
+def test_other_unfinished_work_is_not_erased_by_process_activity(separator):
+    text = ("The batch is running" + separator
+            + "the rollback implementation is not complete yet. I'll report back when the batch finishes.")
+    answer = RulesClassifier().classify(Event("s", "e", text))
+    assert (answer.state, answer.gesture) == ("caveats", "caveats")

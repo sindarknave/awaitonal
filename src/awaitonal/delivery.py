@@ -7,7 +7,7 @@ unknown. All scans are linear in the bounded input, with fixed-size lookahead.
 import re
 from typing import Literal
 
-from .text import MAX_PROSE_CHARS
+from .text import MAX_PROSE_CHARS, response_prose
 
 Delivery = Literal["change", "answer", "plan", "artifact", "published", "unknown"]
 
@@ -90,8 +90,26 @@ _EVALUATION = {
 _STANCE = {"recommend", "suggest", "favor", "favour", "prefer", "choose", "pick", "advise"}
 _DECISION_ACTIONS = {"use", "keep", "retain", "stick", "choose", "pick", "select", "adopt",
                      "wait", "hold", "drop", "skip", "avoid", "proceed", "ship", "merge",
-                     "release", "deploy", "publish", "build", "buy", "sell", "leave", "take"}
+                     "release", "deploy", "publish", "build", "buy", "sell", "leave", "take", "replace"}
 _ASSESSMENT_CONDITIONS = {"if", "unless", "when", "once", "assuming", "suppose", "hypothetical"}
+# Verification and information-gathering suggestions are follow-up tasks, not
+# an assessed choice. Keep this separate from decision actions such as waiting
+# or retaining an alternative, which can themselves be the recommendation.
+_PROCEDURES = {"ask", "asking", "check", "checking", "verify", "verifying",
+               "confirm", "confirming", "validate", "validating", "test", "testing",
+               "inspect", "inspecting", "review", "reviewing", "investigate", "investigating",
+               "measure", "measuring", "monitor", "monitoring", "consult", "consulting",
+               "contact", "contacting", "read", "reading", "discuss", "discussing",
+               "find", "finding", "determine", "determining", "follow", "following"}
+
+
+def _procedural_advice(words: list[str]) -> bool:
+    """Identify the requested activity before inspecting its evaluated object."""
+    target = words
+    while target[:1] and target[0] in {"that", "you", "we", "they", "someone", "somebody",
+                                         "anyone", "someone's", "the", "team", "should", "must", "to", "first", "and"}:
+        target = target[1:]
+    return bool(target and target[0] in _PROCEDURES)
 
 
 def _current_assessment(words: list[str], part: str) -> bool:
@@ -135,6 +153,18 @@ def _structural_verdict(words: list[str], part: str) -> bool:
     """
     if not _current_assessment(words, part):
         return False
+    # An explicit personal assessment label introduces the asserted clause;
+    # its topic noun phrase is not the grammatical subject of that clause.
+    if ":" in part:
+        label, assertion = part.split(":", 1)
+        label_words = _WORDS.findall(label.lower())
+        if (label_words[:1] in (["my"], ["our"])
+                and label_words[1:2] and label_words[1] in {
+                    "assessment", "judgment", "judgement", "recommendation", "verdict", "conclusion"}):
+            part = assertion.strip()
+            words = _WORDS.findall(part.lower())
+            if not _current_assessment(words, part):
+                return False
     # Opening adjuncts do not change the grammatical subject of the main
     # assertion: "After comparing ..., I recommend ..." is still a stance.
     main = re.search(r",\s*(?:\*\*|__)?(?:i|we|i'd|we'd)\b", part, re.I)
@@ -157,7 +187,7 @@ def _structural_verdict(words: list[str], part: str) -> bool:
     }:
         start += 1
     stance = first[start:]
-    if stance[:1] and stance[0] in {"i", "we", "i'd", "we'd"}:
+    if stance[:1] and stance[0] in {"i", "we", "i'd", "we'd", "i'm", "we're"}:
         stance = stance[1:]
         while stance[:1] and stance[0] in {"would", "still", "now", "strongly", "definitely", "personally"}:
             stance = stance[1:]
@@ -170,6 +200,8 @@ def _structural_verdict(words: list[str], part: str) -> bool:
             return True
         if stance[:1] and stance[0] in _STANCE and len(stance) >= 3:
             target = stance[1:]
+            if _procedural_advice(target):
+                return False
             # A bare plan to add/fix/investigate something is not an assessed
             # choice. Selection, abstention and named alternatives are.
             if target[0] not in {"adding", "fixing", "implementing", "investigating", "checking",
@@ -182,19 +214,48 @@ def _structural_verdict(words: list[str], part: str) -> bool:
                 return True
         if stance[:1] in (["go"], ["stick"]) and stance[1:2] == ["with"] and len(stance) >= 3:
             return True
+        # A leaning/vote/ranking is a present choice, including softened
+        # recommendations that never use the verb "recommend".
+        choosing = stance
+        if choosing[:1] in (["am"], ["'m"]):
+            choosing = choosing[1:]
+        if (choosing[:1] in (["lean"], ["leaning"])
+                and choosing[1:2] in (["toward"], ["towards"], ["to"])
+                and len(choosing) >= 3 and not _procedural_advice(choosing[2:])):
+            return True
+        if choosing[:2] in (["vote", "for"], ["vouch", "for"]) and len(choosing) >= 3:
+            return True
+        if (choosing[:1] in (["rank"], ["place"], ["put"])
+                and len(choosing) >= 3
+                and {"first", "ahead", "above"}.intersection(choosing[2:])):
+            return True
         if stance[:1] and stance[0] in _DECISION_ACTIONS and len(stance) >= 3:
             # "I use this" reports behavior; "I'd keep this" gives advice.
             return any(word in {"i'd", "we'd", "would"} for word in first[:start + 3])
         if stance[:1] in (["wouldn't"], ["don't"]) and stance[1:2] and stance[1] in _DECISION_ACTIONS and len(stance) >= 4:
             return True
+    # Standalone go/no-go labels express a decision but do not match ordinary
+    # yes/no answers. A target, rationale or explicit status is still required.
+    if (first[:2] in (["no", "go"], ["go", "ahead"])
+            and len(first) >= 3 and not _procedural_advice(first[2:])):
+        return True
+    if ((first[:1] == ["don't"] and first[1:2]
+         and first[1] in {"ship", "merge", "deploy", "release", "publish", "proceed"})
+            or (first[:2] == ["do", "not"] and first[2:3]
+                and first[2] in {"ship", "merge", "deploy", "release", "publish", "proceed"})):
+        return True
     # Recommendation/choice framings can introduce any selected alternative,
     # without requiring "My call" or a specific heading.
     for index, word in enumerate(first[:6]):
-        if (word in {"recommendation", "preference", "choice", "pick"}
+        if (word in {"recommendation", "preference", "choice", "pick", "vote"}
                 and set(first[:index]).issubset({"my", "our", "the", "current", "final", "preferred", "overall"})):
             tail = first[index + 1:]
             if tail[:1] == ["is"]:
                 tail = tail[1:]
+            if tail[:2] == ["goes", "to"]:
+                tail = tail[2:]
+            if _procedural_advice(tail):
+                return False
             if tail[:1] == ["to"] and tail[1:2] and tail[1] in _DECISION_ACTIONS:
                 return True
             if tail and tail[0] not in _UNAVAILABLE_VERDICT | {"not", "no", "to", "will"}:
@@ -207,12 +268,17 @@ def _structural_verdict(words: list[str], part: str) -> bool:
             continue
         subject = first[:index]
         if {"whether", "which", "how", "why", "tell", "know", "determine", "assess",
-            "judge", "discuss", "explain", "describe"}.intersection(subject):
+            "judge", "discuss", "explain", "describe", "ask", "asking", "check", "checking",
+            "verify", "verifying", "confirm", "confirming", "ensure", "ensuring"}.intersection(subject):
             continue
         predicate = first[index + 1:]
+        if word in {"looks", "look", "seems", "seem"} and predicate[:1] == ["like"]:
+            predicate = predicate[1:]
         while predicate[:1] and predicate[0] in {"a", "an", "the", "clearly", "still", "now", "not", "too", "much", "probably", "really", "quite"}:
             predicate = predicate[1:]
         if predicate[:1] and predicate[0] in _EVALUATION:
+            if predicate[1:2] == ["to"] and _procedural_advice(predicate[2:]):
+                continue
             # Reporting which value was selected is not endorsing its quality.
             if predicate[0] in {"right", "wrong"} and predicate[1:2] in (["now"], ["side"]):
                 continue
@@ -223,7 +289,8 @@ def _structural_verdict(words: list[str], part: str) -> bool:
         if predicate[:2] == ["ready", "to"] and set(predicate[2:4]).intersection(_DECISION_ACTIONS):
             return True
         if (predicate[:2] in (["my", "recommendation"], ["our", "recommendation"],
-                               ["my", "preference"], ["our", "preference"])):
+                               ["my", "preference"], ["our", "preference"],
+                               ["my", "pick"], ["our", "pick"], ["my", "vote"], ["our", "vote"])):
             return True
         # A ranked choice may put its evaluation in the subject: "The safer
         # option is the staged release", rather than after the copula.
@@ -234,6 +301,23 @@ def _structural_verdict(words: list[str], part: str) -> bool:
     for index, word in enumerate(first[1:12], 1):
         if word in {"makes", "make"} and first[index + 1:index + 2] == ["sense"]:
             return True
+        # Selection and ordering need an actual subject and comparator. An
+        # ordinary factual "wins" or "first" elsewhere is not a verdict.
+        if (word in {"beats", "outperforms", "outweighs"}
+                and first[index + 1:] and {"option", "choice", "alternative", "approach"}.intersection(first[:index])):
+            return True
+        if (word in {"gets", "has", "earns", "wins"}
+                and first[index + 1:index + 3] in (["my", "vote"], ["our", "vote"], ["my", "backing"], ["our", "backing"])):
+            return True
+        if (word in {"ranks", "comes"} and first[index + 1:index + 2] in (["first"], ["ahead"])
+                and {"option", "choice", "alternative", "approach"}.intersection(first[:index])):
+            return True
+    # Withheld endorsement must identify a decision, rather than merely
+    # reporting uncertainty about an observed fact.
+    if (first[:3] in (["i", "don't", "see"], ["we", "don't", "see"])
+            and {"case", "reason", "justification"}.intersection(first[3:7])
+            and _DECISION_ACTIONS.intersection(first[4:12])):
+        return True
     if ":" in part:
         label, selected = part.split(":", 1)
         label_words = _WORDS.findall(label.lower())
@@ -420,9 +504,24 @@ def _passive(words: list[str]) -> Delivery:
 
 def _framing(words: list[str], total_words: int) -> Delivery:
     """Recognize a delivered explanation/proposal, not a promise to make one."""
+    first = words[:10]
+    presented_start = (2 if first[:2] in (["here", "is"], ["here", "are"])
+                       else 1 if first[:1] == ["here's"] else 0)
+    if presented_start and not _historical(words) and not _SUBJECT_BLOCKERS.intersection(first):
+        phrase = []
+        for word in first[presented_start:presented_start + 6]:
+            if word in {"of", "for", "with", "below", "that", "containing"}:
+                break
+            phrase.append(word)
+        for word in reversed(phrase):
+            if word in _PLAN_OBJECTS:
+                return "plan"
+            if word in _DRAFT_OBJECTS | {"document", "documents"}:
+                return "artifact"
+            if word in _ANSWER_OBJECTS:
+                return "answer"
     if total_words < 5:
         return "unknown"
-    first = words[:10]
     subject = 1 if first[0] in {"the", "my", "our", "your"} and len(first) > 1 else 0
     if first[subject] in _ANSWER_OBJECTS | _PLAN_OBJECTS | {"findings", "verdict"}:
         # A noun at the start is not always a report heading. Explicitly
@@ -534,10 +633,12 @@ def _summary_verdict(prose: str) -> bool:
     return len(support) >= 4
 
 
-def detect_assessment(prose: str) -> str:
+def detect_assessment(prose: str, *, response_scoped: bool = False) -> str:
     """Recognize explicit current verdicts, never bare yes/no or imperatives."""
     if not isinstance(prose, str) or len(prose) > MAX_PROSE_CHARS:
         return "none"
+    if not response_scoped:
+        prose = response_prose(prose)
     if _summary_verdict(prose):
         return "verdict"
     example = False
@@ -558,11 +659,15 @@ def detect_assessment(prose: str) -> str:
             continue
         if _structural_verdict(words, part):
             return "verdict"
-        if (_current_assessment(words, part)
-                and re.search(
-                    r"(?:^|,)\s*(?:yes[, ]+)?(?:(?:do not|don't)\s+)?"
-                    r"(?:choose|pick|select|keep|retain|avoid|skip|proceed|ship|merge|deploy|release|publish|go ahead)\b",
-                    part, re.I)
+        # Explicit labels and later fallback evidence must obey the same
+        # scope/tense/conditional checks as structural recommendations.
+        if not _current_assessment(words, part):
+            continue
+        imperative = re.search(
+            r"(?:^|,)\s*(?:yes[, ]+)?(?:(?:do not|don't)\s+)?"
+            r"(?:choose|pick|select|keep|retain|avoid|skip|proceed|ship|merge|deploy|release|publish|go ahead)\b",
+            part, re.I)
+        if (imperative and not _procedural_advice(_WORDS.findall(part[imperative.end():].lower()))
                 and _supported_recommendation(clauses, position)):
             return "verdict"
         if _historical(words) or set(words[:5]).intersection({"if", "would", "will", "example", "says", "said"}):
@@ -613,7 +718,7 @@ def detect_assessment(prose: str) -> str:
     return "verdict" if (completed_review or assessed_object) and leading_verdict else "none"
 
 
-def detect_delivery(prose: str) -> Delivery:
+def detect_delivery(prose: str, *, response_scoped: bool = False) -> Delivery:
     """Return a conservative type for the current reported deliverable.
 
     Explicit publication outranks an artifact, which outranks a change. A plan
@@ -623,6 +728,8 @@ def detect_delivery(prose: str) -> Delivery:
     """
     if not isinstance(prose, str) or len(prose) > MAX_PROSE_CHARS or not prose.strip():
         return "unknown"
+    if not response_scoped:
+        prose = response_prose(prose)
     parts = _BREAKS.split(prose)
     clauses = [_WORDS.findall(part.lower()) for part in parts]
     total_words = sum(map(len, clauses))
@@ -691,6 +798,6 @@ def detect_delivery(prose: str) -> Delivery:
         best = max(candidates, key=_PRIORITY.__getitem__)
         if _PRIORITY[best] > _PRIORITY[detected]:
             detected = best
-    if detected == "unknown" and detect_assessment(prose) == "verdict":
+    if detected == "unknown" and detect_assessment(prose, response_scoped=True) == "verdict":
         return "answer"
     return detected

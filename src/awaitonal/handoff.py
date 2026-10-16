@@ -9,7 +9,7 @@ from dataclasses import dataclass
 import re
 from typing import Literal
 
-from .text import MAX_PROSE_CHARS
+from .text import MAX_PROSE_CHARS, response_prose
 from .delivery import detect_assessment
 
 Expectancy = Literal["none", "review-requested", "required-handoff"]
@@ -61,7 +61,7 @@ _DIRECT = _rx(
     r"\b(?:after|once|when) you [^.!?\n]{1,100},\s*)"
     r"(?P<verb>review|look over|take a look at|check|sign[ -]?in(?:to)?|log[ -]?in(?:to)?|authenticate|"
     r"complete (?:the |your )?(?:sso|sign[- ]in|authentication)|do (?:the )?auth|"
-    r"approve|authorize|grant|confirm|choose|select|decide|clarify|specify|tell me|"
+    r"approve|authorize|grant|confirm|choose|select|pick|decide|clarify|specify|tell me|"
     r"send|share|paste|upload|provide|reproduce|export|restart|reconnect|run|open|click|enable|install)\b"
 )
 _NEED_OBJECT = (
@@ -87,7 +87,8 @@ _CHOICE = _rx(
     r"\bwhich\b[^.!?\n]{0,85}\b(?:should (?:i|we)|would you (?:like|prefer)|do you (?:want|prefer))\b|"
     r"\b(?:what|which) (?:do you (?:mean|prefer)|option|version|file|directory|environment|account)\b[^.!?\n]{0,85}\?|"
     r"\b(?:i|we) (?:need|require) (?:you to clarify|to know (?:which|what|whether))\b|"
-    r"^\s*should (?:i|we)\b[^.!?\n]{1,90}\bor\b[^.!?\n]{1,60}\?"
+    r"^\s*(?:should|shall|do|would) (?:i|we)\b[^.!?\n]{1,90}\bor\b[^.!?\n]{1,60}\?|"
+    r"^\s*(?:do you (?:want|prefer)|would you (?:prefer|rather))\b[^.!?\n]{1,140}\?"
 )
 _PERMISSION = _rx(r"\b(?:may|can) i (?:run|execute|install|delete|remove|access|use|proceed|continue|publish|merge|deploy)\b")
 _DEPENDENCY = _rx(
@@ -96,8 +97,6 @@ _DEPENDENCY = _rx(
     r"waiting|blocked|paused|still (?:need|needs)|now)\b|"
     r"\b(?:and|then) (?:i|we)(?:'ll| will) (?:carry on|continue|resume|proceed)\b"
 )
-_NEXT_STEP = _rx(r"^\s*(?:then|after that|once (?:that's|that is) done)[, ]+"
-                 r"(?:i|we)(?:'ll| will)\b")
 _DIAGNOSTIC = _rx(r"\b(?:logs?|console|output|trace|error|crash|results?|evidence|reproduc\w*)\b")
 _AUTH = _rx(r"\b(?:auth(?:entication|orization)?|sso|sign[- ]in|log[- ]in|login|browser|device|access)\b")
 _ACTION_BOUNDARY = _rx(r"[,;.!?\n]|\b(?:and|then)\b")
@@ -108,7 +107,7 @@ _RESOLUTIONS = {
     "auth": _rx(r"\b(?:authentication|authorization|sign[- ]in|login|sso|access) (?:is |was |has |has been |now )?(?:complete(?:d)?|successful|succeeded|granted|restored)\b|\b(?:you|i|we) (?:have |has |are |am )?(?:signed in|logged in|authenticated)\b"),
     "approval": _rx(r"\b(?:approval|permission|consent|go[- ]ahead|authorization) (?:is |was |has been )?(?:received|granted|given|obtained)\b|\b(?:received|obtained|got|have) (?:your |the )?(?:approval|permission|consent|go[- ]ahead)\b|\byou (?:have )?(?:approved|authorized)\b|\byou (?:have )?(?:granted|provided|gave) (?:your |the )?(?:approval|permission|consent|go[- ]ahead)\b"),
     "review": _rx(r"\b(?:your review|your feedback) (?:is in|arrived|was received|has arrived)\b|\b(?:received|got|applied|addressed|incorporated) (?:your |the )?(?:review|feedback|comments|requested corrections)\b|\byou (?:have )?reviewed\b"),
-    "choice": _rx(r"\b(?:your |the )?(?:choice|answer|decision|selection|clarification) (?:is |was |has been )?(?:received|provided|made|given)\b|\b(?:received|got|have) your (?:choice|answer|decision|selection|clarification)\b|\byou (?:have )?(?:chosen|selected|answered|clarified|decided)\b"),
+    "choice": _rx(r"\b(?:your |the )?(?:choice|answer|decision|selection|clarification) (?:is |was |has been )?(?:received|provided|made|given)\b|\b(?:received|got|have) your (?:choice|answer|decision|selection|clarification)\b|\byou (?:have )?(?:chosen|selected|picked|answered|clarified|decided)\b"),
     "diagnostics": _rx(r"\b(?:logs?|output|evidence|results?) (?:is |are |was |were |has been |have been )?(?:received|provided|uploaded|available)\b|\b(?:received|got|have) (?:your |the )?(?:logs?|output|evidence|results?)\b"),
     "action": _rx(r"\b(?:restart|upload|installation) (?:is |was |has )?(?:complete(?:d)?|finished|succeeded)\b|\b(?:service|connection) (?:has )?(?:reconnected|restarted)\b"),
 }
@@ -184,19 +183,38 @@ _BARE_ACTION = _rx(r"^\s*(?:[-*]\s*|\d+[.)]\s*)?(?:(?:first|next),?\s+)?(?P<verb
 _CAUSATIVE_ACTION = _rx(r"^\s*(?:please\s+)?(?P<verb>have|get)\s+(?:the|your|this|that|these|those)\s+[^.!?\n]{1,70}\s+[a-z]+ed\b")
 _NON_IMPERATIVE = frozenset(
     "i we you he she it they the a an this that these those there here my our your their "
-    "all everything nothing anything no yes done then now after before once when until if "
+    "all everything nothing anything no yes done then now after before once when until if please "
     "should shall may can could will would is are was were has have had not don't do "
-    "another other some any which what how why where who and but however yet or awaitonalcode awaitonalfile awaitonalliteral".split()
+    "another other some any which what how why where who and but however yet or waiting awaiting pending blocked need needs require requires awaitonalcode awaitonalfile awaitonalliteral".split()
 )
 _ASSISTANT_DEPENDENCY = _rx(
     r"\b(?:i|we)(?:'ll| will| can| cannot| can't| am unable to| are unable to| am waiting| are waiting)\b|"
     r"\b(?:i'm|we're)\s+(?:waiting|blocked|paused)\b|\bbefore (?:i|we)\s+[a-z]+\b"
 )
-_LINK = _rx(r"\b(?:before|after|once|when|until|then|without|waiting|blocked|paused|need|require|as soon as)\b|\bso (?:i|we)\b|\bwith (?:that|this|your|the)\b")
-_LINKED_RESULT = _rx(r"\b(?:before|after|once|when|until|as soon as)\s+(?:you|your|it|that|this|they|those|these)\b|\b(?:then|so)\s+(?:i|we)\b|\bwith (?:that|this|your)\b|\bbefore (?:i|we) can\b|\b(?:once|after|when) (?:i|we) (?:have|receive|get)\b")
-_BLOCKED_ACTOR = _rx(r"\b(?:cannot|can't|waiting|blocked|paused|unable)\b")
+_LINK = _rx(r"\b(?:before|after|once|when|until|then|without|waiting|blocked|paused|need|require|as soon as)\b|\b(?:so|and) (?:i|we)\b|\bwith (?:that|this|your|the)\b")
 _NON_ACTION = frozenset("know remember note enjoy understand realize realise".split())
 _USER_NECESSITY = _rx(r"\b(?:you(?: must| have to| need to|'ll need to| will need to)|(?:i|we) (?:need|require) you to)\b")
+# Advice can address the reader without requesting input for this turn.  It
+# becomes a handoff only when the assistant ties its own next step to that input.
+_ADVISORY = _rx(
+    r"\b(?:you (?:should|could|might|may want to)|(?:i|we) (?:recommend|suggest)|"
+    r"(?:my|our|general) (?:advice|recommendation)|consider|someone should|someone needs to|"
+    r"check (?:again )?later|before (?:you )?(?:rely|relying|use|using|adopt|adopting|act|acting)\b|(?:to|for) (?:try|trying|explore|exploring) (?:the|a) (?:demo|example))\b"
+)
+_READER_VERIFICATION = _rx(
+    r"\b(?:confirm|check|verify)\b[^.!?\n]{0,90}"
+    r"\b(?:against|with (?:the|your|an?)|independently|yourself|on your own)\b"
+)
+_EXPLICIT_REQUEST = _rx(
+    r"(?:^|[,;:]\s*)(?:please\s+|(?:can|could|would|will) you\s+|"
+    r"(?:i|we) (?:need|require) you to\s+)|\bplease\s+"
+)
+_ACTOR_CHOICE = _rx(
+    r"\b(?:should|shall|can|could|do|would) (?:i|we)\b|"
+    r"\b(?:do you (?:want|prefer|mean)|would you (?:like|prefer|rather))\b|"
+    r"\b(?:i|we) (?:need|require) (?:you to clarify|to know)\b"
+)
+
 _OUTSTANDING_EXECUTION = _rx(
     r"\b(?:i|we)(?: haven't| have not)\s+(?:yet\s+)?"
     r"(?:pushed|published|posted|sent|submitted|merged|deployed|released|committed|applied|saved)\s+"
@@ -271,17 +289,79 @@ def _linked_dependency(parts: list[str], index: int) -> bool:
                 or _FUTURE.search(neighbor) or _OPTIONAL.search(neighbor)):
             continue
         if _ASSISTANT_DEPENDENCY.search(neighbor) and _LINK.search(neighbor):
-            if ((_LINKED_RESULT.search(neighbor) and has_object)
-                    or (_BLOCKED_ACTOR.search(neighbor) and object_reference)
-                    or re.search(r"\b(?:before (?:i|we)|(?:once|after|when|until|as soon as) you)\b", neighbor)):
+            if re.search(r"\b(?:before (?:i|we)|(?:once|after|when|until|as soon as) you)\b", neighbor):
+                return True
+            if ((has_object and re.search(r"\b(?:then|so) (?:i|we)\b", neighbor))
+                    or (_DIRECT.search(target) and re.search(
+                        r"\b(?:then|and) (?:i|we)(?:'ll| will) (?:carry on|continue|resume|proceed)\b", neighbor))):
+                return True
+            # Pronouns can refer to the requested action/result; a named event
+            # such as a timer completing must instead match the prerequisite.
+            if has_object and re.search(
+                    r"\b(?:once|after|when|until|as soon as) (?:it|that|this|they|those|these)\b|"
+                    r"\b(?:once|after|when) (?:i|we) (?:have|receive|get) (?:it|that|this|them)\b|"
+                    r"\b(?:after|with) (?:that|this)\b|"
+                    r"\bwaiting (?:for|on) (?:it|that|this|them)\b", neighbor):
                 return True
             # A repeated prerequisite noun also links sentences, without
             # requiring it to be called a log, file, credential, or report.
             for relation in re.finditer(r"\b(?:after|once|when|until|without|with)\s+([^,.!?\n]{1,90})", neighbor):
                 words = set(re.findall(r"\b[a-z]{3,}\b", relation[1].lower())) - _NON_IMPERATIVE
-                if target_words & words or object_reference:
+                if (target_words & words or (
+                        re.search(r"\b(?:review|look over|take a look)\b", request)
+                        and re.search(r"\byour (?:feedback|review|comments)\b", relation[1]))):
+                    return True
+                if (object_reference and re.search(r"\b(?:usable|available|accessible|unlocked|restored|granted|arrive|arrives|arrived|received|provided|attached)\b", relation[1])):
                     return True
     return False
+
+
+def _user_gate(clause: str, kind: str, source: str, matched: str,
+               linked_dependency: bool, verdict: bool) -> bool:
+    """Require a current user-owned request on every textual entry route.
+
+    An explicit request to the reader or permission question can itself state
+    the current gate. Advice and generic need/wait predicates require stronger
+    evidence: an assistant continuation that depends on a user-owned action.
+    """
+    if kind == "review":
+        return True  # A soft review invitation does not play the attention cue.
+    if not linked_dependency and (_ADVISORY.search(clause)
+                                  or _READER_VERIFICATION.search(clause)):
+        return False
+    if source == "need":
+        # "The job is waiting for the output" names a process prerequisite,
+        # whereas "I need your output" asks the user to supply something.
+        return bool(re.search(r"\byour\b", matched))
+    if source == "choice":
+        if _OUTWARD.search(clause):
+            return False  # Prepared execution is handled as authorization.
+        if re.search(r"\b(?:me|us|that i|that we) (?:to )?(?:draft|write|create|prepare|build)\b", clause):
+            return False  # Offer of fresh work, rather than a current decision.
+        addressed_question = bool(
+            re.match(r"^\s*(?:what|which|should|shall|can|could|do|would|i|we)\b", clause)
+            and (_ACTOR_CHOICE.search(clause))
+            and ("?" in clause or re.search(r"\b(?:need|require)\b", clause)))
+        return addressed_question or bool(
+            linked_dependency and re.match(r"^\s*(?:what|which)\b", clause))
+    if source == "permission":
+        return True  # Explicit assistant actor: "May I install ...?"
+    if source == "structural":
+        return bool(linked_dependency
+                    or re.search(r"\b(?:i|we) (?:need|require) you to\b", clause)
+                    or (_USER_NECESSITY.search(clause)
+                        and re.search(r"\b(?:for this run|before|to continue|to proceed)\b", clause)))
+    if linked_dependency or _EXPLICIT_REQUEST.search(clause):
+        return True
+    if kind == "choice":
+        return False  # Bare selection advice does not establish a paused task.
+    if _USER_NECESSITY.search(clause) and not re.search(
+            r"\b(?:for this run|to continue|to proceed)\b", clause):
+        return False
+    # Standalone auth and approval requests remain supported. Selection
+    # instructions require an explicit request or assistant dependency above.
+    return not verdict and not bool(re.search(
+        r"\b(?:to try|to see|to explore|as (?:a|an) [^.!?\n]{0,80}precaution|in general)\b", clause))
 
 
 def _completed_action(clause: str, verb: str) -> bool:
@@ -340,7 +420,7 @@ def _direct_kind(verb: str, signals: set[str], auth_object: bool) -> str | None:
         return "review"
     if verb == "check":
         return "diagnostics" if "diagnostic" in signals else "review" if "review-object" in signals else None
-    if verb in {"choose", "select", "decide", "clarify", "specify"}:
+    if verb in {"choose", "select", "pick", "decide", "clarify", "specify"}:
         return "choice"
     if verb == "tell me":
         if "review-answer" in signals:
@@ -375,7 +455,7 @@ def _need_kind(obj: str) -> str:
     return "auth"
 
 
-def analyze_handoff(prose: str) -> Handoff:
+def analyze_handoff(prose: str, *, response_scoped: bool = False) -> Handoff:
     """Return the strongest unresolved current handoff in one bounded analysis.
 
     Later explicit resolutions clear matching dependency families only. Routine
@@ -386,6 +466,8 @@ def analyze_handoff(prose: str) -> Handoff:
     """
     if not isinstance(prose, str) or not prose.strip() or len(prose) > MAX_PROSE_CHARS:
         return Handoff()
+    if not response_scoped:
+        prose = response_prose(prose)
     pending: dict[str, Expectancy] = {}
     prepared = False
     preparation_denied = False
@@ -394,7 +476,7 @@ def analyze_handoff(prose: str) -> Handoff:
     review_approval_coupled = False
     in_instructions = False
     prose = prose.replace("’", "'")
-    verdict = detect_assessment(prose) == "verdict"
+    verdict = detect_assessment(prose, response_scoped=True) == "verdict"
     # Preserve explicit line boundaries but join common soft-wrapped phrases.
     prose = re.sub(r"\b(have|has|had|your|the|been|is|are|was|were|need|needs|require|requires|for|to)\s*\n\s*", r"\1 ", prose, flags=re.I)
     parts = _PARTS.split(prose)
@@ -484,17 +566,22 @@ def analyze_handoff(prose: str) -> Handoff:
         # imperative would be quadratic on repeated adversarial requests.
         signals = {name for name, pattern in (
             ("diagnostic", _DIAGNOSTIC), ("review-object", _REVIEW_OBJECT),
-            ("dependency", _DEPENDENCY),
             ("review-answer", _REVIEW_ANSWER), ("confirm-choice", _CONFIRM_CHOICE),
         ) if pattern.search(clause)}
-        # A user instruction followed by "Then I'll ..." is an explicit
-        # dependency even when the requested command itself was stripped as
-        # code. Only the adjacent continuation supplies this evidence.
-        if index + 1 < len(parts) and _NEXT_STEP.search(parts[index + 1]):
-            signals.add("dependency")
         linked_dependency = _linked_dependency(parts, index)
         if linked_dependency:
             signals.add("dependency")
+        gate_cache: dict[tuple[str, str, bool], bool] = {}
+
+        def current_gate(kind: str, source: str, matched: str) -> bool:
+            # Full-clause evidence is shared across repeated requests. Keep
+            # adversarial repetition linear rather than rescanning per match.
+            key = (kind, source, bool(re.search(r"\byour\b", matched)))
+            if key not in gate_cache:
+                gate_cache[key] = _user_gate(clause, kind, source, matched,
+                                             linked_dependency, verdict)
+            return gate_cache[key]
+
         candidates: list[tuple[int, str]] = []
         recognized_direct = False
         if staged_offer:
@@ -509,27 +596,35 @@ def analyze_handoff(prose: str) -> Handoff:
                     and re.search(r"\b(?:page|share|sharing) menu\b", clause)):
                 continue  # Usage instruction after delivering an artifact.
             kind = _direct_kind(match["verb"], signals, _auth_object(clause, match.end("verb")))
-            if kind:
+            if kind and current_gate(kind, "direct", match[0]):
                 candidates.append((match.start(), kind))
                 recognized_direct = True
                 if kind == "action" and " " not in match["verb"]:
                     generic_action = match["verb"]
         # A workflow gate supplies the meaning of a user verb even when the
         # operation is domain-specific (rotate, unlock, attach, acknowledge...).
-        # Explicit necessity also establishes that the action belongs to the
-        # user, without treating every question or bare noun as a request.
+        # Explicit current requests also establish user ownership; general
+        # reader advice and bare noun phrases do not supply a workflow gate.
         action = _structural_action(clause)
         if (action and not staged_offer and not recognized_direct
-                and (linked_dependency or _USER_NECESSITY.search(clause))):
-            candidates.append((action[0], "action"))
-            generic_action = action[1]
+                and current_gate("action", "structural", clause)):
+            structural_choice = (action[1] in {
+                "choose", "select", "pick", "decide", "clarify", "specify"
+            } or (action[1] in {"make", "give", "state", "express"} and re.search(
+                r"\b" + re.escape(action[1]) + r"\b(?:\s+[a-z]+){0,3}\s+"
+                r"(?:choice|selection|decision|preference)\b", clause)))
+            structural_kind = "choice" if structural_choice else "action"
+            candidates.append((action[0], structural_kind))
+            if structural_kind == "action":
+                generic_action = action[1]
         # A compound imperative carries the same address to the user.
         if candidates:
             for match in re.finditer(r"\band (?:then )?(approve|authorize|confirm|choose|select|sign in|log in)\b", clause):
                 kind = _direct_kind(match[1], signals, _auth_object(clause, match.end(1)))
-                if kind:
+                if kind and current_gate(kind, "direct", match[0]):
                     candidates.append((match.start(), kind))
-        needs = list(_NEED.finditer(clause))
+        needs = [match for match in _NEED.finditer(clause)
+                 if current_gate(_need_kind(match["object"]), "need", match[0])]
         for match in needs:
             candidates.append((match.start(), _need_kind(match["object"])))
         if needs:
@@ -549,16 +644,15 @@ def analyze_handoff(prose: str) -> Handoff:
                     continue
                 if kind == "choice" and staged_offer and match.start() == staged_offer.start():
                     continue  # "Should I commit it or leave it?" asks permission.
-                candidates.append((match.start(), kind))
+                if current_gate(kind, "choice" if kind == "choice" else "permission", match[0]):
+                    candidates.append((match.start(), kind))
         # An independent soft review stays soft after a neighboring required
         # action resolves. Only an explicit workflow gate strengthens it.
         review_coupled_here = bool(_REVIEW_APPROVAL.search(clause)) and any(
             kind == "approval" for _, kind in candidates)
-        review_blocked = (_DEPENDENCY.search(re.sub(r"\bnow\b", "", clause))
-                          or (linked_dependency and any(
-                              re.search(r"\b(?:review|feedback|comments)\b", neighbor)
-                              for neighbor in parts[max(0, index - 1):index + 2]
-                              if _ASSISTANT_DEPENDENCY.search(neighbor))))
+        review_blocked = (linked_dependency or bool(re.search(
+            r"\b(?:i|we) (?:need|require) your (?:review|feedback)\b[^.!?\n]{0,80}"
+            r"\b(?:to continue|to proceed|before (?:i|we) can)\b", clause)))
         for position, kind in candidates:
             expectancy = (
                 "review-requested" if kind == "review" and not review_blocked

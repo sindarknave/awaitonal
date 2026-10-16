@@ -7,6 +7,95 @@ MAX_PROSE_CHARS = 131_072
 # These words select context for the encoder; they do not choose a class.
 SALIENCE = re.compile(r"\b(wait|await|approval|approve|permission|choose|choice|decide|answer|before|cannot|can't|refus|declin|won't|unable|fail|error|recover|fixed|resolved|unavailable|blocked|remaining|caveat)", re.I)
 
+_DOCUMENT_NOUN = re.compile(
+    r"\b(?:draft|reply|response|email|message|letter|memo|document|report|brief|write-up|note|content|dialogue)\b", re.I)
+_DOCUMENT_INTRO = re.compile(
+    r"^\s*(?:\#{1,6}\s*)?(?P<intro>(?:"
+    r"(?:here(?:'s| is| are)|below (?:is|are))\s+[^:\n]{1,160}|"
+    r"(?:i|we)(?:'ve| have)?\s+(?:wrote|written|drafted|prepared|assembled)\s+[^:\n]{1,160}|"
+    r"(?:the |your )?(?:requested |prepared |written )?(?:note|content|text|draft|document)\b[^:\n]{0,140}\b(?:is|follows)|"
+    r"(?:draft(?:\s+[^:\n]{1,120})?|"
+    r"(?:reply|response|email|message|letter|document)\s+draft)(?:\s*\([^\n)]{0,60}\))?"
+    r")\s*:)\s*(?P<body>.*)$", re.I)
+_DOCUMENT_RESUME = re.compile(
+    r"^\s*(?:\#{1,6}\s*)?(?:end (?:of )?(?:the )?(?:draft|document|reply|report|message|file content|slide text|content|text)|"
+    r"outside (?:of )?(?:the )?(?:draft|document|reply|report|message)|"
+    r"back to (?:the |our )?(?:task|conversation|implementation)|"
+    r"(?:next|current) (?:step|action) (?:for me|on my side))\b", re.I)
+_DOCUMENT_LOCATION = re.compile(
+    r"\s*(?:<?(?:https?://|sandbox:/)|\[[^\]\n]{1,200}\]\(\s*(?:(?:https?://|sandbox:/)|$)|"
+    r"awaitonal(?:pr|artifact|reference)link\b)", re.I)
+
+
+def response_prose(text: str) -> str:
+    """Keep response framing separate from explicitly presented document text.
+
+    Plain document bodies have no implicit end at a blank line or a generic
+    "Next steps" heading. Only an explicit return to the conversation ends
+    that scope. Quoted/fenced bodies have their own unambiguous boundaries.
+    This helper accepts raw Markdown or already-extracted prose; it does not
+    interpret quoted content as instructions or judgments by the assistant.
+    """
+    if not isinstance(text, str) or len(text) > MAX_PROSE_CHARS:
+        return ""
+    kept = []
+    body = None
+    fence = None
+    for line in text.splitlines():
+        mark = re.match(r"^\s{0,3}(`{3,}|~{3,})", line)
+        if fence:
+            if body is None:
+                kept.append(line)
+            if mark and mark[1][0] == fence[0] and len(mark[1]) >= len(fence):
+                fence = None
+                if body == "fence":
+                    body = None
+            continue
+        if body:
+            if not line.strip():
+                continue
+            if body == "pending":
+                if _DOCUMENT_LOCATION.match(line):
+                    kept.append(line)
+                    body = None
+                    continue
+                if mark:
+                    body, fence = "fence", mark[1]
+                    continue
+                body = "quote" if re.match(r"^\s*>", line) else "plain"
+            if body == "quote":
+                if re.match(r"^\s*>", line):
+                    continue
+                body = None
+            elif body == "plain" and mark:
+                fence = mark[1]
+                continue
+            elif _DOCUMENT_RESUME.match(re.sub(r"[*_]", "", line)):
+                body = None
+            else:
+                continue
+        if mark:
+            fence = mark[1]
+            kept.append(line)
+            continue
+        if re.match(r"^\s*>|^(?: {4}|\t)", line):
+            kept.append(line)
+            continue
+        normalized = re.sub(r"[*_]", "", line).replace("’", "'")
+        intro = _DOCUMENT_INTRO.match(normalized)
+        noun = _DOCUMENT_NOUN.search(intro["intro"]) if intro else None
+        location = bool(intro and _DOCUMENT_LOCATION.match(intro["body"]))
+        # A helper that writes a report is implementation prose, not the report
+        # itself. Require the document to be the presented/direct object.
+        if (noun and not location
+                and not re.search(r"\b(?:https?|sandbox):", intro["intro"], re.I)
+                and not re.search(r"\b(?:to|that|which|about)\b", intro["intro"][:noun.start()], re.I)):
+            kept.append(intro["intro"])
+            body = "plain" if intro["body"].strip() else "pending"
+        else:
+            kept.append(line)
+    return "\n".join(kept)
+
 
 def _literal_marker(value: str) -> str:
     """Keep a literal's shape, never its contents or executable instructions.

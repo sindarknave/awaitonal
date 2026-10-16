@@ -1,10 +1,10 @@
 """Small conservative rules baseline, independent of ML libraries."""
 import re
-from .activity import detect_activity
+from .activity import current_process_status, detect_activity
 from .delivery import detect_assessment, detect_delivery
 from .handoff import analyze_handoff
 from .hook_events import QUESTION_SOURCES
-from .text import assistant_prose, sentences
+from .text import assistant_prose, response_prose, sentences
 from .types import Classification, Event, STATES, controls_for, map_controls
 
 
@@ -39,6 +39,37 @@ NEGATED_COMPLETION = (
     r"\b(?:not|never|isn't|aren't|wasn't|weren't|hasn't|haven't|didn't|doesn't) "
     r"(?:(?:yet|fully|actually|been) )?(?:done|ready|working|work|fixed|finished|finish|complete(?:d)?|implemented|verified|resolved|successful)\b"
 )
+
+# Once activity has independently established current execution and a pending
+# follow-up, its temporary completion state is not a verification limitation.
+# Keep personal "haven't verified", unavailable checks, failures, and explicit
+# caveats intact; only the grammatical pending-completion assertions change.
+_ACTIVE_COMPLETION_STATUS = re.compile(
+    r"\b(?:hasn't|haven't|has not|have not)\s+"
+    r"(?:finished|completed|ended|returned|settled|expired|elapsed)\s+yet\b|"
+    r"\b(?:is|are)\s+(?:still\s+)?not\s+(?:done|complete|finished|ready)\s+yet\b|"
+    r"\b(?:isn't|aren't)\s+(?:done|complete|finished|ready)\s+yet\b|"
+    r"\b(?:is|are|remains?|remain)\s+(?:still\s+)?pending\b", re.I)
+
+
+def _activity_limitations(prose: str) -> str:
+    """Separate the primary process wait from independent unfinished work.
+
+    Only the first current process assertion may supply the pending status.
+    Later incomplete work remains a limitation, including when it appears in
+    the same sentence as a different running process. Without coreference we
+    conservatively avoid clearing multiple independently named work items.
+    """
+    chunks = re.split(r"((?<=[.!?;])\s+|\b(?:but|however)\b)", prose, flags=re.I)
+    for index in range(0, len(chunks), 2):
+        clause = chunks[index]
+        if not current_process_status(clause):
+            continue
+        status = _ACTIVE_COMPLETION_STATUS.search(clause)
+        if status and not current_process_status(clause[:status.start()]):
+            chunks[index] = clause[:status.start()] + "is ongoing" + clause[status.end():]
+        break
+    return "".join(chunks)
 
 
 def has_completion(text: str) -> bool:
@@ -163,12 +194,12 @@ class RulesClassifier:
             return explicit_result(event, self.threshold)
         # Strip URL targets before *all* routing. Words in paths, queries, or
         # fragments are reference data, not claims about this turn's outcome.
-        prose = assistant_prose(event.text, link_types=True, typed_code=True)
+        prose = assistant_prose(response_prose(event.text), link_types=True, typed_code=True)
         if not prose:
             return None
-        handoff = analyze_handoff(prose)
-        delivery = detect_delivery(prose)
-        assessment = detect_assessment(prose)
+        handoff = analyze_handoff(prose, response_scoped=True)
+        delivery = detect_delivery(prose, response_scoped=True)
+        assessment = detect_assessment(prose, response_scoped=True)
         activity, activity_source = detect_activity(prose, event.background_tasks, event.session_crons)
         # Background registries are session-wide. A completed artifact or
         # assessment must not turn into an activity pulse due to a monitor.
@@ -188,7 +219,7 @@ class RulesClassifier:
             if is_refusal(sentence) and not _has(r"\b(?:earlier|previously|initially|at first|no longer)\b", sentence):
                 temporary_dependency = (
                     _has(r"\b(?:because|until|without|unless)\b", sentence)
-                    and analyze_handoff(sentence).expectancy == "required-handoff"
+                    and analyze_handoff(sentence, response_scoped=True).expectancy == "required-handoff"
                 )
                 temporary_inability = (
                     _has(r"\bI (?:cannot|can't|am unable to)\b", sentence)
@@ -215,7 +246,7 @@ class RulesClassifier:
                     independent_limit = _has(
                         r"\b(?:unverified|untested|unavailable|unfinished|incomplete)\b|"
                         r"\b(?:tests?|checks?)\b[^.!?\n]{0,45}\b(?:fail|failed|not run|not tested)\b", clause)
-                    if independent_limit or analyze_handoff(clause).expectancy != "required-handoff":
+                    if independent_limit or analyze_handoff(clause, response_scoped=True).expectancy != "required-handoff":
                         retained.append(clause)
                 sentence = " and ".join(retained)
                 if not sentence.strip():
@@ -225,15 +256,17 @@ class RulesClassifier:
                 sentence = clauses[-1]
             active.append(sentence)
         joined = " ".join(active)
+        limitation_prose = (_activity_limitations(joined)
+                            if activity == "in-flight" else joined)
         # Negative findings can be the requested deliverable. A reported
         # explanation or plan is distinct from a failed attempt to produce it.
-        incomplete_delivery = unfinished_work(joined) or (
-            _has(NEGATED_COMPLETION, joined) and delivery not in ("answer", "plan"))
+        incomplete_delivery = unfinished_work(limitation_prose) or (
+            _has(NEGATED_COMPLETION, limitation_prose) and delivery not in ("answer", "plan"))
         if delivery in ("answer", "plan") and not incomplete_delivery and activity != "in-flight":
             return classified("done", "A requested answer, assessment, or proposal is reported delivered.")
         if incomplete_delivery:
             return classified("caveats", "Prose explicitly reports unfinished work or a validation gap.")
-        if unresolved(joined):
+        if unresolved(limitation_prose):
             previous = " ".join(active[:-1])
             final = active[-1] if active else ""
             # A later success resolves earlier errors, but not skipped validation.

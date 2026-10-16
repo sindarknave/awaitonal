@@ -214,6 +214,85 @@ def test_structural_activity_requires_a_current_nonoptional_claim(text):
     assert detect_activity(text) == ("unknown", "none")
 
 
+@pytest.mark.parametrize("text", [
+    "I'm waiting for the countdown to expire. I'll check again when it does.",
+    "Waiting for the transfer to finish; then I'll inspect the result.",
+    "Still awaiting the final output. I'll report back once it arrives.",
+    "The result is pending. I'll let you know when it arrives.",
+    "The second run remains pending. I'll report back after it finishes.",
+    "The timer hasn't expired yet. Once it does, I'll repeat the measurement.",
+    "The interval has not elapsed yet. I'll run the check when it does.",
+    "The remote call hasn't returned yet. I'll send you an update.",
+    "The remote call hasn't returned yet, and I'll send you an update.",
+    "Both passes haven't finished yet. I'll check the output when they do.",
+    "The comparison is still not ready yet. I'll return with the results.",
+    "The comparison is still not ready yet, and I'll return with the results.",
+    "The response isn't ready yet. I'll report back once it arrives.",
+    "We await completion of the replication. I'll share the findings when it ends.",
+    "We're waiting for the new snapshot; I'll send an update when it arrives.",
+    "The job is waiting on a free slot. I'll update you when it returns.",
+    "The job is waiting for a worker, and I'll notify you once it returns.",
+    "We are awaiting the output and I'll let you know when it arrives.",
+    "The result is pending and I'll send you an update once it's available.",
+    "I'm waiting for your script to finish. I'll report back once it does.",
+    "Your export is pending. I'll send you an update when it completes.",
+    "Waiting for the cooldown to elapse. I'll then make another measurement.",
+    "The remote call is awaiting completion; afterward, I'll attach the output.",
+    "The countdown is waiting to expire. I'll check again once it's over.",
+    "When the new output arrives, I'll review the result. We're still awaiting it.",
+    "Once the pause has elapsed, I'll repeat the request. The timer is still pending.",
+    "I will share the findings when they arrive. The output is pending.",
+    "The queued operation is waiting for a worker. Then we'll examine the result.",
+    "The retries are running. I'll check the output when they finish.",
+    "The first attempt failed, but the retry is awaiting a worker. I'll report back.",
+])
+def test_current_process_waiting_and_dependent_followup_are_in_flight(text):
+    assert detect_activity(text) == ("in-flight", "pending-followup")
+
+
+@pytest.mark.parametrize("text", [
+    "I'm waiting for your approval. I'll report back after you approve.",
+    "We are awaiting your reply. I'll send you an update.",
+    "Your confirmation is pending. I'll report back once it arrives.",
+    "Approval remains pending. I'll let you know when it arrives.",
+    "Approval: still pending. I'll report back.",
+    "I am waiting for you to finish the review. I'll report back afterward.",
+    "The authorization isn't ready yet. I'll share an update.",
+    "I will wait for the timer to expire. Then I'll repeat the measurement.",
+    "I'll await the output and report back when it arrives.",
+    "The result will be pending. I'll report back when it arrives.",
+    "The result was pending. I'll share the findings when it arrives.",
+    "Earlier I was waiting for the remote call. I'll report back.",
+    "If the result is pending, I'll report back once it arrives.",
+    "When the result is pending, I'll share an update.",
+    "I am no longer waiting for the transfer. I'll report back tomorrow.",
+    "The output is no longer pending. I'll send you an update.",
+    "Nothing is pending. I'll report back when it arrives.",
+    "No result is pending. I'll share the findings.",
+    "I'm waiting for the countdown to expire.",
+    "The output hasn't arrived yet. I can report back if you want.",
+    "The result is pending. If you want, I'll share an update.",
+    "Waiting for the transfer to finish; then I can inspect the output if you'd like.",
+    "The transfer is waiting for a worker. I won't report back.",
+    "I'll check again when the timer expires.",
+    "Then I'll inspect the output once it is ready.",
+    "The interval elapsed. I'll repeat the request shortly.",
+])
+def test_process_waiting_does_not_invent_user_obligations_or_current_work(text):
+    assert detect_activity(text) == ("unknown", "none")
+
+
+@pytest.mark.parametrize("ending", [
+    "The remote call has returned.",
+    "The countdown has expired.",
+    "The pending result is now ready.",
+    "I'm no longer waiting.",
+])
+def test_later_completion_clears_process_waiting(ending):
+    text = "Waiting for the remote call to complete. I'll report back. " + ending
+    assert detect_activity(text) == ("unknown", "none")
+
+
 @pytest.mark.parametrize("ending", [
     "The synchronization has finished.",
     "The replication is now complete.",
@@ -238,7 +317,10 @@ def test_finished_adjective_in_unrelated_delivery_does_not_claim_running_work_en
     ("The replica is running. I'll report back " + "when " * 20_000 + "it finishes.", "in-flight"),
     ("will have five minutes left and " * 3_000 + "I'll report back.", "unknown"),
     ("It is going to " * 8_000 + "run. I'll report back.", "unknown"),
-], ids=["completion-first", "promise-first", "repeated-future-countdown", "repeated-future-status"])
+    ("The operation is waiting for your approval and " * 2_000 + "I'll report back.", "unknown"),
+    ("The operation is pending approval and " * 2_500 + "I'll report back.", "unknown"),
+], ids=["completion-first", "promise-first", "repeated-future-countdown", "repeated-future-status",
+        "repeated-user-wait", "repeated-pending-approval"])
 def test_adversarial_temporal_and_status_claims_finish_promptly(prose, expected):
     result = subprocess.run(
         [sys.executable, "-c", "import sys; from awaitonal.activity import detect_activity; "

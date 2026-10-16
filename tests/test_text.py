@@ -4,7 +4,84 @@ import sys
 
 import pytest
 
-from awaitonal.text import assistant_prose
+from awaitonal.text import assistant_prose, response_prose
+
+
+@pytest.mark.parametrize("intro", [
+    "Here's the draft:", "Here is the report:", "Below is the email:",
+    "I wrote the reply below:", "Draft reply:", "**Draft email:**", "Here’s the message:",
+])
+def test_explicit_plain_document_body_is_not_response_prose(intro):
+    text = intro + "\nChoose the cheaper plan. It is safe to deploy.\n\n## Next steps\nPlease approve the purchase."
+    kept = response_prose(text)
+    assert "Choose" not in kept and "safe" not in kept and "Please approve" not in kept
+    assert "draft" in kept.lower() or any(word in kept.lower() for word in ("report", "email", "reply", "message"))
+
+
+@pytest.mark.parametrize("body", [
+    "> Choose the cheaper plan.\n> Please approve the purchase.",
+    "```text\nChoose the cheaper plan.\nPlease approve the purchase.\n```",
+    "~~~\nChoose the cheaper plan.\nPlease approve the purchase.\n~~~",
+])
+def test_quoted_and_fenced_document_boundaries_preserve_following_wrapper(body):
+    kept = response_prose("Here's the draft:\n" + body + "\nPlease review it.")
+    assert "Choose" not in kept and "Please approve" not in kept
+    assert "Please review it." in kept
+
+
+def test_explicit_return_to_conversation_ends_plain_document_scope():
+    text = "Here's the draft:\nChoose the cheaper plan.\n\nOutside the draft, I need your approval to post it."
+    kept = response_prose(text)
+    assert "Choose" not in kept
+    assert "I need your approval to post it." in kept
+
+
+@pytest.mark.parametrize("text", [
+    "Here is my analysis:\nI recommend the smaller queue.",
+    "Here is the answer:\nI would keep the old path.",
+    "I wrote a helper to generate the report:\nThe parser is fixed.",
+    "```text\nHere's the draft:\n```\nI recommend the smaller queue.",
+    "> Here's the draft:\nI recommend the smaller queue.",
+])
+def test_answer_analysis_and_document_mentions_do_not_start_document_scope(text):
+    assert response_prose(text) == text
+
+
+def test_document_body_fences_cannot_fake_an_end_marker():
+    text = "Here's the report:\n# Title\n```\nEnd of draft\nPlease approve it.\n```\nIt is safe to deploy."
+    assert response_prose(text) == "Here's the report:"
+
+
+@pytest.mark.parametrize("location", [
+    "https://example.com/report", "https://claude.ai/artifacts/abc",
+    "[report](https://example.com/report)", "awaitonalartifactlink",
+])
+def test_presented_document_locations_keep_their_evidence(location):
+    text = "Here is your report: " + location
+    assert response_prose(text) == text
+
+
+def test_link_scheme_colons_do_not_start_document_bodies():
+    text = "Here is your [report](https://claude.ai/artifacts/abc)."
+    assert response_prose(text) == text
+
+
+@pytest.mark.parametrize("intro", [
+    "The requested note for `handover.md` is:", "Your document content follows:",
+    "Draft dialogue for the training slide:",
+])
+def test_named_content_and_draft_titles_introduce_document_bodies(intro):
+    text = intro + "\nPlease approve this so I can publish it.\nThis is safer."
+    assert response_prose(text) == intro
+
+
+@pytest.mark.parametrize("location", [
+    "https://claude.ai/artifacts/abc", "[Download](sandbox:/mnt/data/report.md).",
+    "[Download](\nsandbox:/mnt/data/report.md)",
+])
+def test_next_line_artifact_locations_are_not_document_body_text(location):
+    text = "Here is your report:\n" + location
+    assert response_prose(text) == text
 
 
 @pytest.mark.parametrize("text,expected", [
