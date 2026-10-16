@@ -30,6 +30,17 @@ matches, and a fresh 27-case probe set reached 19/27 versus 13/27 for baseline.
 All nine negatives in that fresh set were clean. These are user-reported
 aggregates, not results reproduced from private replies in this checkout.
 
+The originating environment reported unchanged aggregate metrics for `6afdb71`
+against `2dbe6b4`: 35/100 gesture matches, 47/100 outcome matches, seven attention
+cues with five correct, and 5/24 required handoffs. One handoff was newly caught
+and one was lost to in-flight. A narrow follow-up fixes a reproduced priority
+regression: declaration guards now inspect the leading command before a trailing
+`while` clause reports process activity. The complete request still supplies
+dependency and resolution evidence. End-to-end regressions require the handoff
+cue even when activity is in-flight, and retain process-declaration, advice,
+optional, quoted, and resolved-action exclusions. Private re-scoring is still
+needed to confirm the reported lost handoff is recovered.
+
 The classifier combines grammatical evidence instead of complete example
 phrases:
 

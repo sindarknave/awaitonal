@@ -295,3 +295,40 @@ def test_future_completion_condition_preserves_independent_unfinished_work(limit
             "Once the remaining checks have returned, I'll summarize the outcome. " + limitation)
     answer = RulesClassifier().classify(Event("synthetic", "independent-work", text))
     assert answer.gesture == "caveats"
+
+
+@pytest.mark.parametrize("text", [
+    "Attach the manifest while the build is running, then I can validate the release. "
+    "I will report back when it finishes.",
+    "Rotate the secret now while the build is running, so I can resume the deployment. "
+    "I will report back when it finishes.",
+    "Reauthorize the connection now while the import is running; "
+    "I can continue once you have done that. I will report back when it finishes.",
+    "Please unlock the workspace while the copy is running, so I can validate its contents. "
+    "I will report back when it finishes.",
+])
+def test_current_user_command_keeps_priority_over_a_trailing_process_status(text):
+    answer = RulesClassifier().classify(Event("synthetic", "command-and-process", text))
+    assert (answer.state, answer.expectancy, answer.handoff_kind, answer.gesture) == (
+        "needs-you", "required-handoff", "action", "needs-you")
+    assert answer.activity == "in-flight"
+
+
+@pytest.mark.parametrize("text", [
+    "Package validation for release 2.8 is underway in the build service. "
+    "I will return with the report as soon as the service has produced it.",
+    "Archive reconstruction is running while the queue is draining. "
+    "I will report back when it finishes.",
+    "The import is running. I will report back when it finishes. "
+    "Please verify the estimates independently before relying on this answer.",
+    "If useful, attach another manifest while the build is running. "
+    "I will report back when it finishes.",
+    "The build is running. I will report back when it finishes.\n"
+    "> Attach the manifest now so I can validate the release.",
+    "Attach the manifest while the build is running, then I can validate the release. "
+    "I attached the manifest. I will report back when it finishes.",
+])
+def test_process_status_without_a_current_user_gate_keeps_its_precision_guards(text):
+    answer = RulesClassifier().classify(Event("synthetic", "no-current-command", text))
+    assert answer.expectancy != "required-handoff"
+    assert not answer.attention

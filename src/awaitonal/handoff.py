@@ -353,11 +353,15 @@ def _structural_action(clause: str) -> tuple[int, str] | None:
     if causative:
         return offset + causative.start(), causative["verb"]
     bare = _BARE_ACTION.match(clause)
+    # A trailing "while" clause can report a process alongside a current
+    # command. Declaration guards inspect the leading head; dependency and
+    # resolution checks retain the complete request.
+    declaration_head = re.split(r"\bwhile\b", clause, maxsplit=1)[0]
     if (bare and bare["verb"] not in _NON_IMPERATIVE | _NON_ACTION
-            and not current_process_status(clause)
+            and not current_process_status(declaration_head)
             and not any(pattern.search(clause) for pattern in _RESOLUTIONS.values())
             and not re.fullmatch(r"[a-z]+ed[.!?]?", bare["rest"])
-            and not _NOUN_PREDICATE_PREFIX.match(bare["rest"])):
+            and not _NOUN_PREDICATE_PREFIX.match(declaration_head[bare.start("rest"):])):
         return offset + bare.start(), bare["verb"]
     return None
 
