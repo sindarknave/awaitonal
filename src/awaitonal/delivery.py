@@ -59,6 +59,51 @@ _SUMMARY_BOTTOM_LINE = re.compile(
     r"\A\s*(?:\*\*|__)?(?:approve(?:\*\*|__)?(?=[.!;:]|\s*$)|request changes\b"
     r"|(?:don't|do not) (?:build|merge|ship|deploy|release|publish|use|proceed)\b"
     r"|safe(?: to (?:merge|ship|deploy|release|publish|use))?(?:\*\*|__)?(?=[,.!;:]|\s*$))", re.I)
+_VERDICT_HEADER = re.compile(
+    r"\A\s*(?:\#{1,6}[ \t]+)?(?:\*\*|__)?"
+    r"(?:(?:review|audit|assessment) verdict|verdict(?: on [^:\n]{1,60})?)"
+    r"(?:\*\*|__)?[ \t]*:[ \t]*(?:\*\*|__)?[ \t]*(?P<body>\S.*)", re.I)
+_FILE_DESTINATION = re.compile(
+    r"\b(?:to|as|at)\s+(?:\.{0,2}/|/)?[a-z0-9_-][a-z0-9_./-]{0,180}\."
+    r"(?:md|markdown|txt|rst|pdf|csv|tsv|xlsx|docx|pptx|png|jpe?g|svg|mp4|mp3|wav|zip)"
+    r"(?=$|[\s.,;:!?)])", re.I)
+_DRAFT_OBJECTS = {"reply", "draft", "message", "email", "response", "comment", "comments"}
+_DIAGNOSIS_PREDICATES = {"is", "are", "isn't", "aren't", "doesn't", "don't", "reads", "uses",
+                         "returns", "loads", "takes", "sends", "runs", "causes", "because",
+                         "instead", "means", "depends"}
+_UNAVAILABLE_VERDICT = {"pending", "unavailable", "incomplete", "unknown", "undecided", "undetermined", "deferred"}
+
+
+def _available_verdict(words: list[str]) -> bool:
+    """Explicit verdict framing must contain a judgment rather than defer it."""
+    if len(words) < 2 or words[0] in _UNAVAILABLE_VERDICT:
+        return False
+    if words[:2] in (["not", "ready"], ["not", "available"], ["not", "yet"],
+                     ["no", "verdict"], ["no", "decision"], ["no", "conclusion"]):
+        return False
+    if (words[:1] in (["i"], ["we"])
+            and {"can't", "cannot", "couldn't", "don't"}.intersection(words[:4])
+            and {"tell", "know", "decide", "determine", "conclude", "assess", "judge"}.intersection(words[:8])):
+        return False
+    return not {"i'll", "we'll", "docs", "documentation", "example", "hypothetical"}.intersection(words[:5])
+
+
+def _diagnostic_explanation(words: list[str]) -> bool:
+    """A terse 'Found it' needs a current explanation, not a promised one."""
+    return (len(words) >= 6 and words[:1] in (["the"], ["this"], ["it"], ["our"], ["your"])
+            and not _historical(words)
+            and not _SUBJECT_BLOCKERS.intersection(words[:8])
+            and bool(_DIAGNOSIS_PREDICATES.intersection(words[:12])))
+
+
+def _supported_recommendation(parts: list[list[str]], position: int) -> bool:
+    """Require present supporting prose for a terse go/no-go recommendation."""
+    support = parts[position] if len(parts[position]) >= 8 else (
+        parts[position + 1] if position + 1 < len(parts) else [])
+    return (len(support) >= 4 and not _historical(support)
+            and not set(support[:5]).intersection(
+                {"example", "hypothetical", "please", "if", "unless", "when", "once",
+                 "will", "would", "could", "might", "docs", "documentation", "says", "said"}))
 
 
 def _historical(words: list[str]) -> bool:
@@ -216,6 +261,13 @@ def _framing(words: list[str], total_words: int) -> Delivery:
     elif first[:1] == ["here's"]:
         start = 1
     if start:
+        presented = words[start:start + 10]
+        if (_DRAFT_OBJECTS.intersection(presented)
+                and any(presented[index:index + 3] == ["ready", "to", "paste"]
+                        for index in range(max(0, len(presented) - 2)))
+                and not _SUBJECT_BLOCKERS.intersection(presented)
+                and not _historical(words)):
+            return "artifact"
         for word in first[start:start + 5]:
             if word in _PLAN_OBJECTS:
                 return "plan"
@@ -291,10 +343,11 @@ def detect_assessment(prose: str) -> str:
     completed_review = False
     leading_verdict = False
     assessed_object = False
-    for part in _BREAKS.split(prose):
-        words = _WORDS.findall(part.lower())
-        if not words:
-            continue
+    no_blocker = False
+    parts = [(part, _WORDS.findall(part.lower())) for part in _BREAKS.split(prose)]
+    parts = [(part, words) for part, words in parts if words]
+    clauses = [words for _, words in parts]
+    for position, (part, words) in enumerate(parts):
         if part.rstrip().endswith(":"):
             if tuple(words) in _EXAMPLE_HEADERS:
                 example = True
@@ -306,12 +359,40 @@ def detect_assessment(prose: str) -> str:
             completed_review = True
         if re.search(r"\b(?:review|audit|assessment) found no (?:issues|blockers|problems)\b", part, re.I):
             completed_review = True
-        if re.match(r"\s*(?:#+\s*)?(?:(?:review|audit|assessment) verdict|verdict(?: on [^:\n]{1,60})?)\s*:\s*\S", part, re.I):
+        if header := _VERDICT_HEADER.match(part):
+            body = _WORDS.findall(header["body"].lower())
+            if _available_verdict(body):
+                return "verdict"
+        if (re.match(r"\s*(?:my|our) call\s*:\s*\S", part, re.I)
+                and len(words) >= 5
+                and _available_verdict(words[2:])
+                and not {"if", "unless", "when", "once", "i'll", "we'll", "please",
+                         "docs", "documentation", "hypothetical"}.intersection(words[2:5])):
+            return "verdict"
+        if (words[:3] in (["i'd", "go", "with"], ["we'd", "go", "with"])
+                and len(words) >= 5
+                and not {"if", "unless", "when", "once", "hypothetical"}.intersection(words)):
+            return "verdict"
+        if (words[:3] in (["yes", "ship", "it"], ["yes", "merge", "it"],
+                          ["yes", "deploy", "it"], ["yes", "release", "it"],
+                          ["yes", "publish", "it"], ["yes", "do", "it"])
+                and not {"if", "unless", "when", "once"}.intersection(words)
+                and _supported_recommendation(clauses, position)):
+            return "verdict"
+        if re.match(r"\s*(?:this|that|it|the (?:change|patch|issue)) (?:isn't|is not) "
+                    r"(?:a )?(?:(?:release|merge|deployment) )?blocker\b", part, re.I):
+            no_blocker = True
+        if (no_blocker and re.match(r"\s*(?:i|we) wouldn't (?:delay|block|hold up) "
+                                    r"(?:the |this |our )?(?:release|deployment|merge|launch)\b", part, re.I)
+                and not {"if", "unless", "when", "once"}.intersection(words)):
             return "verdict"
         if re.match(r"\s*(?:approve|request changes|do not merge|don't merge)\b", part, re.I):
             leading_verdict = True
-        if re.match(r"\s*safe to merge\b", part, re.I):
+        if re.match(r"\s*safe to (?:merge|ship|deploy|release|publish)\b", part, re.I):
             leading_verdict = True
+            if (not {"if", "unless", "when", "once"}.intersection(words)
+                    and _supported_recommendation(clauses, position)):
+                return "verdict"
         if re.search(r"\b(?:patch|implementation|migration|handler|change)\b[^.!?\n]{0,35}"
                      r"\b(?:matches|loses|breaks|violates|preserves|is reversible|is safe|is unsafe|has a (?:race|failure))\b", part, re.I):
             assessed_object = True
@@ -336,9 +417,12 @@ def detect_delivery(prose: str) -> Delivery:
     detected: Delivery = "unknown"
     example = False
     artifact_heading = False
+    found_it = False
     for part, words in zip(parts, clauses):
         if not words:
             continue
+        previous_found_it = found_it
+        found_it = False
         previous_artifact_heading = artifact_heading
         artifact_heading = bool(
             part.rstrip().endswith(":")
@@ -358,10 +442,18 @@ def detect_delivery(prose: str) -> Delivery:
         candidates = [_framing(words, total_words)]
         artifact_link = _artifact_link_delivery(words)
         if not _historical(words):
+            if previous_found_it and _diagnostic_explanation(words):
+                candidates.append("answer")
             candidates.append(_passive(words))
             position = _action(words)
             if position is not None:
                 kind = _action_kind(words, position)
+                found_it = words[position:] == ["found", "it"]
+                if (kind != "change" and words[position] in {"saved", "exported", "rendered", "wrote", "generated"}
+                        and not {"no", "not", "nothing", "none", "neither"}.intersection(
+                            words[position + 1:position + 4])
+                        and _FILE_DESTINATION.search(part)):
+                    kind = "artifact"
                 if (kind == "unknown" and previous_artifact_heading
                         and words[position] in {"rendered", "generated", "exported", "saved"}
                         and words[position + 1:] in (["and", "opened"], ["and", "saved"])):

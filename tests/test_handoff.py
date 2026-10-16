@@ -8,6 +8,64 @@ from awaitonal.text import assistant_prose
 
 
 @pytest.mark.parametrize("text", [
+    "Your session token has expired, so I can't query the warehouse. Run `! examplectl auth login` and I'll carry on.",
+    "Run:\n```sh\nexamplectl auth login\n```\nThen I'll resume the query.",
+    "After you finish the test, export the request from the browser's network tab and drop it into request.txt. Then I'll wire it into the script.",
+    "Export the browser request. Then I'll reproduce the error.",
+])
+def test_user_action_with_assistant_continuation_is_required(text):
+    assert analyze_handoff(assistant_prose(text)) == Handoff("required-handoff", "action")
+
+
+@pytest.mark.parametrize("text", [
+    "Run `examplectl auth login` to try the demo.",
+    "If you want, run the example. Then I'll explain the output.",
+    "The documentation says: run the command. Then I'll explain the example.",
+    "Setup instructions:\nRun the command. Then I'll explain the result.",
+    "```sh\nexamplectl auth login\n```\nThen I'll continue.",
+    "The instructions say \"Run the command and I'll continue.\"",
+    "I exported the browser request. Then I'll reproduce the error.",
+])
+def test_continuation_does_not_promote_optional_documented_or_completed_actions(text):
+    assert analyze_handoff(assistant_prose(text)).expectancy == "none"
+
+
+@pytest.mark.parametrize("text", [
+    "The review comments are written up above; none are on the PR yet. Should I post them?",
+    "The change is ready locally and the tests pass; nothing is committed. Shall I commit and open the pull request?",
+    "The two config rules are listed above. OK to apply them as written?",
+    "The change is ready. Should I commit it or leave it for you?",
+    "The change is ready. Would you like me to commit it?",
+    "The config rules are listed above. Want me to apply them?",
+    "I committed the changes. Want me to push them?",
+    "I committed the changes. Should I push them?",
+])
+def test_explicit_permission_for_prepared_work_is_authorization(text):
+    assert analyze_handoff(text) == Handoff("required-handoff", "authorization")
+
+
+@pytest.mark.parametrize("text", [
+    "Should I post a review?",
+    "Shall I commit and open a pull request?",
+    "The change is not ready. Shall I commit it?",
+    "The config rules will be listed above. OK to apply them?",
+    "The change is ready. If you want, I can also commit it.",
+    "The change is ready. Shall I commit it? I committed it.",
+    "The config rules are listed above. OK to apply them? I applied them.",
+    "The config rules are listed above. OK to apply them? No need to apply them.",
+    "The documentation says: the config rules are listed above. OK to apply them?",
+])
+def test_unprepared_optional_and_resolved_permission_questions_stay_neutral(text):
+    assert analyze_handoff(text).expectancy == "none"
+
+
+def test_explicit_alternative_question_is_a_decision():
+    text = "I'd enable it for both groups. Should I set it to half the traffic or all of it?"
+    assert analyze_handoff(text) == Handoff("required-handoff", "decision")
+    assert analyze_handoff(text + " Your choice was received.").expectancy == "none"
+
+
+@pytest.mark.parametrize("text", [
     "The branch is ready. Say the word and I'll push it and open the PR.",
     "The review is written. I haven't posted it; want me to submit it as an approval?",
     "The draft reply is above. Want me to post it to the thread?",

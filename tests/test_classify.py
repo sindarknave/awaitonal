@@ -136,6 +136,8 @@ _CONTRASTS = [json.loads(line) for line in
               (Path(__file__).parents[1] / "examples/classification-vNext.jsonl").read_text().splitlines()]
 _CONTRASTS += [json.loads(line) for line in
                (Path(__file__).parents[1] / "examples/classification-v061.jsonl").read_text().splitlines()]
+_CONTRASTS += [json.loads(line) for line in
+               (Path(__file__).parents[1] / "examples/classification-workflow.jsonl").read_text().splitlines()]
 
 
 @pytest.mark.parametrize("case", _CONTRASTS, ids=lambda case: case["id"])

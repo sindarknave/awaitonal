@@ -221,6 +221,106 @@ def test_summary_headings_quotes_and_conditional_advice_are_not_verdicts(text):
     assert detect_assessment(assistant_prose(text, link_types=True)) == "none"
 
 
+@pytest.mark.parametrize("text", [
+    "My call: enable it for the first group now and hold the second for a week.",
+    "Our call: keep the existing handler and skip the rewrite.",
+    "I'd go with the smaller migration because rollback is simpler.",
+    "Yes, ship it. The downside is small and it's one command to undo.",
+    "Yes, do it. The change preserves existing callers and the tests cover the new branch.",
+    "**Verdict:** the patch is correct. Approve once the config default is updated.",
+    "__Verdict__: do not ship this patch because it drops cancellation.",
+    "## **Review verdict:** the migration preserves existing records.",
+    "This isn't a blocker; I wouldn't delay the release for it.",
+    "Safe to ship. The patch is reversible and the checks cover the changed behavior.",
+])
+def test_explicit_current_recommendations_deliver_an_assessment(text):
+    prose = assistant_prose(text, link_types=True)
+    assert detect_assessment(prose) == "verdict"
+    assert detect_delivery(prose) == "answer"
+
+
+@pytest.mark.parametrize("text", [
+    "Yes, the output directory contains the requested files.",
+    "Ship it after the next review.",
+    "Yes, ship it.",
+    "Yes, ship it. I will inspect the patch tomorrow.",
+    "Yes, ship it if the next check passes. The patch is reversible.",
+    "Safe to ship if the missing check passes. The branch is reversible.",
+    "My call: if the next check passes, enable the new path.",
+    "My call: I'll inspect the handler in the next session.",
+    "My call: pending review of the new handler.",
+    "My call: I can't tell yet without logs.",
+    "My call: no decision until we get results.",
+    "My call: I don't know which migration preserves the records.",
+    "Yesterday my call: enable the new path now.",
+    "The docs say My call: enable the new path now.",
+    "I'd go with the smaller migration if the old database were still available.",
+    "**Verdict:** pending review of the new handler.",
+    "**Verdict:** I'll inspect the handler in the next session.",
+    "**Verdict:** not available because the input is missing.",
+    "**Verdict:** I cannot assess the patch without the test results.",
+    "The docs say **Verdict:** the patch is correct.",
+    "Example:\n**Verdict:** the patch is correct.",
+    "> **Verdict:** the patch is correct.",
+    'The reviewer said "My call: enable the first group now."',
+    "This isn't a blocker; I wouldn't delay the release if the next test passes.",
+    "Previously this wasn't a blocker; I wouldn't delay the release for it.",
+])
+def test_recommendation_mentions_promises_and_conditions_are_not_assessments(text):
+    assert detect_assessment(assistant_prose(text, link_types=True)) == "none"
+
+
+@pytest.mark.parametrize("text", [
+    "I saved the summary to findings.md, including the table and the open questions.",
+    "Saved the comparison as output/comparison.txt.",
+    "I wrote the summary to /tmp/findings.md.",
+    "Here's the reply, ready to paste:\n\n> Thanks, this is live now; let me know if anything looks off.",
+    "Here is my draft, ready to paste into the discussion.",
+    "Here's the ready-to-paste email with the requested wording.",
+])
+def test_saved_files_and_explicit_paste_ready_drafts_are_artifacts(text):
+    assert detect_delivery(assistant_prose(text, link_types=True)) == "artifact"
+
+
+@pytest.mark.parametrize("text,expected", [
+    ("I will save the summary to findings.md.", "unknown"),
+    ("I have not saved the summary to findings.md.", "unknown"),
+    ("I saved no summary to findings.md.", "unknown"),
+    ("Yesterday I saved the summary to findings.md.", "unknown"),
+    ("The docs say I saved the summary to findings.md.", "unknown"),
+    ("Example:\nI saved the summary to findings.md.", "unknown"),
+    ("I wrote a helper to export data as findings.md.", "change"),
+    ("I saved the summary to the database.", "unknown"),
+    ("Here is a reply that will be ready to paste later.", "unknown"),
+    ("Here's the reply, not ready to paste yet.", "unknown"),
+    ("Here's an example reply, ready to paste.", "unknown"),
+    ("Here's the reply, ready to paste last week.", "unknown"),
+])
+def test_file_mentions_and_undelivered_drafts_do_not_become_artifacts(text, expected):
+    assert detect_delivery(assistant_prose(text, link_types=True)) == expected
+
+
+@pytest.mark.parametrize("text", [
+    "Found it. The scheduler reads the timezone from the server instead of the user's profile, so evening jobs run an hour early.",
+    "I found it. The parser returns an empty list because it receives the wrong key.",
+    "Found it. The cause is the upstream rate limiter, not our code.",
+])
+def test_found_it_with_a_current_explanation_delivers_a_diagnosis(text):
+    assert detect_delivery(assistant_prose(text, link_types=True)) == "answer"
+
+
+@pytest.mark.parametrize("text", [
+    "Found it.",
+    "Found it. Please confirm the target branch before I continue.",
+    "Found it. The summary will be available after the next run.",
+    "Found it. The documentation says the patch is fixed.",
+    "Found it yesterday. The scheduler reads the timezone from the server.",
+    "Example:\nFound it. The scheduler reads the timezone from the server.",
+])
+def test_found_it_without_a_current_explanation_is_not_a_delivered_diagnosis(text):
+    assert detect_delivery(assistant_prose(text, link_types=True)) == "unknown"
+
+
 @pytest.mark.parametrize("prose", [None, {}, "", "  ", "x" * 131_073])
 def test_invalid_or_oversized_input_is_unknown(prose):
     assert detect_delivery(prose) == "unknown"

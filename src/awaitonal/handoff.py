@@ -57,11 +57,12 @@ _NEGATED = _rx(
 _DIRECT = _rx(
     r"(?P<prefix>^\s*(?:[-*]\s*|\d+[.)]\s*)?(?:please\s+)?|\bplease\s+|"
     r"\b(?:can|could|would|will) you\s+|\b(?:i|we) (?:need|require) you to\s+|"
-    r"\byou(?: (?:will )?need to|'ll need to| must| have to)\s+|\b(?:waiting for|until|once|after) you (?:to )?)"
+    r"\byou(?: (?:will )?need to|'ll need to| must| have to)\s+|\b(?:waiting for|until|once|after) you (?:to )?|"
+    r"\b(?:after|once|when) you [^.!?\n]{1,100},\s*)"
     r"(?P<verb>review|look over|take a look at|check|sign[ -]?in(?:to)?|log[ -]?in(?:to)?|authenticate|"
     r"complete (?:the |your )?(?:sso|sign[- ]in|authentication)|do (?:the )?auth|"
     r"approve|authorize|grant|confirm|choose|select|decide|clarify|specify|tell me|"
-    r"send|share|paste|upload|provide|reproduce|restart|reconnect|run|open|click|enable|install)\b"
+    r"send|share|paste|upload|provide|reproduce|export|restart|reconnect|run|open|click|enable|install)\b"
 )
 _NEED_OBJECT = (
     r"(?P<object>review|feedback|approval|permission|consent|go[- ]ahead|"
@@ -85,14 +86,18 @@ _FEEDBACK = _rx(
 _CHOICE = _rx(
     r"\bwhich\b[^.!?\n]{0,85}\b(?:should (?:i|we)|would you (?:like|prefer)|do you (?:want|prefer))\b|"
     r"\b(?:what|which) (?:do you (?:mean|prefer)|option|version|file|directory|environment|account)\b[^.!?\n]{0,85}\?|"
-    r"\b(?:i|we) (?:need|require) (?:you to clarify|to know (?:which|what|whether))\b"
+    r"\b(?:i|we) (?:need|require) (?:you to clarify|to know (?:which|what|whether))\b|"
+    r"^\s*should (?:i|we)\b[^.!?\n]{1,90}\bor\b[^.!?\n]{1,60}\?"
 )
 _PERMISSION = _rx(r"\b(?:may|can) i (?:run|execute|install|delete|remove|access|use|proceed|continue|publish|merge|deploy)\b")
 _DEPENDENCY = _rx(
     r"\b(?:before (?:i|we) can|(?:so|until|once) (?:i|we) can|to (?:continue|proceed|resume|unblock)|"
     r"(?:i|we) (?:cannot|can't|am unable to|are unable to) (?:continue|proceed)|"
-    r"waiting|blocked|paused|still (?:need|needs)|now)\b"
+    r"waiting|blocked|paused|still (?:need|needs)|now)\b|"
+    r"\b(?:and|then) (?:i|we)(?:'ll| will) (?:carry on|continue|resume|proceed)\b"
 )
+_NEXT_STEP = _rx(r"^\s*(?:then|after that|once (?:that's|that is) done)[, ]+"
+                 r"(?:i|we)(?:'ll| will)\b")
 _DIAGNOSTIC = _rx(r"\b(?:logs?|console|output|trace|error|crash|results?|evidence|reproduc\w*)\b")
 _AUTH = _rx(r"\b(?:auth(?:entication|orization)?|sso|sign[- ]in|log[- ]in|login|browser|device|access)\b")
 _ACTION_BOUNDARY = _rx(r"[,;.!?\n]|\b(?:and|then)\b")
@@ -109,21 +114,25 @@ _RESOLUTIONS = {
 }
 _UNRESOLVED = _rx(r"\b(?:not|never|hasn't|haven't|isn't|wasn't|weren't|aren't|didn't|don't|without|until|once|when|if)\b")
 _PREPARED = _rx(
-    r"\b(?:draft|patch|branch|changes|preview|release|email|message|report|review|video|package)\b[^.!?\n]{0,45}"
+    r"\b(?:draft|patch|branch|changes?|preview|release|email|message|report|review|video|package)\b[^.!?\n]{0,45}"
     r"\b(?:ready|complete|completed|prepared|written|committed|rendered|saved)\b|"
     r"\b(?:i |we )?(?:prepared|wrote|rendered|saved|committed)\b[^.!?\n]{0,45}"
-    r"\b(?:draft|patch|branch|changes|preview|release|email|message|report|review|video|package)\b|"
-    r"\b(?:the |my |our )?draft (?:reply|response|message|email) (?:is |appears )?(?:above|below|attached)\b"
+    r"\b(?:draft|patch|branch|changes?|preview|release|email|message|report|review|video|package)\b|"
+    r"\b(?:the |my |our )?draft (?:reply|response|message|email) (?:is |appears )?(?:above|below|attached)\b|"
+    r"\b(?:config(?:uration)? rules?|config(?:uration)? changes?|patch|changes?)\b[^.!?\n]{0,35}"
+    r"\b(?:is |are )?(?:listed|shown|provided) (?:above|below|here)\b"
 )
-_OUTWARD = _rx(r"\b(?:push|publish|post|send|submit|merge|deploy|release)\b")
+_OUTWARD_VERBS = r"(?:push|publish|post|send|submit|merge|deploy|release|commit|apply)"
+_OUTWARD = _rx(r"\b" + _OUTWARD_VERBS + r"\b")
 _STAGED_OFFER = _rx(
     r"(?:^|[,:—]\s*|\band\s+)(?:(?:do you )?want (?:me|us) to|would you like (?:me|us) to)\s+"
-    r"(?:push|publish|post|send|submit|merge|deploy|release)\b|"
+    + _OUTWARD_VERBS + r"\b|"
     r"(?:^|[,:—]\s*|\band\s+)say the word[^.!?\n]{0,45}\b(?:i'll|i will|we'll|we will)\s+"
-    r"(?:push|publish|post|send|submit|merge|deploy|release)\b"
+    + _OUTWARD_VERBS + r"\b|"
+    r"^\s*(?:(?:should|shall|may|can) (?:i|we)\s+|ok(?:ay)? to\s+)" + _OUTWARD_VERBS + r"\b[^.!?\n]{0,100}\?"
 )
 _OUTWARD_COMPLETED = _rx(
-    r"(?:^|\b(?:i|we|i've|we've) (?:have )?(?:already |just )?)(?:pushed|published|posted|sent|submitted|merged|deployed|released)\b|"
+    r"(?:^|\b(?:i|we|i've|we've) (?:have )?(?:already |just )?)(?P<verb>pushed|published|posted|sent|submitted|merged|deployed|released|committed|applied)\b|"
     r"\b(?:pr|pull request) is (?:open|merged)\b|"
     r"\b(?:pr|pull request) is up(?=\s*(?:[.!,:;]|$|\bawaitonalprlink\b))"
 )
@@ -176,6 +185,8 @@ def _direct_kind(verb: str, signals: set[str], auth_object: bool) -> str | None:
         if "confirm-choice" in signals:
             return "choice"
         return "approval"  # Permission to act is stronger than a preference.
+    if verb == "export":
+        return "diagnostics" if "diagnostic" in signals else "action" if "dependency" in signals else None
     if verb in {"send", "share", "paste", "upload", "provide", "reproduce"}:
         return "diagnostics" if "diagnostic" in signals else "action"
     if verb in {"restart", "reconnect", "run", "open", "click", "enable", "install"}:
@@ -216,7 +227,8 @@ def analyze_handoff(prose: str) -> Handoff:
     verdict = detect_assessment(prose) == "verdict"
     # Preserve explicit line boundaries but join common soft-wrapped phrases.
     prose = re.sub(r"\b(have|has|had|your|the|been|is|are|was|were|need|needs|require|requires|for|to)\s*\n\s*", r"\1 ", prose, flags=re.I)
-    for part in _PARTS.split(prose):
+    parts = _PARTS.split(prose)
+    for index, part in enumerate(parts):
         clause = part.strip().lower()
         if not clause:
             continue
@@ -251,9 +263,12 @@ def analyze_handoff(prose: str) -> Handoff:
             completed = list(_OUTWARD_COMPLETED.finditer(clause))
             if completed:
                 events.extend((match.start(), 1, "staged-approval", None) for match in completed)
-                prepared = False
+                # Completing a local preparation step resolves its permission
+                # request while leaving the result ready for publication.
+                if any(match["verb"] not in {"committed", "applied"} for match in completed):
+                    prepared = False
         if _NEGATED.search(clause):
-            if re.search(r"\bno need to (?:push|publish|post|send|submit|merge|deploy|release)\b", clause):
+            if re.search(r"\bno need to " + _OUTWARD_VERBS + r"\b", clause):
                 pending.pop("staged-approval", None)
             for kind, words in {
                 "auth": r"auth|sign|log|access", "approval": r"approv|permission|consent|go-ahead",
@@ -277,6 +292,11 @@ def analyze_handoff(prose: str) -> Handoff:
             ("dependency", _DEPENDENCY),
             ("review-answer", _REVIEW_ANSWER), ("confirm-choice", _CONFIRM_CHOICE),
         ) if pattern.search(clause)}
+        # A user instruction followed by "Then I'll ..." is an explicit
+        # dependency even when the requested command itself was stripped as
+        # code. Only the adjacent continuation supplies this evidence.
+        if index + 1 < len(parts) and _NEXT_STEP.search(parts[index + 1]):
+            signals.add("dependency")
         candidates: list[tuple[int, str]] = []
         if staged_offer:
             candidates.append((staged_offer.start(), "staged-approval"))
@@ -284,7 +304,7 @@ def analyze_handoff(prose: str) -> Handoff:
             if match["verb"] == "review" and re.match(r"\s+verdict\s*:", clause[match.end():]):
                 continue
             if (verdict and match["verb"] == "approve"
-                    and re.fullmatch(r"approve[.!]?", clause)):
+                    and re.fullmatch(r"approve(?:[.!]?| (?:once|when|after) .+)", clause)):
                 continue  # Completed review verdict, not a request for approval.
             if (match["verb"] == "share" and "dependency" not in signals
                     and re.search(r"\b(?:page|share|sharing) menu\b", clause)):
@@ -310,7 +330,10 @@ def analyze_handoff(prose: str) -> Handoff:
                 if match.start() >= first_need_end and not _NOUN_PREDICATE.match(clause, match.end()):
                     candidates.append((match.start(), _need_kind(match["object"])))
         for pattern, kind in ((_FEEDBACK, "review"), (_CHOICE, "choice"), (_PERMISSION, "approval")):
-            candidates.extend((match.start(), kind) for match in pattern.finditer(clause))
+            for match in pattern.finditer(clause):
+                if kind == "choice" and staged_offer and match.start() == staged_offer.start():
+                    continue  # "Should I commit it or leave it?" asks permission.
+                candidates.append((match.start(), kind))
         # An independent soft review stays soft after a neighboring required
         # action resolves. Only an explicit workflow gate strengthens it.
         review_coupled_here = bool(_REVIEW_APPROVAL.search(clause)) and any(
