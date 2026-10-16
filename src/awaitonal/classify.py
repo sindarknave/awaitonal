@@ -1,6 +1,6 @@
 """Small conservative rules baseline, independent of ML libraries."""
 import re
-from .activity import current_process_status, detect_activity
+from .activity import completion_dependency, current_process_status, detect_activity
 from .delivery import detect_assessment, detect_delivery
 from .handoff import analyze_handoff
 from .hook_events import QUESTION_SOURCES
@@ -53,7 +53,7 @@ _ACTIVE_COMPLETION_STATUS = re.compile(
 
 
 def _activity_limitations(prose: str) -> str:
-    """Separate the primary process wait from independent unfinished work.
+    """Separate current activity and its completion condition from limitations.
 
     Only the first current process assertion may supply the pending status.
     Later incomplete work remains a limitation, including when it appears in
@@ -69,6 +69,16 @@ def _activity_limitations(prose: str) -> str:
         if status and not current_process_status(clause[:status.start()]):
             chunks[index] = clause[:status.start()] + "is ongoing" + clause[status.end():]
         break
+    # "Once the remaining checks finish, I'll report back" specifies the
+    # handback's future condition. It does not independently report omitted
+    # validation. Keep assertions outside that condition, even in the same
+    # sentence, so unrelated untested or unfinished work remains a caveat.
+    for index in range(0, len(chunks), 2):
+        clause = chunks[index]
+        dependency = completion_dependency(clause)
+        if dependency:
+            start, end = dependency
+            chunks[index] = clause[:start] + "upon completion" + clause[end:]
     return "".join(chunks)
 
 

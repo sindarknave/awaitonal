@@ -5,7 +5,8 @@ from .text import MAX_PROSE_CHARS, sentences
 
 _PRESENT = r"(?:\b(?:is|are|am)\b|(?<=\w)'(?:s|re|m)\b)"
 _MODIFIERS = r"(?:(?:still|currently|now|actively|already)\s+)*"
-_PROGRESS_PREDICATE = r"(?:in progress|under ?way|ongoing|being\s+[a-z]+ed|[a-z]+ing)"
+_PROGRESS_STATE = r"(?:in progress|under ?way|ongoing|active)"
+_PROGRESS_PREDICATE = r"(?:" + _PROGRESS_STATE + r"|being\s+[a-z]+ed|[a-z]+ing)"
 # Subjects deliberately do not appear in this grammar: a restore, transfer,
 # replica, timer, or previously unseen operation has the same present tense.
 _RUN_STATUS = re.compile(
@@ -16,6 +17,9 @@ _DURATIVE_STATUS = re.compile(
     r"(?:" + _PROGRESS_PREDICATE + r"|in (?:the )?background)\b", re.I)
 _STATUS_HEADING = re.compile(
     r"^[^:;\n.!?]{1,160}:\s+" + _MODIFIERS + _PROGRESS_PREDICATE + r"\b", re.I)
+_STATE_FIRST_STATUS = re.compile(
+    r"^(?:" + _MODIFIERS + _PROGRESS_STATE + r"\s*:(?=\s+\S)|" +
+    _MODIFIERS + _PROGRESS_STATE + r"\s+" + _MODIFIERS + r"(?:is|are)\b(?=\s+\S))", re.I)
 _STATIC_PREDICATES = {"missing", "interesting", "confusing", "misleading", "worrying",
                       "concerning", "disappointing", "surprising", "outstanding",
                       "amazing", "annoying", "alarming", "embarrassing", "exciting",
@@ -38,29 +42,51 @@ _WAIT_STATE = re.compile(
     r"\b(?:i|we)\s+" + _MODIFIERS + r"(?:wait|await)\b|"
     r"^(?:still\s+|currently\s+)?(?:waiting|awaiting)\b", re.I)
 _PENDING_STATE = re.compile(
-    _PRESENT + r"\s+" + _MODIFIERS + r"pending\b|"
-    r"\b(?:remains?|remain)\s+pending\b", re.I)
+    _PRESENT + r"\s+" + _MODIFIERS +
+    r"(?:pending|queued|in\s+(?:the\s+)?queue)\b|"
+    r"\b(?:remains?|remain)\s+" + _MODIFIERS +
+    r"(?:pending|queued|in\s+(?:the\s+)?queue)\b|"
+    r"^(?:still|currently)\s+(?:pending|queued|in\s+(?:the\s+)?queue)\b|"
+    r"^[^:;\n.!?]{1,160}:\s+" + _MODIFIERS +
+    r"(?:pending|queued|in\s+(?:the\s+)?queue)\b", re.I)
 _NOT_COMPLETE_YET = re.compile(
     r"\b(?:hasn't|haven't|has not|have not)\s+"
-    r"(?:finished|completed|ended|returned|settled|expired|elapsed)\s+yet\b|" +
-    _PRESENT + r"\s+(?:still\s+)?not\s+(?:done|complete|finished|ready)\s+yet\b|"
-    r"\b(?:isn't|aren't)\s+(?:done|complete|finished|ready)\s+yet\b", re.I)
+    r"(?:finished|completed|ended|returned|settled|expired|elapsed|come\s+back)\s+yet\b|" +
+    r"\b(?:has|have)\s+yet\s+to\s+"
+    r"(?:finish|complete|end|return|settle|expire|elapse|come\s+back)\b|" +
+    _PRESENT + r"\s+(?:still\s+)?not\s+(?:done|complete|finished|ready|back)\s+yet\b|"
+    r"\b(?:isn't|aren't)\s+(?:done|complete|finished|ready|back)\s+yet\b", re.I)
 _HUMAN_WAIT = re.compile(
     r"\b(?:you|users?|approval|permission|consent|authorization|authorisation)\b|"
     r"\b(?:your|their)\s+(?:reply|response|input|decision|feedback|confirmation|selection|choice|answer|review)\b", re.I)
 _PROMISE = r"\b(?:i will|i'll|we will|we'll)\s+(?:(?:also|then)\s+)?"
+# The present subject also owns a coordinated future action. Keep the clause
+# bounded and require the assistant actor rather than accepting bare "will".
+_COORDINATED_PROMISE = (
+    r"\b(?:i am|i'm|we are|we're)\s+[^.!?\n;]{1,160}?\s+and\s+will\s+")
+_ASSISTANT_PROMISE = r"(?:" + _PROMISE + r"|" + _COORDINATED_PROMISE + r")"
 _REPORT = (r"(?:report\s+(?:back|(?:the\s+)?(?:results?|verdict|outcome|findings))|"
            r"follow\s+up|update\s+you|notify\s+you|let\s+you\s+know|keep\s+you\s+posted|"
            r"(?:give|send)\s+you\s+(?:an?\s+|the\s+)?update|"
            r"send\s+(?:an?\s+|the\s+)?update|(?:be|come|circle)\s+back\s+with|return\s+with|"
+           r"(?:get|come|circle)\s+back\s+to\s+(?:you|this\s+(?:thread|message))|"
            r"(?:share|send|post|summarize|relay)\b[^.!?\n]{0,80}\b"
            r"(?:results?|findings|summary|verdict|outcome|update))")
 _FOLLOWUP = re.compile(
-    _PROMISE + _REPORT + r"\b", re.I)
+    _ASSISTANT_PROMISE + _REPORT + r"\b", re.I)
+# Passive commitments still promise a report, but never establish current work
+# themselves. The actor may be omitted because the reply is its own handback.
+_PASSIVE_REPORT = re.compile(
+    r"^(?:an?\s+|the\s+)?(?:results?|findings|summary|verdict|outcome|update)\s+"
+    r"will\s+be\s+(?:posted|shared|sent|reported|provided)\b", re.I)
+_RECEIPT_PROMISE = re.compile(
+    r"^you(?:\s+will|'ll)\s+(?:receive\b|"
+    r"get\s+(?=(?:the|an?|my|our|your|this|that|these|those|it|them)\b)|"
+    r"be\s+(?:sent|given|provided(?:\s+with)?)\b)", re.I)
 # With a definite completion clause, the future action's relation to that work
 # matters more than its verb: delivering, attaching, or inspecting an output
 # are all pending steps. Do not enumerate the verbs of possible work products.
-_FOLLOWUP_ACTION = re.compile(_PROMISE + r"(?!not\b|never\b)[a-z]+\b", re.I)
+_FOLLOWUP_ACTION = re.compile(_ASSISTANT_PROMISE + r"(?!not\b|never\b)[a-z]+\b", re.I)
 _NEXT_ACTION = re.compile(
     r"^(?:then|afterwards?)\s*,?\s*" + _PROMISE + r"(?!not\b|never\b)[a-z]+\b|"
     r"\b(?:i will|i'll|we will|we'll)\s+then\s+(?!not\b|never\b)[a-z]+\b", re.I)
@@ -68,14 +94,23 @@ _TEMPORAL = re.compile(r"\b(?:when|once|after|as soon as)\b", re.I)
 _COMPLETE = re.compile(
     r"\b(?:lands?|finish(?:es)?|completes?|ends?|settles?|resolves?|returns?|arrives?|"
     r"expires?|elapses?|go(?:es)? off|"
-    r"catch(?:es)? up|"
+    r"catch(?:es)? up|come(?:s)? back|"
     r"(?:has|have) (?:landed|finished|completed|ended|settled|returned|arrived|expired|elapsed|caught up))\b", re.I)
 _COMPLETE_STATE = re.compile(
-    _PRESENT + r"\s+(?:done|ready|finished|complete|available|through|over)\b", re.I)
+    _PRESENT + r"\s+(?:done|ready|finished|complete|completed|available|through|over|back)\b|"
+    r"\b(?:becomes?|gets?)\s+(?:ready|available|complete|finished|done)\b|"
+    r"\b(?:the\s+)?(?:completion|conclusion|end)\s+of\b", re.I)
+_COMPLETE_OUTPUT = re.compile(
+    r"\b(?:has|have)\s+(?:produced|generated|yielded|emitted)\s+"
+    r"(?:it|them|(?:the|its|their|an?)\s+[\w'-]+)\b", re.I)
 _COMPLETE_ANAPHOR = re.compile(
     r"^\s*(?:it does|they do|that happens|this happens)\s*(?:[,.!?;]|$)", re.I)
+_RELATIVE_COMPLETION = re.compile(r"\bafter\s+which\b", re.I)
+_WAIT_COMPLETION = re.compile(
+    r"\bto\s+(?:finish|complete|end|return|settle|expire|elapse)\b", re.I)
 _KEEPING_EYE = re.compile(
-    r"\b(?:i am|i'm|we are|we're) (?:still |currently )?keeping an eye on (?:it|them)\b", re.I)
+    r"\b(?:i am|i'm|we are|we're) (?:still |currently )?keeping an eye on"
+    r"(?=\s+(?!nothing\b|nobody\b)[\w'-]+)", re.I)
 _POLLING = re.compile(r"\b(?:monitoring|polling|watching)\b[^.!?\n]{0,55}\b(?:background|ci|checks?)\b", re.I)
 _QUIET = re.compile(r"\bno (?:action|reply|response) (?:is )?(?:needed|required)\b", re.I)
 _EXCLUDED = re.compile(r"\b(?:earlier|previously|yesterday|example|documentation|would you like|let me know if|can also|happy to)\b", re.I)
@@ -88,18 +123,23 @@ _ENDED = re.compile(
     r"(?:finished|completed|passed|stopped|cancelled|canceled|landed|expired|elapsed|returned|arrived)\b|"
     r"\b(?:finished|completed|passed|stopped|cancelled|canceled|landed|expired|elapsed|returned|arrived|went off)\b"
     r"(?=\s*(?:[.!?,;:]|$|(?:successfully|cleanly|now|already|finally|soon|and|with|without)\b))|" +
-    _PRESENT + r"\s+(?:now\s+)?(?:done|complete|finished|ready)\b|"
+    _PRESENT + r"\s+(?:now\s+)?(?:done|complete|finished|ready|back)\b|"
     r"\b(?:all done|everything is (?:complete|finished))\b", re.I)
 _NO_LONGER_RUNNING = re.compile(
     r"(?:\b(?:is|are|am)\b|(?<=\w)'(?:s|re|m)\b)\s+(?:not|no longer)\s+"
-    r"(?:[a-z]+ing|in progress|under ?way|ongoing)\b|"
-    r"\b(?:isn't|aren't)\s+(?:[a-z]+ing|in progress|under ?way|ongoing)\b", re.I)
+    r"(?:[a-z]+ing|queued|in\s+(?:the\s+)?queue|in progress|under ?way|ongoing)\b|"
+    r"\b(?:isn't|aren't)\s+(?:[a-z]+ing|queued|in\s+(?:the\s+)?queue|in progress|under ?way|ongoing)\b", re.I)
 
 
 def _human_wait_target(text: str, start: int, end: int) -> bool:
     prefix = text[max(0, start - 96):start]
     prefix = re.split(r"[,;]|\b(?:and|but)\b", prefix, flags=re.I)[-1]
     target = text[end:min(len(text), end + 160)]
+    # A dangling wait qualifies the queue assertion itself: "queued, waiting
+    # for you" is user-blocked. An independent request after a comma does not.
+    dangling = re.match(r"\s*,\s*(?:(?:still|currently)\s+)?(?:waiting|awaiting)\b", target, re.I)
+    if dangling:
+        target = target[dangling.end():]
     # "I'll notify you" is the reporting step, not the object of "waiting".
     target = re.split(r"[,;]|\b(?:and|then)\b|" + _PROMISE,
                       target, maxsplit=1, flags=re.I)[0]
@@ -108,6 +148,9 @@ def _human_wait_target(text: str, start: int, end: int) -> bool:
 
 def _current_status(text: str, *, include_monitor: bool = True) -> bool:
     """Recognize a present predicate, without guessing from the subject's name."""
+    state_first = _STATE_FIRST_STATUS.search(text)
+    if state_first and not _human_wait_target(text, state_first.start(), state_first.end()):
+        return True
     for match in _RUN_STATUS.finditer(text):
         predicate = match["predicate"].lower()
         if predicate in _STATIC_PREDICATES:
@@ -161,7 +204,8 @@ def _process_waiting(text: str) -> bool:
     """
     for pattern in (_WAIT_STATE, _PENDING_STATE, _NOT_COMPLETE_YET):
         for match in pattern.finditer(text):
-            if _human_wait_target(text, match.start(), match.end()) or _NEGATIVE_SUBJECT.search(
+            if (_HUMAN_WAIT.search(match[0]) or
+                    _human_wait_target(text, match.start(), match.end())) or _NEGATIVE_SUBJECT.search(
                     text[max(0, match.start() - 160):match.start()]):
                 continue
             prefix = text[max(0, match.start() - 64):match.start()]
@@ -183,20 +227,103 @@ def current_process_status(text: str) -> bool:
                 and _current_status(text))
 
 
-def _completion_followup(text: str) -> bool:
-    """A reporting/review promise can precede or follow its completion clause."""
-    promise = _FOLLOWUP_ACTION.search(text)
+def _passive_report(text: str) -> re.Match[str] | None:
+    """A direct report assertion can imply our handback, not another actor's.
+
+    Requiring the assertion at the start also excludes negative determiners
+    and passive promises embedded in quoted or historical reports. An explicit
+    by-agent is scoped before the completion clause, where it owns the report.
+    """
+    promise = _PASSIVE_REPORT.search(text)
     if not promise:
-        return False
+        return None
+    tail = _TEMPORAL.split(text[promise.end():], maxsplit=1)[0]
+    agent = re.search(r"\bby\s+([\w']+)\b", tail, re.I)
+    if agent and agent[1].lower() not in {"me", "us", "myself", "ourselves"}:
+        return None
+    # A passive future report can also be an offer. Conditional permission or
+    # request clauses do not commit us to a handback; temporal clauses need an
+    # actual completion event rather than "when requested" or "when needed".
+    dependency = re.search(r"\b(?:if|unless|provided|assuming|when|once|after|as soon as)\b",
+                           text[promise.end():], re.I)
+    if dependency:
+        if dependency[0].lower() in {"if", "unless", "provided", "assuming"}:
+            return None
+        event = text[promise.end() + dependency.end():]
+        if not (_COMPLETE.search(event) or _COMPLETE_STATE.search(event) or _COMPLETE_OUTPUT.search(event)
+                or _COMPLETE_ANAPHOR.search(event)):
+            return None
+    return promise
+
+
+def _receipt_promise(text: str) -> re.Match[str] | None:
+    """A direct promise of receipt, excluding actions and other deliverers."""
+    promise = _RECEIPT_PROMISE.search(text)
+    if not promise:
+        return None
+    tail = text[promise.end():]
+    if re.search(r"\b(?:if|unless|provided|assuming)\b", tail, re.I):
+        return None
+    delivery = _TEMPORAL.split(tail, maxsplit=1)[0]
+    if _HUMAN_WAIT.search(delivery):
+        return None
+    # Causative "get the checks running" describes the user's work rather
+    # than receiving our output, despite sharing the same future auxiliary.
+    if re.search(r"\bget\s*$", promise[0], re.I) and re.search(
+            r"\b(?:started|running|working|going|ready|done|installed|configured|enabled)\b",
+            delivery, re.I):
+        return None
+    agent = re.search(r"\b(?:from|by)\s+([\w']+)\b", delivery, re.I)
+    if agent and agent[1].lower() not in {"me", "us", "myself", "ourselves"}:
+        return None
+    return promise
+
+
+def completion_dependency(text: str) -> tuple[int, int] | None:
+    """Return an affirmative future action's temporal completion dependency.
+
+    The span excludes the main promise and unrelated limitations so outcome
+    routing can mask the subordinate without treating unfinished work as done.
+    Current process evidence is still required separately by detect_activity.
+    """
+    if not isinstance(text, str) or len(text) > MAX_PROSE_CHARS:
+        return None
+    text = text.replace("’", "'")
+    if (_EXCLUDED.search(text) or _USER_CONDITIONAL.search(text) or
+            re.match(r"\s*(?:if|unless|assuming|provided)\b", text, re.I)):
+        return None
+    promise = _FOLLOWUP_ACTION.search(text) or _passive_report(text) or _receipt_promise(text)
+    if not promise:
+        return None
+    # "Waiting for X to finish, after which I'll inspect it" links the
+    # future action to an antecedent completion instead of repeating it.
+    relative = _RELATIVE_COMPLETION.search(text, 0, promise.start())
+    if relative:
+        waiting = text[:relative.start()]
+        antecedent = _WAIT_COMPLETION.search(waiting)
+        if antecedent and _process_waiting(waiting) and not _NEGATED.search(waiting):
+            return antecedent.start(), relative.end()
     # Only the earliest temporal marker on either side matters. Rescanning
     # every suffix would be quadratic on repeated "when" in a long reply.
     for start, end in ((0, promise.start()), (promise.end(), len(text))):
         temporal = _TEMPORAL.search(text, start, end)
-        if temporal and (_COMPLETE.search(text, temporal.end(), end) or
-                         _COMPLETE_STATE.search(text, temporal.end(), end) or
-                         _COMPLETE_ANAPHOR.search(text[temporal.end():min(end, temporal.end() + 64)])):
-            return True
-    return False
+        if not temporal:
+            continue
+        matches = [match for pattern in (_COMPLETE, _COMPLETE_STATE, _COMPLETE_OUTPUT)
+                   if (match := pattern.search(text, temporal.end(), end))]
+        completion = min(matches, key=lambda match: (match.start(), match.end())) if matches else None
+        if completion:
+            if not _NEGATED.search(text[temporal.end():completion.start()]):
+                return temporal.start(), completion.end()
+        else:
+            anaphor = _COMPLETE_ANAPHOR.search(text[temporal.end():min(end, temporal.end() + 64)])
+            if anaphor:
+                return temporal.start(), temporal.end() + anaphor.end()
+    return None
+
+
+def _completion_followup(text: str) -> bool:
+    return completion_dependency(text) is not None
 
 
 def _ended_now(text: str) -> bool:
@@ -240,7 +367,13 @@ def detect_activity(prose: str, background_tasks: int | None = None,
         current = re.split(r"\b(?:when|once|after|as soon as|if)\b", part, maxsplit=1, flags=re.I)[0]
         if _NO_LONGER_RUNNING.search(current) or _ended_now(current):
             running = polling = followup = quiet = closing_followup = False
-        current_running = _current_status(current)
+        report = _FOLLOWUP.search(part) or _passive_report(part)
+        report_promise = bool(report) and not _NEGATED.search(part[report.start():])
+        monitor = _KEEPING_EYE.search(current)
+        explicit_monitor = (bool(monitor) and not _NEGATED.search(current) and
+                            not _human_wait_target(current, monitor.start(), monitor.end()))
+        current_running = (_current_status(current) or
+                           explicit_monitor and (report_promise or completion_followup))
         running |= current_running
         if not _NEGATED.search(current):
             polling |= bool(_POLLING.search(current))
@@ -249,9 +382,7 @@ def detect_activity(prose: str, background_tasks: int | None = None,
         # in a delivered reply does not provide this stronger evidence.
         current_monitor = (not _NEGATED.search(current) and
                            _current_status(current, include_monitor=False) and
-                           bool(_KEEPING_EYE.search(current)))
-        report = _FOLLOWUP.search(part)
-        report_promise = bool(report) and not _NEGATED.search(part[report.start():])
+                           explicit_monitor)
         next_step = _NEXT_ACTION.search(part)
         next_action = running and bool(next_step) and not _NEGATED.search(part[next_step.start():])
         followup |= report_promise or completion_followup or current_monitor or next_action

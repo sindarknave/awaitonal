@@ -4,7 +4,7 @@ import sys
 
 import pytest
 
-from awaitonal.activity import detect_activity
+from awaitonal.activity import completion_dependency, detect_activity
 
 
 @pytest.mark.parametrize("text", [
@@ -248,6 +248,203 @@ def test_structural_activity_requires_a_current_nonoptional_claim(text):
 ])
 def test_current_process_waiting_and_dependent_followup_are_in_flight(text):
     assert detect_activity(text) == ("in-flight", "pending-followup")
+
+
+@pytest.mark.parametrize("text", [
+    "We're waiting on the completion of the compaction. I'll get back to you afterward.",
+    "The atlas pass is still in the queue. I'll return with the outcome.",
+    "The second invocation remains queued. I'll post the findings here.",
+    "Shard reconciliation: still queued. I'll get back to this thread after completion of the pass.",
+    "The checksum response isn't back yet. I'll get back to you when it comes back.",
+    "The scanner has not come back yet. I'll send you an update.",
+    "The scan has yet to return. I'll get back to you with its findings.",
+    "Still in the queue. The results will be shared once the pass completes.",
+    "Both invocations haven't come back yet. Once they return, I'll inspect the payload.",
+    "The submitted validation is still pending. The findings will be posted here once it finishes.",
+    "An update will be provided when the comparison is complete. It remains in the queue.",
+    "I'll get back to this message once the merge is through. The operation is currently queued.",
+    "After completion of the transfer, I'll collect its output. We're still waiting on it.",
+    "The summary will be shared afterward. The confirmation from the remote service isn't back yet.",
+    "I'm awaiting completion of the unnamed pass. The results will be reported when it's done.",
+    "I'll get back to you after the refresh comes back. The refresh remains pending.",
+])
+def test_current_wait_states_combine_with_definite_handback_in_either_order(text):
+    assert detect_activity(text) == ("in-flight", "pending-followup")
+
+
+@pytest.mark.parametrize("text", [
+    "The atlas pass will be in the queue tomorrow. I'll get back to you afterward.",
+    "The invocation was queued. I'll post the findings here.",
+    "If the invocation remains queued, I'll get back to this thread.",
+    "The checksum response was not back yet. I'll get back to you when it comes back.",
+    "The scan had yet to return. I'll get back to you with its findings.",
+    "If still in the queue, I'll send an update.",
+    "An update will be provided when the comparison is complete.",
+    "I'll get back to this message after completion of the pass.",
+    "The result is queued. I can get back to you if you'd like.",
+    "The result is queued. If you want, the findings will be shared here.",
+    "Your approval is still pending. The findings will be posted once you approve.",
+    "Your confirmation isn't back yet. I'll get back to you afterward.",
+    "Authorization: still queued. I'll get back to you afterward.",
+    "No invocation remains queued. I'll send the results tomorrow.",
+    "Nothing is in the queue. I'll get back to you afterward.",
+    "The result is no longer queued. I'll get back to this message.",
+])
+def test_queue_and_report_grammar_preserves_human_future_and_optional_boundaries(text):
+    assert detect_activity(text) == ("unknown", "none")
+
+
+@pytest.mark.parametrize("handback", [
+    "No summary will be posted.",
+    "The old message said the summary will be shared afterward.",
+    'The previous message says "The findings will be posted here."',
+    '"The results will be shared here," the document promises.',
+    "The summary will be posted by the customer tomorrow.",
+    "The findings will be shared here by another agent once the pass finishes.",
+    "The summary will not be shared here.",
+    "The results will be shared if requested.",
+    "A summary will be posted if there is interest.",
+    "The findings will be posted only if someone asks for them.",
+    "Results will be shared when requested.",
+    "The results will be provided once needed.",
+])
+def test_passive_reports_need_a_current_assistant_handback(handback):
+    assert detect_activity("The result is queued. " + handback) == ("unknown", "none")
+
+
+@pytest.mark.parametrize("handback", [
+    "The results will be posted here.",
+    "The summary will be shared by me once the pass finishes.",
+    "The findings will be shared here once the pass is completed by the scheduler.",
+])
+def test_direct_passive_reports_can_commit_to_a_handback(handback):
+    assert detect_activity("The result is queued. " + handback) == ("in-flight", "pending-followup")
+
+
+@pytest.mark.parametrize("wait_target", [
+    "you to release it",
+    "your approval",
+    "your confirmation",
+])
+def test_user_wait_attached_to_a_queue_assertion_blocks_process_activity(wait_target):
+    text = f"The job is queued, waiting for {wait_target}. I'll send an update afterward."
+    assert detect_activity(text) == ("unknown", "none")
+
+
+@pytest.mark.parametrize("wait_target", ["a worker", "a free slot", "the next cycle"])
+def test_process_wait_attached_to_a_queue_assertion_remains_current(wait_target):
+    text = f"The job is queued, waiting for {wait_target}. I'll send an update afterward."
+    assert detect_activity(text) == ("in-flight", "pending-followup")
+
+
+@pytest.mark.parametrize("text", [
+    "The ledger export is still assembling its CSV. As soon as the file becomes available, I will check the row count and send you the link.",
+    "Validation of the bundle is underway. I will return with its report as soon as the service has produced it.",
+    "I am keeping an eye on that job and will post its final status here after the merge and verification complete.",
+    "We're keeping an eye on the submitted pass and will update you once its output gets ready.",
+    "The conversion remains underway. When the service has generated the refreshed archive, I'll inspect its entries.",
+    "As soon as the output gets available, I'll review it. The conversion is still processing.",
+])
+def test_completion_transitions_and_assistant_coordinated_future_generalize(text):
+    assert detect_activity(text) == ("in-flight", "pending-followup")
+
+
+@pytest.mark.parametrize("text", [
+    "The export was assembling its CSV. As soon as the file becomes available, I will inspect it.",
+    "Validation will be underway tomorrow. I'll return with its report when the service has produced it.",
+    "I will keep an eye on that job and will post its status after verification completes.",
+    "I am keeping an eye on that job and can post its final status after verification completes.",
+    "The support team is keeping an eye on that job and will post its status after verification completes.",
+    "I am not keeping an eye on that job and will post its final status after verification completes.",
+    "If I am keeping an eye on that job, I will post its final status after verification completes.",
+    "The conversion remains underway. When the service has generated the archive, I can inspect it if you want.",
+])
+def test_completion_events_do_not_invent_current_work_or_an_assistant_commitment(text):
+    assert detect_activity(text) == ("unknown", "none")
+
+
+@pytest.mark.parametrize("text", [
+    "I am keeping an eye on your response and will update you when it arrives.",
+    "We are keeping an eye on your approval and will report back once it is available.",
+    "I'm keeping an eye on your confirmation. I'll send an update when it arrives.",
+])
+def test_named_monitor_does_not_turn_human_input_into_process_activity(text):
+    assert detect_activity(text) == ("unknown", "none")
+
+
+@pytest.mark.parametrize("text", [
+    "I am keeping an eye on the batch and will update you when it finishes.",
+    "We are keeping an eye on your batch and will report back once it completes.",
+])
+def test_named_monitor_preserves_process_targets_including_user_owned_jobs(text):
+    assert detect_activity(text) == ("in-flight", "pending-followup")
+
+
+@pytest.mark.parametrize("text", [
+    "Underway now is the verification job. I'll send you an update when it finishes.",
+    "Still active: the named reconciliation batch. I will post its result after it completes.",
+    "In progress currently are both replicas. Once they settle, I'll review their output.",
+    "Currently ongoing: the archive comparison. We'll report back when it ends.",
+    "I am waiting for its checksum comparison to complete, after which I will tell you which archives passed.",
+    "We await the second invocation to finish, after which we'll inspect the returned data.",
+    "The render queue is producing frames. You will get the preview and my notes after the render completes.",
+    "The conversion remains underway. You'll receive its output once it becomes ready.",
+    "The remote pass is still running. You will be sent the summary by me when the pass finishes.",
+    "The upload is in progress. You will get the report from us after it returns.",
+])
+def test_inverted_status_relative_completion_and_recipient_promises(text):
+    assert detect_activity(text) == ("in-flight", "pending-followup")
+
+
+@pytest.mark.parametrize("text", [
+    "Previously underway was the verification job. I'll report back after it finishes.",
+    "If still active: the reconciliation batch. I'll send an update when it completes.",
+    "Not active: the reconciliation batch. I'll send an update when it completes.",
+    "Still active: your approval. I'll report back when it arrives.",
+    "Underway now is your review. I will post an update after it finishes.",
+    "I will wait for its checksum comparison to complete, after which I will tell you which archives passed.",
+    "I am waiting for your review to complete, after which I will send an update.",
+    "I am waiting for the comparison to complete, after which I can inspect its output if you want.",
+    "The queue was producing frames. You will get the preview after the render completes.",
+    "You will get the preview after the render completes.",
+    "The conversion remains underway. You can receive its output once it becomes ready.",
+    "The conversion remains underway. You will receive its output if requested after it finishes.",
+    "The conversion remains underway. You will receive its output from the customer once it becomes ready.",
+    "The job is still running. The customer says you will receive the summary when it finishes.",
+    "The conversion remains underway. You will get the checks running once it completes.",
+    "The conversion remains underway. You will review the output once it becomes ready.",
+    "The remote pass is running. You will be sent the summary by another agent when it finishes.",
+])
+def test_new_constructions_preserve_current_actor_and_definite_receipt_boundaries(text):
+    assert detect_activity(text) == ("unknown", "none")
+
+
+@pytest.mark.parametrize("text, expected", [
+    ("I will summarize the result once the remaining checks have returned.",
+     "once the remaining checks have returned"),
+    ("After the output becomes available, I'll inspect it. One source remains unverified.",
+     "After the output becomes available"),
+    ("I will inspect the result when the service has produced it. One part is unfinished.",
+     "when the service has produced it"),
+    ("I am keeping an eye on the job and will post here after verification completes.",
+     "after verification completes"),
+    ("I’ll inspect the result once it becomes ready.", "once it becomes ready"),
+])
+def test_completion_dependency_span_excludes_main_promise_and_other_limitations(text, expected):
+    span = completion_dependency(text)
+    assert span is not None
+    assert text[slice(*span)] == expected
+
+
+@pytest.mark.parametrize("text", [
+    "If the job becomes available, I will review it.",
+    "Earlier I said I'll review the output when it becomes available.",
+    "I'll inspect the output once it becomes available if you want.",
+    "I can inspect the output when it becomes available.",
+    "I'll inspect the output when the service never returns it.",
+])
+def test_completion_dependency_requires_an_affirmative_assistant_commitment(text):
+    assert completion_dependency(text) is None
 
 
 @pytest.mark.parametrize("text", [

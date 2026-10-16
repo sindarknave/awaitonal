@@ -225,3 +225,73 @@ def test_other_unfinished_work_is_not_erased_by_process_activity(separator):
             + "the rollback implementation is not complete yet. I'll report back when the batch finishes.")
     answer = RulesClassifier().classify(Event("s", "e", text))
     assert (answer.state, answer.gesture) == ("caveats", "caveats")
+
+
+@pytest.mark.parametrize("text,gesture,expectancy", [
+    ("The checks have yet to return. I will get back to you when they come back.",
+     "in-flight", "none"),
+    ("The packet has not come back yet. An update will be shared afterward.",
+     "in-flight", "none"),
+    ("The validation is still queued. I'll get back to this thread once it ends.",
+     "in-flight", "none"),
+    ("The comparison is not ready yet. I'll get back to you once it is available.",
+     "in-flight", "none"),
+    ("The verification remains pending. I haven't tested the recovery path. "
+     "I'll get back to you when it finishes.", "caveats", "none"),
+    ("The transport remains queued. Integration tests could not run. "
+     "I'll report the outcome when it completes.", "caveats", "none"),
+    ("The checks have yet to return. Please sign in to the account "
+     "so that I can run the separate validation.", "needs-you", "required-handoff"),
+    ("The summary is ready for review, and please reconnect the account "
+     "so that I can attach the screenshots.", "needs-you", "required-handoff"),
+    ("I recommend the smaller transfer, but I need to know your preferred "
+     "destination before I can prepare it.", "decision", "required-handoff"),
+    ("The note is ready, though I haven't checked the links. "
+     "If it looks good to you, I'll post it.", "authorization", "required-handoff"),
+    ("The validation is queued. I'll get back to you when it finishes. "
+     "Please verify the owner before relying on this advice.", "in-flight", "none"),
+])
+def test_mixed_output_handoffs_and_process_waits_keep_routing_priority(text, gesture, expectancy):
+    answer = RulesClassifier().classify(Event("synthetic", "mixed-routing", text))
+    assert (answer.gesture, answer.expectancy) == (gesture, expectancy)
+
+
+@pytest.mark.parametrize("text", [
+    "The result is queued. No summary will be posted.",
+    "The result is queued. The old message said the summary will be shared afterward.",
+    "The result is queued. The summary will be posted by the customer tomorrow.",
+    "The result is queued. If you want, I'll get back to you afterward.",
+])
+def test_process_state_requires_an_asserted_assistant_handback(text):
+    answer = RulesClassifier().classify(Event("synthetic", "no-handback", text))
+    assert answer.gesture != "in-flight"
+    assert not answer.attention
+
+
+def test_waiting_for_user_approval_is_a_handoff_rather_than_process_activity():
+    text = "I'm waiting on your approval. I'll post the update once you approve."
+    answer = RulesClassifier().classify(Event("synthetic", "human-wait", text))
+    assert answer.state == "needs-you"
+    assert answer.activity != "in-flight"
+
+
+@pytest.mark.parametrize("text", [
+    "The delivery is still traversing the queue. Once the remaining checks have returned, I'll summarize the outcome.",
+    "The converter is assembling the output. I'll collect it when the remaining work is complete.",
+    "The reduction is being processed. I will share its result after the remaining tests finish.",
+])
+def test_completion_condition_is_not_a_separate_verification_caveat(text):
+    answer = RulesClassifier().classify(Event("synthetic", "completion-condition", text))
+    assert (answer.gesture, answer.expectancy) == ("in-flight", "none")
+
+
+@pytest.mark.parametrize("limitation", [
+    "I haven't tested the separate fallback.",
+    "The rollback implementation remains unfinished.",
+    "Remaining checks on the unrelated recovery path were not run.",
+])
+def test_future_completion_condition_preserves_independent_unfinished_work(limitation):
+    text = ("The delivery is still traversing the queue. "
+            "Once the remaining checks have returned, I'll summarize the outcome. " + limitation)
+    answer = RulesClassifier().classify(Event("synthetic", "independent-work", text))
+    assert answer.gesture == "caveats"

@@ -557,3 +557,311 @@ def test_structural_selection_gate_keeps_the_decision_kind(text):
 ])
 def test_verification_advice_becomes_required_when_it_unblocks_assistant_work(text):
     assert analyze_handoff(text).expectancy == "required-handoff"
+
+
+@pytest.mark.parametrize("text,kind", [
+    ("The diagram is ready for review, and please attach the source data so I can verify it.", "action"),
+    ("No approval is needed for the analysis, and please send the input before I calculate the total.", "action"),
+    ("Previously the measurements were missing, and now please attach them so I can finish.", "action"),
+    ("I cannot finish until you provide the figures, though reviewing the draft is optional.", "action"),
+    ("I recommend proceeding. Approve the release so that I can publish it.", "action"),
+    ("The answer has a limitation, please paste the missing result so that we can finish the comparison.", "action"),
+    ("The preview is ready for review, could you unlock the workspace? Then I will rerun the checks.", "action"),
+    ("You can review the chart whenever convenient, please select the interval before I calculate its final values.", "decision"),
+])
+def test_independent_current_gate_survives_neighboring_response_status(text, kind):
+    assert analyze_handoff(text) == Handoff("required-handoff", kind)
+
+
+@pytest.mark.parametrize("text", [
+    "The diagram is ready for review, and please attach extra source data if useful.",
+    "No approval is needed for the analysis, and I can prepare a new comparison if you want.",
+    "The measurements are missing from this answer, please verify them yourself before relying on it.",
+    "I recommend proceeding. You should approve the release if it suits your own project.",
+    "You can review the chart whenever convenient, please select a larger screen for easier reading.",
+    "The preview is ready for review, could you celebrate the result? I will continue once the unrelated job finishes.",
+    "If useful, please paste the logs. Then I can explain the example.",
+    "If you want, please attach another image so that I can make a separate comparison.",
+    "If you would like, could you send the result? Then I'll examine it.",
+    "If helpful, please choose the interval before I calculate a new chart.",
+    "If you want to go further, could you send the raw output? Then I'll inspect it.",
+    "If useful to you, please choose the longer explanation before I draft another answer.",
+])
+def test_independent_request_boundaries_keep_optional_and_advisory_scope(text):
+    assert analyze_handoff(text).expectancy != "required-handoff"
+
+
+@pytest.mark.parametrize("text", [
+    "The response is drafted. If it looks good to you, I'll send it.",
+    "The edits are ready for review and if these changes are acceptable to you, I will apply them.",
+    "The diagram is complete. If the layout seems right to you, we can publish it.",
+])
+def test_prepared_execution_can_depend_on_a_user_judgment_without_approval_vocabulary(text):
+    assert analyze_handoff(text) == Handoff("required-handoff", "authorization")
+    assert analyze_handoff(text + " Your approval was received.").expectancy == "none"
+
+
+@pytest.mark.parametrize("text", [
+    "If the response looks good to you, I'll draft and send it.",
+    "The response is drafted. If useful, I'll send another example.",
+    "The response is ready. If it looks good to the reviewer, the job will publish it automatically.",
+    "The response is drafted. If it looks good to you, I'll send it. I sent it.",
+])
+def test_judgment_conditions_need_current_prepared_work_and_a_user_owned_gate(text):
+    assert analyze_handoff(text).expectancy == "none"
+
+
+@pytest.mark.parametrize("text", [
+    "I recommend option A. Before I can perform the final build, which route are we taking?",
+    "To complete the chart, I still need to know your preferred interval.",
+    "Before I produce the diagram, what format will it be: landscape or portrait?",
+    "Which account will we use for this run? I cannot start until you choose it.",
+    "Which option am I configuring? I need your choice before I can proceed.",
+])
+def test_needed_input_and_current_assistant_operation_questions_are_decisions(text):
+    assert analyze_handoff(text) == Handoff("required-handoff", "decision")
+
+
+@pytest.mark.parametrize("text", [
+    "I recommend option A. Which route you take depends on your own constraints.",
+    "The chart is complete. If useful, I still need to know your preferred interval to make another one.",
+    "What format will it be: landscape or portrait? The answer explains both options for you.",
+    "The guide asks: which account will we use for this run?",
+    "Which option am I configuring is an example question in the document.",
+    "The completed answer explains both alternatives, which will we pick if we ever revisit this?",
+    "For future reference, what account will we use for the next example?",
+    "What will we see in the trace? A missing parent span, followed by the retry.",
+    "Which labels will we see after deployment? The new status values are active and idle.",
+    "What are we waiting for? The scheduled compaction is still running; I'll report back when it finishes.",
+    "What will we discover after the switch? The trace explains the new order.",
+    "Which behavior are we investigating? The trace explains the new order.",
+    "Which route are we trying next? The answer gives both paths and no further work is pending.",
+    "What should we expect from the output? The next line explains it.",
+])
+def test_interrogative_words_without_current_input_gate_do_not_create_decisions(text):
+    assert analyze_handoff(text).expectancy != "required-handoff"
+
+
+@pytest.mark.parametrize("text", [
+    "The checks have yet to return. I will get back to you when they come back.",
+    "The validation is queued. I will get back to you when it finishes. Please verify the owner before relying on this advice.",
+    "The audit is running. I can finish the comparison when it completes. Please confirm those figures yourself before using the answer.",
+    "The archive is being reconstructed. I'll report when it finishes. Please verify the checksum yourself before relying on my analysis.",
+])
+def test_process_completion_antecedent_does_not_become_a_later_reader_action(text):
+    assert analyze_handoff(text).expectancy != "required-handoff"
+
+
+@pytest.mark.parametrize("text", [
+    "The validation is queued. I'll report back when it finishes. Please attach the missing file so that I can finish the separate comparison.",
+    "The audit is running. I can finish the comparison when it completes. Before I can publish the analysis, please approve the prepared draft.",
+])
+def test_an_independent_user_gate_is_preserved_alongside_a_process_wait(text):
+    assert analyze_handoff(text).expectancy == "required-handoff"
+
+
+@pytest.mark.parametrize("text", [
+    "The job is queued, waiting for you to release it. I'll send an update afterward.",
+    "The run is waiting on you to unlock the environment. I'll continue after that.",
+    "Waiting for you to attach the remaining input. Once it arrives, I can finish.",
+])
+def test_current_user_owned_process_wait_accepts_a_domain_verb(text):
+    assert analyze_handoff(text) == Handoff("required-handoff", "action")
+
+
+@pytest.mark.parametrize("text", [
+    "The job was waiting for you to release it. It finished successfully.",
+    "The example will be waiting for you to unlock the environment. The answer is complete.",
+    "If useful, the job can be started, waiting for you to attach another input.",
+    "The job is queued, waiting for the service to release it. I'll send an update afterward.",
+])
+def test_user_wait_structure_excludes_past_future_optional_and_non_user_actors(text):
+    assert analyze_handoff(text).expectancy != "required-handoff"
+
+
+@pytest.mark.parametrize("modifier", ["still", "currently", "urgently", "now", "still urgently"])
+@pytest.mark.parametrize("request_text,kind", [
+    ("I {modifier} need you to send the table definition before I can revise the query.", "action"),
+    ("We {modifier} require you to unlock the account so that we can validate the connection.", "action"),
+    ("I {modifier} need you to choose the reporting period before I can draw the chart.", "decision"),
+    ("You {modifier} need to briefly run the local check for this run.", "action"),
+])
+def test_current_finite_user_requirements_preserve_their_actor_through_adverbs(modifier, request_text, kind):
+    text = "I recommend retaining the current design. " + request_text.format(modifier=modifier)
+    assert analyze_handoff(text) == Handoff("required-handoff", kind)
+
+
+@pytest.mark.parametrize("text", [
+    "I do not currently need you to send the table definition. The analysis is complete.",
+    "We don't urgently require you to unlock the account. It is already available.",
+    "You do not currently need to run the local check. Everything is complete.",
+    "I would still need you to provide the measurements if we started a new investigation.",
+    "Previously I urgently needed you to choose a period. You chose one and the chart is complete.",
+    "If useful, I still need you to send an extra sample before I can produce a separate answer.",
+    "I generally need you to unlock the account when demonstrating this workflow. The answer is complete.",
+    "We hypothetically require you to attach the missing input in that example. No action is needed.",
+])
+def test_adverbial_requirements_do_not_erase_negation_modality_or_habitual_scope(text):
+    assert analyze_handoff(text).expectancy != "required-handoff"
+
+
+@pytest.mark.parametrize("text", [
+    "Package validation for release 2.8 is underway in the build service. I will return with the report as soon as the service has produced it.",
+    "Archive reconstruction across all shards is in progress. I'll report when the archive returns.",
+    "Transfer verification for the previous batch is being checked. I will return with the verification once the batch finishes.",
+])
+def test_present_process_declarations_are_not_bare_user_imperatives(text):
+    assert analyze_handoff(text).expectancy != "required-handoff"
+
+
+@pytest.mark.parametrize("text", [
+    "Package verification is underway. Please attach the manifest so that I can validate the separate release.",
+    "The archive is being reconstructed. Please unlock the destination before I can run the independent comparison.",
+])
+def test_an_addressed_request_survives_a_neighboring_process_assertion(text):
+    assert analyze_handoff(text).expectancy == "required-handoff"
+
+
+@pytest.mark.parametrize("text", [
+    "To locate the failure in your run, paste the complete error trace here; I will trace it back to the responsible statement.",
+    "In order to finish the comparison, attach the earlier measurements. We will compare them with the new run.",
+    "To distinguish the cases, forward the original request to me. I will inspect it for the missing header.",
+    "To reconcile the counts, supply the original records here. I'll check them against the summary.",
+])
+def test_purpose_led_input_request_with_promised_consumption_is_required(text):
+    assert analyze_handoff(text) == Handoff("required-handoff", "action")
+
+
+@pytest.mark.parametrize("text", [
+    "To understand the sample, paste the output into your own console. I will finish the unrelated review tomorrow.",
+    "If useful, to extend the comparison, attach extra measurements. We will compare them next.",
+    "To inspect the delivered answer, open the document. I will summarize it at tomorrow's meeting.",
+    "The guide explains: to locate the failure, paste the error trace here. I will explain it later.",
+    "To make your own comparison, attach the measurements in the example tool. I can prepare another answer if useful.",
+])
+def test_purpose_and_future_work_without_required_input_transfer_stay_optional(text):
+    assert analyze_handoff(text).expectancy != "required-handoff"
+
+
+@pytest.mark.parametrize("text", [
+    "The parser accepts the sample, although the sample contains no nested lists. Please attach a nested list so that I can verify the remaining case.",
+    "The guide includes only the public examples. Please provide the missing output so I can finish the diagnosis.",
+    "The sample explains the discrepancy in the count. Please paste the original count before I can reconcile it.",
+])
+def test_document_narration_does_not_extend_its_scope_over_current_requests(text):
+    assert analyze_handoff(text).expectancy == "required-handoff"
+
+
+@pytest.mark.parametrize("text", [
+    "The guide includes these steps: attach a source sample. Once I have it, I can explain the comparison.",
+    "Sample output: please send the measurements. I will inspect them once they arrive.",
+    "Here are the authentication instructions. Sign in to SSO. Then I will describe the screen.",
+])
+def test_presented_instruction_bodies_remain_excluded_from_current_requests(text):
+    assert analyze_handoff(text).expectancy != "required-handoff"
+
+
+@pytest.mark.parametrize("text,kind", [
+    ("Attach the supporting records for those totals, and I can complete the reconciliation.", "action"),
+    ("Unlock the shared account, and we can verify the connection.", "action"),
+    ("Choose the compact layout or the detailed one, and I will produce the final diagram using your selection.", "decision"),
+    ("Provide the previous run's results, and I'll compare them with today's run.", "action"),
+])
+def test_same_clause_imperative_and_assistant_consequence_establish_a_gate(text, kind):
+    assert analyze_handoff(text) == Handoff("required-handoff", kind)
+
+
+@pytest.mark.parametrize("text", [
+    "If useful, attach extra records, and I can make a separate reconciliation.",
+    "The guide says: unlock the shared account, and we can verify the connection.",
+    "The account is unlocked, and we can verify the connection.",
+    "The process is running. Please enjoy the result, and I will continue when it finishes.",
+])
+def test_coordinated_capability_preserves_optional_documented_and_completed_scope(text):
+    assert analyze_handoff(text).expectancy != "required-handoff"
+
+
+@pytest.mark.parametrize("text", [
+    "The transfer is still progressing. I will summarize it when it returns. Remaining checks on the alternate recovery path were not run.",
+    "The run is awaiting results. I'll report when it completes. Missing records from the earlier export have not been checked.",
+    "The copy is in progress. I will compare it once it returns. Pending repairs in the separate workspace are outside this task.",
+])
+def test_long_noun_subjects_with_finite_predicates_do_not_become_imperatives(text):
+    assert analyze_handoff(text).expectancy != "required-handoff"
+
+
+@pytest.mark.parametrize("text", [
+    "Attach the records that are missing. Once I have them, I can finish the calculation.",
+    "Unlock the workspace before the next check can start. Then I will rerun it.",
+])
+def test_relative_and_temporal_clauses_do_not_turn_real_imperatives_into_noun_assertions(text):
+    assert analyze_handoff(text).expectancy == "required-handoff"
+
+
+@pytest.mark.parametrize("text", [
+    "The patch is complete. To inspect the syntax locally, paste the snippet into your editor. I'll publish it tomorrow.",
+    "The draft is complete. To compare the examples, paste them into your own console. I'll send it to the team tomorrow.",
+    "The answer is complete. To inspect the values, attach the sample in the local tool. I will inspect it during tomorrow's demonstration.",
+    "To finish the comparison, attach the records. I will not inspect them.",
+    "The answer is complete. Please verify the source yourself, and I will report back when the unrelated queue clears.",
+    "The summary is complete. Please review the source in your browser, and I will publish it next week.",
+])
+def test_user_tool_transfers_and_unrelated_handback_promises_are_not_input_dependencies(text):
+    assert analyze_handoff(text).expectancy != "required-handoff"
+
+
+@pytest.mark.parametrize("text", [
+    "To finish the comparison, paste the values into this chat. I'll inspect them for duplicate entries.",
+    "To reconcile the counts, send the records to me in CSV. I will check them against the summary.",
+    "To finish the chart, provide the measurements in CSV. I will compare them with the earlier run.",
+])
+def test_assistant_owned_input_destination_and_format_preserve_the_dependency(text):
+    assert analyze_handoff(text) == Handoff("required-handoff", "action")
+
+
+@pytest.mark.parametrize("text", [
+    "The guide contains the following steps. Sign in to the account. Approve the connection.",
+    "The manual includes these instructions. Please grant access. Then select an account.",
+    "The documentation explains the following recommended procedure. Please approve the connection. Then I will explain the resulting screen.",
+    "Training run cedar-19 has two epochs left. I will compare its final score and give you the outcome after the run closes.",
+    "Remaining checks on recovery-path-3 were not run. I will summarize the separate job when it finishes.",
+])
+def test_forward_instruction_introductions_and_identified_noun_subjects_stay_declarative(text):
+    assert analyze_handoff(text).expectancy != "required-handoff"
+
+
+@pytest.mark.parametrize("text", [
+    "I recommend keeping the current design. Run the diagnostic on your laptop and paste the output into this chat. That output is required for me to identify the failing component.",
+    "Please attach the original measurements. The measurements are necessary for us to complete the comparison.",
+    "Send the corrected export here. That export remains essential for me to reconcile the totals.",
+    "Provide the missing account details. These are needed for us to configure the connection.",
+    "Please unlock the workspace. That is required for me to finish the validation.",
+    "The preview is ready for review. Paste the original trace here. This is still necessary for us to isolate the first failure.",
+])
+def test_passive_need_for_assistant_infinitive_links_the_requested_input(text):
+    assert analyze_handoff(text) == Handoff("required-handoff", "action")
+
+
+@pytest.mark.parametrize("text", [
+    "Please verify the estimates yourself before using this answer. The timer is required for me to finish the separate task.",
+    "Check the figures as general advice. The background job is necessary for us to prepare a separate report.",
+    "Paste the example output into your own console before relying on the answer. That output is required for me to demonstrate the tool tomorrow.",
+    "If useful, attach another export. That export is needed for me to create a new comparison.",
+    "The guide says: attach the measurements. Those measurements are required for us to finish the example.",
+    "The background job is processing the output. That output is necessary for me to complete the comparison.",
+    "The workspace is unlocked. That is required for me to finish the check.",
+    "Please attach a sample if we revisit this. If that sample is required for me to continue, I will ask then.",
+])
+def test_passive_needs_do_not_make_advice_optional_or_non_user_events_blocking(text):
+    assert analyze_handoff(text).expectancy != "required-handoff"
+
+
+@pytest.mark.parametrize("assertion", [
+    "That export was required for me to finish yesterday's example.",
+    "That export will be necessary for me to start the next task.",
+    "That export is not needed for me to continue.",
+    "If that export is essential for me to continue, I will ask later.",
+])
+def test_only_asserted_current_passive_needs_establish_a_new_gate(assertion):
+    text = "The report is delivered. Review the export before relying on it. " + assertion
+    assert analyze_handoff(text).expectancy != "required-handoff"

@@ -20,6 +20,16 @@ absent from the labels, two on ambiguous cases. A fresh 28-case paraphrase set
 improved from 8/28 to 14/28; a targeted 25-reply set improved from 3/25 to 4/25
 gesture matches. These results motivated a precision pass before installation.
 
+The precision candidate, `2dbe6b4`, met the originating environment's precision
+goal: gesture agreement reached 35/100 and outcome agreement 47/100. It played
+seven attention cues, five correctly, compared with three false cues in the
+v0.8.0 baseline. Required handoffs fell from 7/24 to 5/24: three previously caught
+handoffs were lost and one was newly caught. Assessment coverage and the same
+five unlabeled assessments were unchanged. The targeted set reached 5/25 gesture
+matches, and a fresh 27-case probe set reached 19/27 versus 13/27 for baseline.
+All nine negatives in that fresh set were clean. These are user-reported
+aggregates, not results reproduced from private replies in this checkout.
+
 The classifier combines grammatical evidence instead of complete example
 phrases:
 
@@ -54,6 +64,22 @@ what to check before relying on an answer is not a gate for the assistant.
 Selection prerequisites retain the decision kind rather than becoming a
 generic action request.
 
+The following recall pass separates independently addressed requests from
+neighboring status, review, or limitation clauses. A genuine dependency can
+therefore survive a nearby caveat or optional review invitation. Leading
+optional conditions still govern their requests; unrelated process completion
+does not establish a dependency on reader advice. Prepared-work authorization
+also recognizes the user's judgment as a condition for execution. Questions
+with an explicit assistant dependency and explicitly needed preferences retain
+the decision kind. New generic interrogatives require that dependency; actor
+inversion alone can introduce rhetorical or informational questions. Finite
+requirements preserve their actor through adverbs, and purpose-led requests can
+link supplied input to its promised use. Passive prerequisites can identify the
+assistant as their beneficiary, linked to the requested input by a repeated
+noun or local reference. Ordinary descriptions of sample data
+do not open an indefinite document-body scope. Present process declarations do
+not count as bare user commands.
+
 `response_prose` separates explicitly presented draft/document bodies from
 the response wrapper before quotation and code extraction. Body instructions
 and assessments are not current requests or verdicts. Quoted/fenced body ends
@@ -70,9 +96,37 @@ treated conservatively without reliable coreference. Verdict detection also
 distinguishes current assessment from procedural advice, and supports softened
 stance, appearance predicates, and an assessment's main clause after its topic.
 
+The recall pass extends current process grammar to queue states and unfinished
+return/completion states, paired with a definite handback in either order.
+Passive reports must be direct assertions, with negated, reported, and explicit
+third-party promises excluded. A queued operation explicitly waiting for the
+user remains a human dependency. Standalone future promises still do not
+establish current work. End-to-end contrasts check that independent incomplete
+verification remains a caveat and user gates retain priority over process waits.
+An affirmative follow-up's temporal completion condition is extracted once and
+shared with outcome routing. For example, pending checks within that future
+condition do not independently assert omitted verification; limitations outside
+the condition retain their priority. Completion-state transitions and
+assistant-owned coordinated monitoring/report promises use the same scope.
+Current status can precede its subject in a heading or inverted assertion.
+Completion-relative follow-ups and definite promises of delivery to the user
+also require current process evidence; user actions and other people's reports
+do not supply that handback.
+
 The new tests use varied subjects, verbs, clause order, morphology, and nearby
 non-matches. Additional synthetic development probes were authored separately
 and then used for diagnosis; scores on them are not held-out validation.
+In this recall pass, the initial edits matched `2dbe6b4` at 26/48 on one
+independently authored set. A second independently authored set also initially
+matched baseline at 27/36. Both sets were then inspected to identify missing
+grammatical roles and scopes, so they are now development inputs. They do not
+provide an independent final generalization score. Local synthetic labels also
+have not been adjudicated against the originating environment's label policy.
+After diagnosis, the final candidate matched the specified expectations on
+35/48 and 30/36 cases, respectively. All 24 negative cases remained clean.
+These numbers describe development coverage only. Nonverbal progress reports
+and some handoff subtypes remain incomplete; assessment coverage still needs
+the originating environment's evaluation.
 Negative completion alone ("hasn't finished") still does not establish current
 execution without a definite pending follow-up. These remain English heuristics
 with limited reference resolution and adjacent-clause context, not a general
@@ -101,9 +155,9 @@ Run from the checkout:
 Re-score any candidate against the original private 100-reply sample and the
 separate targeted 25-reply set in their originating environment. Compare false
 attention, missed handoffs, gesture errors, and ambiguous cases separately.
-Score `48ad797`, `eceabb8`, `1a4e700`, and the new candidate against the same frozen labels
+Score `48ad797`, `eceabb8`, `1a4e700`, `2dbe6b4`, and the new candidate against the same frozen labels
 and export aggregate results only. Keep ambiguous cases distinct. The original
-20- and 28-case paraphrase sets are partially described by the feedback now; a new
+20-, 28-, and 27-case paraphrase sets are partially described by the feedback now; a new
 unshared paraphrase set and a session-disjoint real-reply sample are needed to
 measure generalization. No private-data improvement is claimed for this pass
 until the originating environment re-scores it.
